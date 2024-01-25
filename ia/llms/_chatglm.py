@@ -1,6 +1,7 @@
+from typing import List
 import json
-from ._llm import LLM
-from ..tools import get_function_descriptions
+from ._llm import LLM, Message
+from ..tools import Function
 import chatglm_cpp
 
 
@@ -9,33 +10,42 @@ class ChatGLM(LLM):
         super().__init__()
         self._llm = chatglm_cpp.Pipeline(model_path=model_path)
 
-    def generate(self, instructions: str, functions=None, **kwargs) -> str:
+    def generate(self, instructions: str, functions: List[Function] = None, **kwargs) -> Message:
+        """"""
         messages = []
-
-        if functions is not None:
-            function_descriptions = get_function_descriptions(functions=functions)
-            system_instructions = "Answer the following questions as best as you can. You have access to the following tools:\n"
-            system_instructions += json.dumps(function_descriptions, ensure_ascii=False, indent=4)
-
-            messages.append(chatglm_cpp.ChatMessage(
-                role="system",
-                content=system_instructions
-            ))
-
-        messages.append(chatglm_cpp.ChatMessage(
+        messages.append(Message(
             role="user",
             content=instructions
         ))
 
-        r = self._llm.chat(messages=messages)
+        return self.chat(messages=messages, functions=functions, **kwargs)
+
+    def chat(self, messages: List[Message] = [], functions: List[Function] = None, **kwargs) -> Message:
+        if functions is not None:
+            function_descriptions = [f.description.to_openai_style() for f in functions]
+            system_instructions = """
+                Answer the following questions as best as you can. You have access to the following tools:\n
+            """
+            system_instructions += json.dumps(function_descriptions, ensure_ascii=False, indent=4)
+
+            messages.insert(-1, Message(
+                role="system",
+                content=system_instructions
+            ))
+
+        chatglm_messages = []
+        for m in messages:
+            chatglm_messages.append(chatglm_cpp.ChatMessage(role=m.role, content=m.content))
+        r = self._llm.chat(messages=chatglm_messages)
 
         tool_calls = r.tool_calls
 
-        if tool_calls:
+        r_content = None
+        if tool_calls and functions:
             resp = []
 
             available_function = dict(
-                [(func.description()['name'], functions[name]) for name, func in functions.items()]
+                [(func.description.name, func) for func in functions]
             )
 
             def tool_call(**kwargs):
@@ -51,14 +61,14 @@ class ChatGLM(LLM):
                 try:
                     func_args = eval(tc.function.arguments, dict(tool_call=tool_call))
                     func_resp = func_to_call(**func_args)
-                    print(func_args, func_resp)
                 except Exception as e:
                     func_resp = str(e)
-                if isinstance(func_resp, str):
-                    resp.append(func_resp)
-                else:
-                    resp.append(json.dumps(func_resp or {}, ensure_ascii=False, indent=4))
+                if not isinstance(func_resp, str):
+                    func_resp = json.dumps(func_resp or {}, ensure_ascii=False, indent=4)
+                resp.append(func_resp)
 
-            return '\n'.join(resp)
+            r_content = '\n'.join(resp) if len(resp) > 0 else "."
         else:
-            return r.content
+            r_content = r.content
+
+        return Message(role="assistant", content=r_content)

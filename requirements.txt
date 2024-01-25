@@ -1,3 +1,7 @@
+pydantic
+
 prompt_toolkit
+colorama
+
 openai
 chatglm-cpp

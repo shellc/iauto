@@ -1,6 +1,7 @@
+from typing import Dict
 import json
 from ._llm import LLM
-from ..tools import get_function_descriptions
+from ..tools import Function
 import openai
 
 
@@ -12,7 +13,7 @@ class OpenAI(LLM):
 
         self._openai = openai.OpenAI(**kwargs)
 
-    def generate(self, instructions: str, functions=None, **kwargs) -> str:
+    def generate(self, instructions: str, functions: Dict[str, Function] = None, **kwargs) -> str:
         tools = []
         if functions is not None:
             function_descriptions = get_function_descriptions(functions=functions)
