@@ -1,7 +1,7 @@
 from typing import List
 import json
 from ._llm import LLM, Message
-from ..tools import Function
+from ..actions import Action
 import chatglm_cpp
 
 
@@ -10,7 +10,7 @@ class ChatGLM(LLM):
         super().__init__()
         self._llm = chatglm_cpp.Pipeline(model_path=model_path)
 
-    def generate(self, instructions: str, functions: List[Function] = None, **kwargs) -> Message:
+    def generate(self, instructions: str, functions: List[Action] = None, **kwargs) -> Message:
         """"""
         messages = []
         messages.append(Message(
@@ -20,9 +20,9 @@ class ChatGLM(LLM):
 
         return self.chat(messages=messages, functions=functions, **kwargs)
 
-    def chat(self, messages: List[Message] = [], functions: List[Function] = None, **kwargs) -> Message:
+    def chat(self, messages: List[Message] = [], functions: List[Action] = None, **kwargs) -> Message:
         if functions is not None:
-            function_descriptions = [f.description.to_openai_style() for f in functions]
+            function_descriptions = [f.definition.openai_function() for f in functions]
             system_instructions = """
                 Answer the following questions as best as you can. You have access to the following tools:\n
             """
@@ -45,7 +45,7 @@ class ChatGLM(LLM):
             resp = []
 
             available_function = dict(
-                [(func.description.name, func) for func in functions]
+                [(func.definition.name, func) for func in functions]
             )
 
             def tool_call(**kwargs):

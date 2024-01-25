@@ -3,35 +3,35 @@ from pydantic import BaseModel
 from typing import Any, List, Dict, Optional
 
 
-class FunctionArgument(BaseModel):
+class ActionArg(BaseModel):
     name: str
     type: str = "string"
     description: str
     required: bool = False
 
 
-class FunctionDescription(BaseModel):
+class ActionDef(BaseModel):
     name: str
     description: str
-    arguments: Optional[List[FunctionArgument]]
+    arguments: Optional[List[ActionArg]]
 
     @staticmethod
-    def from_dict(desc: Dict) -> 'FunctionDescription':
+    def from_dict(d: Dict) -> 'ActionDef':
         try:
-            func = FunctionDescription(
-                name=desc.get("name"),
-                description=desc.get("description"),
+            func = ActionDef(
+                name=d.get("name"),
+                description=d.get("description"),
                 arguments=[]
             )
 
-            args = desc.get("arguments")
+            args = d.get("arguments")
             for arg in args:
-                func.arguments.append(FunctionArgument(**arg))
+                func.arguments.append(ActionArg(**arg))
         except Exception as e:
-            raise ValueError(f"Invalid FunctionDescription: {e}")
+            raise ValueError(f"Invalid ActionDef: {e}")
         return func
 
-    def to_openai_style(self) -> Dict:
+    def openai_function(self) -> Dict:
         args = {}
         required = []
 
@@ -58,12 +58,16 @@ class FunctionDescription(BaseModel):
         }
 
 
-class Function(ABC, BaseModel):
-    description: FunctionDescription
+class Action(ABC):
 
+    @property
     @abstractmethod
-    def call(self, *args: Any, **kwds: Any) -> Any:
+    def definition(self) -> ActionDef:
         raise NotImplementedError()
 
-    def __call__(self, *args: Any, **kwds: Any) -> Any:
-        return self.call(*args, **kwds)
+    @abstractmethod
+    def perform(self, *args: Any, **kwargs: Any) -> Any:
+        raise NotImplementedError()
+
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
+        return self.perform(*args, **kwargs)

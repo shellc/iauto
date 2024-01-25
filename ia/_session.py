@@ -1,12 +1,12 @@
 from typing import List
 from .llms import LLM, Message
-from .tools import Function
+from .actions import Action
 
 
 class Session:
-    def __init__(self, llm: LLM, functions: List[Function]) -> None:
+    def __init__(self, llm: LLM, actions: List[Action]) -> None:
         self._llm = llm
-        self._functions = functions
+        self._actions = actions
         self._messages = []
 
     def add(self, message: Message):
@@ -17,6 +17,6 @@ class Session:
         return self._messages
 
     def run(self):
-        m = self._llm.chat(messages=self._messages, functions=self._functions)
+        m = self._llm.chat(messages=self._messages, functions=self._actions)
         self.add(m)
         return m

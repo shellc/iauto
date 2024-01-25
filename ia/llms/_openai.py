@@ -1,7 +1,7 @@
 from typing import Dict
 import json
 from ._llm import LLM
-from ..tools import Function
+from ..actions import Action
 import openai
 
 
@@ -13,7 +13,7 @@ class OpenAI(LLM):
 
         self._openai = openai.OpenAI(**kwargs)
 
-    def generate(self, instructions: str, functions: Dict[str, Function] = None, **kwargs) -> str:
+    def generate(self, instructions: str, functions: Dict[str, Action] = None, **kwargs) -> str:
         tools = []
         if functions is not None:
             function_descriptions = get_function_descriptions(functions=functions)
@@ -36,7 +36,7 @@ class OpenAI(LLM):
 
         if tool_calls:
             available_function = dict(
-                [(func.description()['name'], functions[name]) for name, func in functions.items()]
+                [(func.definition()['name'], functions[name]) for name, func in functions.items()]
             )
 
             messages.append(m)

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import List, Dict
+from typing import List
 from pydantic import BaseModel
-from ..tools import Function
+from ..actions import Action
 
 
 class Message(BaseModel):
@@ -16,9 +16,9 @@ class LLM(ABC):
         super().__init__()
 
     @abstractmethod
-    def generate(self, instructions: str, functions: List[Function] = None, **kwargs) -> Message:
+    def generate(self, instructions: str, functions: List[Action] = None, **kwargs) -> Message:
         """"""
 
     @abstractmethod
-    def chat(self, messages: List[Message], functions: List[Function] = None, **kwargs) -> Message:
+    def chat(self, messages: List[Message], functions: List[Action] = None, **kwargs) -> Message:
         """"""
