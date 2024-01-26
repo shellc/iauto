@@ -1,3 +1,3 @@
 # iauto
 
-iauto is an Intelligent Automation library
+`iauto` is a Python library for intelligent automation.
