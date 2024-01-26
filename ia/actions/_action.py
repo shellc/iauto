@@ -25,8 +25,9 @@ class ActionDef(BaseModel):
             )
 
             args = d.get("arguments")
-            for arg in args:
-                func.arguments.append(ActionArg(**arg))
+            if args:
+                for arg in args:
+                    func.arguments.append(ActionArg(**arg))
         except Exception as e:
             raise ValueError(f"Invalid ActionDef: {e}")
         return func
@@ -59,15 +60,13 @@ class ActionDef(BaseModel):
 
 
 class Action(ABC):
-
-    @property
     @abstractmethod
     def definition(self) -> ActionDef:
         raise NotImplementedError()
 
     @abstractmethod
-    def perform(self, *args: Any, **kwargs: Any) -> Any:
+    def perform(self, **args: Any) -> Dict:
         raise NotImplementedError()
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
-        return self.perform(*args, **kwargs)
+        return self.perform(**kwargs)

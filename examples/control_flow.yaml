@@ -1,0 +1,13 @@
+Playbook:
+  Actions:
+    - While:
+        Args:
+          Or:
+            - $c1
+            - $c2
+        Actions:
+          - OpenBrowser:
+              Args:
+                url: $1
+              Returns:
+                html: $3

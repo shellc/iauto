@@ -1,6 +1,6 @@
 from typing import List
-from .llms import LLM, Message
-from .actions import Action
+from . import LLM, Message
+from ..actions import Action
 
 
 class Session:

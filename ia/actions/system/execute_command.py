@@ -37,12 +37,10 @@ Examples:
 
 
 class ExecuteCommand(Action):
-
-    @property
     def definition(self) -> ActionDef:
         return _definition
 
-    def perform(self, *args: Any, **kwargs: Any) -> Any:
+    def perform(self, **kwargs: Any) -> Any:
         cmd = kwargs.get('command')
 
         try:

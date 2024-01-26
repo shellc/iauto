@@ -22,7 +22,7 @@ class ChatGLM(LLM):
 
     def chat(self, messages: List[Message] = [], functions: List[Action] = None, **kwargs) -> Message:
         if functions is not None:
-            function_descriptions = [f.definition.openai_function() for f in functions]
+            function_descriptions = [f.definition().openai_function() for f in functions]
             system_instructions = """
                 Answer the following questions as best as you can. You have access to the following tools:\n
             """
@@ -45,7 +45,7 @@ class ChatGLM(LLM):
             resp = []
 
             available_function = dict(
-                [(func.definition.name, func) for func in functions]
+                [(func.definition().name, func) for func in functions]
             )
 
             def tool_call(**kwargs):

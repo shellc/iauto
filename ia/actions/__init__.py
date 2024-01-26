@@ -1,16 +1,9 @@
-import importlib
-from typing import List, Dict
 from ._action import Action
+from .playbook import PlaybookAction
+from ._loader import loader
+from ._buildin import get_buildin_actions
+from ._executor import PlaybookExecutor
 
+_buildin_actions = get_buildin_actions()
 
-def load_actions(identifiers: List[str] = []) -> Dict[str, Action]:
-    actions = []
-
-    for id in identifiers:
-        ss = id.split(".")
-        pkg = importlib.import_module('.'.join(ss[:-1]))
-        if pkg != '':
-            action = getattr(pkg, ss[-1])()
-            actions.append(action)
-
-    return actions
+loader.add(_buildin_actions)
