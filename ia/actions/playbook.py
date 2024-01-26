@@ -11,9 +11,10 @@ class PlaybookAction(Action):
     def definition(self) -> ActionDef:
         return _definition
 
-    def perform(self, executor=None, actions=None, **args: Any) -> Any:
-        if not executor or not actions:
+    def perform(self, executor=None, playbook=None, **args: Any) -> Any:
+        if not executor or not playbook:
             return
 
+        actions = playbook.get("actions") or []
         for action in actions:
             executor.perform(playbook=action)

@@ -4,7 +4,7 @@ from yaml import CLoader as yaml_loader
 from ._action import Action
 from ._loader import loader
 
-VALID_KEYS = ["Args", "Actions", "Returns"]
+VALID_KEYS = ["args", "actions", "return"]
 
 
 class PlaybookExecutor:
@@ -13,19 +13,18 @@ class PlaybookExecutor:
 
     def perform(self, playbook: Dict[str, Any]):
         name, action = self.get_action(playbook=playbook)
-        args = self.extract_args(playbook=playbook[name])
-        actions = playbook[name].get("Actions")
+        args = self.eval_args(playbook=playbook[name])
 
-        returns = action.perform(executor=self, actions=actions, **args)
+        returns = action.perform(executor=self, playbook=playbook[name], **args)
 
-        self.extract_returns(returns=returns, playbook=playbook[name])
+        self.eval_return(returns=returns, playbook=playbook[name])
 
     def get_action(self, playbook: Dict[str, Any]) -> Tuple[str, Action]:
         if playbook is None or not isinstance(playbook, Dict):
             raise ValueError(f"Invalid playbook: {playbook}")
 
         keys = list(playbook.keys())
-        if len(keys) > 1:
+        if len(keys) != 1:
             raise ValueError(f"Invalid playbook, more than one Action={keys}")
 
         name = keys[0]
@@ -44,26 +43,30 @@ class PlaybookExecutor:
 
         return name, action
 
-    def extract_args(self, playbook):
-        args = playbook.get("Args")
+    def eval_args(self, playbook):
+        args = playbook.get("args")
         extracted = {}
         if args:
             for k, v in args.items():
-                if v.startswith("$"):
+                if isinstance(v, str) and v.startswith("$"):
                     extracted[k] = self._variables.get(v)
                 else:
                     extracted[k] = v
         return extracted
 
-    def extract_returns(self, returns, playbook):
-        returns_ = playbook.get("Returns")
+    def eval_return(self, returns, playbook):
+        returns_ = playbook.get("return")
         if returns:
             for k, v in returns_.items():
+                if k not in returns:
+                    raise ValueError(f"Key error: {k}, returns={returns}")
                 r = returns.get(k)
-                if not r:
-                    raise ValueError(f"Key error: {k}")
 
                 self._variables[v] = r
+
+    @property
+    def variables(self):
+        return self._variables
 
     @staticmethod
     def execute(playbook_file):

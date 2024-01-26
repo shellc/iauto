@@ -1,13 +1,34 @@
-Playbook:
-  Actions:
-    - While:
-        Args:
-          Or:
-            - $c1
-            - $c2
-        Actions:
-          - OpenBrowser:
-              Args:
-                url: $1
-              Returns:
-                html: $3
+# Playbook example
+#
+playbook:
+  actions:
+    - while:
+        args:
+          any:
+            - true
+        actions:
+          - get_now_timestamp:
+              return:
+                timestamp: $now
+          - mod:
+              args:
+                left: $now
+                right: 2
+              return:
+                result: $tick
+          - if:
+              args:
+                eq:
+                  - $tick
+                  - 0
+              actions:
+                - log:
+                    args:
+                      TICK: "TOCK"
+          - log:
+              args:
+                now: $now
+                tick: $tick
+          - wait:
+              args:
+                seconds: 3
