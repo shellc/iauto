@@ -1,8 +1,7 @@
 from prompt_toolkit import prompt
 from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
-from .llms import create_llm, Session, Message
-from .actions import loader
+from . import create_llm, Session, Message
 
 
 def run():
@@ -10,10 +9,8 @@ def run():
         "model_path": "/Users/shellc/Workspaces/chatglm.cpp/chatglm-ggml.bin"
     }
 
-    actions = loader.actions
-
     llm = create_llm(provider="chatglm", **llm_args)
-    session = Session(llm=llm, actions=actions)
+    session = Session(llm=llm)
 
     try:
         history = InMemoryHistory()

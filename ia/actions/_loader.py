@@ -1,5 +1,5 @@
 import importlib
-from typing import Union
+from typing import Union, Dict
 from ._action import Action
 
 
@@ -7,7 +7,7 @@ class ActionLoader:
     def __init__(self) -> None:
         self._actions = {}
 
-    def add(self, actions):
+    def register(self, actions: Dict[str, Action]):
         self._actions.update(actions)
 
     def get(self, name) -> Union[Action, None]:

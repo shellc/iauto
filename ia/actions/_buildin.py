@@ -1,24 +1,33 @@
-from .system import execute_command
-from .playbook import PlaybookAction
-from . import _flow as flow
-from . import _log as log
+from ._playbook import PlaybookAction
+from . import _flow
+from . import _log
 from . import _time
 from . import _math
+from . import _shell
+from . import _browser
 
 
 def get_buildin_actions():
     actions = {}
 
-    actions["execute_command"] = execute_command.ExecuteCommand()
     actions["playbook"] = PlaybookAction()
-    actions["log"] = log.LogAction()
+    actions["log"] = _log.LogAction()
 
-    actions["while"] = flow.WhileAction()
-    actions["if"] = flow.IfAction()
+    actions["while"] = _flow.WhileAction()
+    actions["if"] = _flow.IfAction()
 
     actions["time.wait"] = _time.WaitAction()
     actions["time.now"] = _time.GetNowTimestamp()
 
     actions["math.mod"] = _math.ModAction()
+
+    actions["shell.command"] = _shell.ShellCommandAction()
+    actions["shell.prompt"] = _shell.PromptAction()
+    actions["shell.print"] = _shell.PrintAction()
+
+    actions["browser.open"] = _browser.OpenBrowserAction()
+    actions["browser.new"] = _browser.NewPageAction()
+    actions["browser.goto"] = _browser.GotoAction()
+    actions["browser.evaluate"] = _browser.EvaluateJavascriptAction()
 
     return actions

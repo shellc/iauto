@@ -1,0 +1,29 @@
+playbook:
+  description: Chat to a LLM
+  actions:
+    - llm.session:
+        args:
+          provider: chatglm
+          llm_args:
+            model_path: /Users/shellc/Workspaces/chatglm.cpp/chatglm-ggml.bin
+        result:
+          session: $llm_session
+    - while:
+        args:
+          any:
+            - true
+        actions:
+          - shell.prompt:
+              result:
+                prompt: $prompt
+          - llm.chat:
+              args:
+                session: $llm_session
+                prompt: $prompt
+              result:
+                message: $message
+          - shell.print:
+              args:
+                begin: "AI: "
+                message: $message
+                  

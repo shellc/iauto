@@ -56,7 +56,7 @@ class PlaybookExecutor:
 
     def eval_result(self, result, playbook):
         result_ = playbook.get("result")
-        if result:
+        if result and result_:
             for k, v in result_.items():
                 if k not in result:
                     raise ValueError(f"Key error: {k}, result={result}")

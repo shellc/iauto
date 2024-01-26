@@ -4,7 +4,7 @@ from ..actions import Action
 
 
 class Session:
-    def __init__(self, llm: LLM, actions: List[Action]) -> None:
+    def __init__(self, llm: LLM, actions: List[Action] = None) -> None:
         self._llm = llm
         self._actions = actions
         self._messages = []

@@ -1,0 +1,35 @@
+playbook:
+  description: Open browser and goto https://bing.com
+  actions:
+    - browser.open:
+        args:
+          exec_path: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
+        result:
+          browser: $browser
+    - browser.new:
+        args:
+          browser: $browser
+        result:
+          page: $page
+    - browser.goto:
+        args:
+          page: $page
+          url: https://bing.com
+    - while:
+        args:
+          any:
+            - true
+        actions:
+          - browser.evaluate:
+              args:
+                page: $page
+                javascript: new Date()
+              result:
+                result: $now
+          - log:
+              args:
+                now: $now
+          - time.wait:
+              args:
+                seconds: 2
+    

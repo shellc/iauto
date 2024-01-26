@@ -6,3 +6,5 @@ colorama
 
 openai
 chatglm-cpp
+
+playwright
