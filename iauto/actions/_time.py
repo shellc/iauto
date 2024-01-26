@@ -1,14 +1,10 @@
 import time
 from datetime import datetime
 from typing import Any, Dict
-from iauto.actions._action import ActionDef
 from ._action import Action
 
 
 class WaitAction(Action):
-    def definition(self) -> ActionDef:
-        return super().definition()
-
     def perform(self, **args: Any) -> Dict:
         seconds = args.get("seconds") or 0
 
@@ -17,9 +13,6 @@ class WaitAction(Action):
 
 
 class GetNowTimestamp(Action):
-    def definition(self) -> ActionDef:
-        return super().definition()
-
     def perform(self, **args: Any) -> Dict:
         return {
             "timestamp": int(datetime.now().timestamp() * 1000)

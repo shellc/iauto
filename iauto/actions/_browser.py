@@ -1,13 +1,9 @@
 from typing import Any, Dict
-from iauto.actions._action import ActionDef
 from ._action import Action
 from playwright.sync_api import sync_playwright, Browser, Page
 
 
 class OpenBrowserAction(Action):
-    def definition(self) -> ActionDef:
-        return super().definition()
-
     def perform(self, **args: Any) -> Dict:
         # browser_type = args.get("browser") or "chromium"
         exec_path = args.get("exec_path")
@@ -22,9 +18,6 @@ class OpenBrowserAction(Action):
 
 
 class NewPageAction(Action):
-    def definition(self) -> ActionDef:
-        return super().definition()
-
     def perform(self, **args: Any) -> Dict:
         browser: Browser = args.get("browser")
 
@@ -34,9 +27,6 @@ class NewPageAction(Action):
 
 
 class GotoAction(Action):
-    def definition(self) -> ActionDef:
-        return super().definition()
-
     def perform(self, **args: Any) -> Dict:
         page: Page = args.get("page")
         url = args.get("url")
@@ -47,9 +37,6 @@ class GotoAction(Action):
 
 
 class EvaluateJavascriptAction(Action):
-    def definition(self) -> ActionDef:
-        return super().definition()
-
     def perform(self, **args: Any) -> Dict:
         page: Page = args.get("page")
         javascript = args.get("javascript")

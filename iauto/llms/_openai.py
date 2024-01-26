@@ -1,6 +1,6 @@
-from typing import Dict
+from typing import List
 import json
-from ._llm import LLM
+from ._llm import LLM, Message
 from ..actions import Action
 import openai
 
@@ -13,16 +13,22 @@ class OpenAI(LLM):
 
         self._openai = openai.OpenAI(**kwargs)
 
-    def generate(self, instructions: str, functions: Dict[str, Action] = None, **kwargs) -> str:
+    def generate(self, instructions: str, functions: List[Action] = None, **kwargs) -> Message:
+        messages = []
+        messages.append(Message(
+            role="user",
+            content=instructions
+        ))
+
+        return self.chat(messages=messages, functions=functions, **kwargs)
+
+    def chat(self, messages: List[Message] = [], functions: List[Action] = None, **kwargs) -> Message:
         tools = []
         if functions is not None:
-            function_descriptions = get_function_descriptions(functions=functions)
-            tools.extend(function_descriptions)
+            function_spec = [f.spec.openai_spec() for f in functions]
+            tools.extend(function_spec)
 
-        messages = [{
-            "role": "user",
-            "content": instructions
-        }]
+        messages = [{"role": m.role, "content": m.content} for m in messages]
 
         r = self._openai.chat.completions.create(
             messages=messages,
@@ -34,9 +40,9 @@ class OpenAI(LLM):
         m = r.choices[0].message
         tool_calls = m.tool_calls
 
-        if tool_calls:
+        if tool_calls and functions:
             available_function = dict(
-                [(func.definition()['name'], functions[name]) for name, func in functions.items()]
+                [(func.spec.name, func) for func in functions]
             )
 
             messages.append(m)
@@ -62,4 +68,4 @@ class OpenAI(LLM):
                 **kwargs
             )
             m = r.choices[0].message
-        return m.content
+        return Message(role="assistant", content=m.content)

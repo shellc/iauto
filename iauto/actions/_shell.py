@@ -2,7 +2,7 @@ import os
 import sys
 import json
 from typing import Any, Dict
-from ._action import Action, ActionDef
+from ._action import Action, ActionSpec
 
 from prompt_toolkit import prompt
 from prompt_toolkit.history import InMemoryHistory
@@ -16,7 +16,7 @@ _env = {
     "PWD": os.environ.get("PWD")
 }
 
-_definition = ActionDef.from_dict({
+_spec = ActionSpec.from_dict({
     "name": "shell_command",
     "description": f"""
 Use this tool to execute Linux, macOS, and DOS commands and output the execution results.
@@ -41,8 +41,9 @@ Examples:
 
 
 class ShellCommandAction(Action):
-    def definition(self) -> ActionDef:
-        return _definition
+    def __init__(self) -> None:
+        super().__init__()
+        self.spec = _spec
 
     def perform(self, **kwargs: Any) -> Any:
         cmd = kwargs.get('command')
@@ -59,18 +60,12 @@ class PromptAction(Action):
         super().__init__()
         self._history = InMemoryHistory()
 
-    def definition(self) -> ActionDef:
-        return super().definition()
-
     def perform(self, **args: Any) -> Dict:
         p = prompt("Human: ", history=self._history, auto_suggest=AutoSuggestFromHistory())
         return {"prompt": p}
 
 
 class PrintAction(Action):
-    def definition(self) -> ActionDef:
-        return super().definition()
-
     def perform(self, message, begin=None, end="\n", **args: Any) -> Dict:
         if begin:
             print(begin, end='')

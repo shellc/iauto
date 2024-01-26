@@ -1,5 +1,4 @@
 from typing import Any, Dict
-from iauto.actions._action import ActionDef
 from ._action import Action
 
 
@@ -74,9 +73,6 @@ def eval_operator(operator, variables={}) -> bool:
 
 
 class WhileAction(Action):
-    def definition(self) -> ActionDef:
-        return super().definition()
-
     def perform(self, executor, playbook, **args: Any) -> Dict:
         args = executor.eval_args(playbook)
 
@@ -89,9 +85,6 @@ class WhileAction(Action):
 
 
 class IfAction(Action):
-    def definition(self) -> ActionDef:
-        return super().definition()
-
     def perform(self, executor, playbook, **args: Any) -> Dict:
         args = executor.eval_args(playbook)
 

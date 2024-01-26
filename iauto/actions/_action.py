@@ -10,15 +10,15 @@ class ActionArg(BaseModel):
     required: bool = False
 
 
-class ActionDef(BaseModel):
+class ActionSpec(BaseModel):
     name: str
     description: str
-    arguments: Optional[List[ActionArg]]
+    arguments: Optional[List[ActionArg]] = None
 
     @staticmethod
-    def from_dict(d: Dict) -> 'ActionDef':
+    def from_dict(d: Dict) -> 'ActionSpec':
         try:
-            func = ActionDef(
+            func = ActionSpec(
                 name=d.get("name"),
                 description=d.get("description"),
                 arguments=[]
@@ -32,7 +32,7 @@ class ActionDef(BaseModel):
             raise ValueError(f"Invalid ActionDef: {e}")
         return func
 
-    def openai_function(self) -> Dict:
+    def openai_spec(self) -> Dict:
         args = {}
         required = []
 
@@ -60,9 +60,9 @@ class ActionDef(BaseModel):
 
 
 class Action(ABC):
-    @abstractmethod
-    def definition(self) -> ActionDef:
-        raise NotImplementedError()
+    def __init__(self) -> None:
+        super().__init__()
+        self.spec = ActionSpec(name="UNNAMED", description="")
 
     @abstractmethod
     def perform(self, **args: Any) -> Dict:
@@ -70,3 +70,18 @@ class Action(ABC):
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         return self.perform(**kwargs)
+
+
+class FunctionAction(Action):
+    def __init__(self, func, spec: Dict = None) -> None:
+        super().__init__()
+        self._func = func
+        if spec:
+            self.spec = ActionSpec.from_dict(spec)
+
+    def perform(self, **args: Any) -> Dict:
+        return self._func(**args)
+
+
+def create_action(func, spec: Dict) -> Action:
+    return FunctionAction(func=func, spec=spec)

@@ -1,19 +1,28 @@
 import os
 import sys
+import importlib
 import argparse
 from iauto.actions import PlaybookExecutor
-from iauto.llms import register_actions
+from iauto import llms
 
-register_actions()
+llms.register_actions()
 
 
 def run(args):
+    if args.load:
+        try:
+            for m in args.load:
+                importlib.import_module(m)
+        except ImportError as e:
+            print(f"Load moudle error: {e}")
+            sys.exit(-1)
+
     playbook = args.playbook
 
     p = os.path.abspath(playbook)
     if not os.path.exists(p) or not os.path.isfile(p):
         print(f"Invalid playbook file: {p}")
-        return
+        sys.exit(-1)
 
     PlaybookExecutor.execute(playbook_file=p)
 
@@ -27,6 +36,8 @@ def parse_args(argv):
     parser.add_argument(
         "playbook", nargs="?", default=None, help="playbook file, like: playbook.yaml"
     )
+
+    parser.add_argument('-l', '--load', nargs="+", default=[], help="load modules, like: --load module1 module2")
 
     parser.set_defaults(func=run)
 
