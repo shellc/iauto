@@ -1,14 +1,33 @@
 import os
 import sys
 import importlib
+import json
 import argparse
-from iauto.actions import PlaybookExecutor
+from iauto.actions import PlaybookExecutor, loader
 from iauto import llms
 
 llms.register_actions()
 
 
-def run(args):
+def list_actions():
+    for a in loader.actions:
+        desc = a.spec.description or ""
+        desc = [x for x in desc.split('\n') if x != ""]
+        desc = desc[0] if len(desc) > 0 else ""
+
+        print(f"{a.spec.name} : {desc}")
+
+
+def print_action_spec(name):
+    action = loader.get(name=name)
+    if not action:
+        print(f"No action found: {name}")
+
+    spec = action.spec
+    print(json.dumps(spec.model_dump(), ensure_ascii=False, indent=2))
+
+
+def run(args, parser):
     if args.load:
         try:
             for m in args.load:
@@ -17,7 +36,18 @@ def run(args):
             print(f"Load moudle error: {e}")
             sys.exit(-1)
 
+    if args.list_actions:
+        list_actions()
+        sys.exit(0)
+
+    if args.spec:
+        print_action_spec(args.spec)
+        sys.exit(0)
+
     playbook = args.playbook
+    if not playbook:
+        parser.print_help()
+        sys.exit(-1)
 
     p = os.path.abspath(playbook)
     if not os.path.exists(p) or not os.path.isfile(p):
@@ -37,7 +67,9 @@ def parse_args(argv):
         "playbook", nargs="?", default=None, help="playbook file, like: playbook.yaml"
     )
 
-    parser.add_argument('-l', '--load', nargs="+", default=[], help="load modules, like: --load module1 module2")
+    parser.add_argument('-l', '--load', nargs="+", default=[], metavar="module", help="load modules, like: --load module1 module2")
+    parser.add_argument('--list-actions', action="store_true", help="list actions")
+    parser.add_argument('--spec', default=None, help="print action spec")
 
     parser.set_defaults(func=run)
 
@@ -48,10 +80,8 @@ def parse_args(argv):
 def main():
     args, parser = parse_args(sys.argv[1:])
 
-    if not args.playbook:
-        parser.print_help()
-    elif hasattr(args, "func"):
-        args.func(args)
+    if hasattr(args, "func"):
+        args.func(args, parser)
     else:
         parser.print_help()
 
