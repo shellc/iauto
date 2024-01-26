@@ -1,8 +1,8 @@
 import os
 import sys
 import argparse
-from ia.actions import PlaybookExecutor
-from ia.llms import register_actions
+from iauto.actions import PlaybookExecutor
+from iauto.llms import register_actions
 
 register_actions()
 
@@ -20,8 +20,8 @@ def run(args):
 
 def parse_args(argv):
     parser = argparse.ArgumentParser(
-        prog='ia',
-        usage="ia playbook.yaml"
+        prog='iauto',
+        usage="iauto playbook.yaml"
     )
 
     parser.add_argument(

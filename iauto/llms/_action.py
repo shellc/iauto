@@ -1,5 +1,5 @@
 from typing import Any, Dict
-from ia.actions._action import ActionDef
+from iauto.actions._action import ActionDef
 from ..actions import Action, loader
 from ._llm_factory import create_llm
 from ._llm import Message

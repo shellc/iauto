@@ -1,7 +1,7 @@
 import time
 from datetime import datetime
 from typing import Any, Dict
-from ia.actions._action import ActionDef
+from iauto.actions._action import ActionDef
 from ._action import Action
 
 
