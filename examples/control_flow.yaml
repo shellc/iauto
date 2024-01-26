@@ -1,20 +1,22 @@
 # Playbook example
 #
 playbook:
+  description: this is a playbook example
   actions:
     - while:
+        description: do forever
         args:
           any:
             - true
         actions:
-          - get_now_timestamp:
-              return:
+          - time.now:
+              result:
                 timestamp: $now
-          - mod:
+          - math.mod:
               args:
                 left: $now
                 right: 2
-              return:
+              result:
                 result: $tick
           - if:
               args:
@@ -29,6 +31,6 @@ playbook:
               args:
                 now: $now
                 tick: $tick
-          - wait:
+          - time.wait:
               args:
                 seconds: 3

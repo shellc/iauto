@@ -1,7 +1,7 @@
 from .._action import Action
 
 
-class BrowserFunction(Action):
+class BrowserAction(Action):
     def __init__(self) -> None:
         super().__init__()
         self._browser = None

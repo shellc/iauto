@@ -16,9 +16,9 @@ def get_buildin_actions():
     actions["while"] = flow.WhileAction()
     actions["if"] = flow.IfAction()
 
-    actions["wait"] = _time.WaitAction()
-    actions["get_now_timestamp"] = _time.GetNowTimestamp()
+    actions["time.wait"] = _time.WaitAction()
+    actions["time.now"] = _time.GetNowTimestamp()
 
-    actions["mod"] = _math.ModAction()
+    actions["math.mod"] = _math.ModAction()
 
     return actions

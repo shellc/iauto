@@ -4,7 +4,7 @@ from yaml import CLoader as yaml_loader
 from ._action import Action
 from ._loader import loader
 
-VALID_KEYS = ["args", "actions", "return"]
+VALID_KEYS = ["args", "actions", "result", "description"]
 
 
 class PlaybookExecutor:
@@ -15,9 +15,9 @@ class PlaybookExecutor:
         name, action = self.get_action(playbook=playbook)
         args = self.eval_args(playbook=playbook[name])
 
-        returns = action.perform(executor=self, playbook=playbook[name], **args)
+        result = action.perform(executor=self, playbook=playbook[name], **args)
 
-        self.eval_return(returns=returns, playbook=playbook[name])
+        self.eval_result(result=result, playbook=playbook[name])
 
     def get_action(self, playbook: Dict[str, Any]) -> Tuple[str, Action]:
         if playbook is None or not isinstance(playbook, Dict):
@@ -54,13 +54,13 @@ class PlaybookExecutor:
                     extracted[k] = v
         return extracted
 
-    def eval_return(self, returns, playbook):
-        returns_ = playbook.get("return")
-        if returns:
-            for k, v in returns_.items():
-                if k not in returns:
-                    raise ValueError(f"Key error: {k}, returns={returns}")
-                r = returns.get(k)
+    def eval_result(self, result, playbook):
+        result_ = playbook.get("result")
+        if result:
+            for k, v in result_.items():
+                if k not in result:
+                    raise ValueError(f"Key error: {k}, result={result}")
+                r = result.get(k)
 
                 self._variables[v] = r
 
