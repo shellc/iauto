@@ -1,6 +1,6 @@
 from typing import Any, Dict
-from ._action import Action
 
+from ._action import Action
 
 _operators = set(["all", "any", "lt", 'le', 'eq', 'ne', 'ge', 'gt'])
 

@@ -1,8 +1,10 @@
-from typing import List
 import json
-from ._llm import LLM, Message
-from ..actions import Action
+from typing import List
+
 import chatglm_cpp
+
+from ..actions import Action
+from ._llm import LLM, Message
 
 
 class ChatGLM(LLM):

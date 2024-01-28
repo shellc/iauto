@@ -1,11 +1,12 @@
+import argparse
+import importlib
+import json
 import os
 import sys
 import traceback
-import importlib
-import json
-import argparse
-from iauto.actions import PlaybookExecutor, loader
+
 from iauto import llms
+from iauto.actions import PlaybookExecutor, loader
 
 llms.register_actions()
 

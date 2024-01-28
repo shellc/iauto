@@ -1,4 +1,5 @@
 from typing import Any
+
 from ._action import Action, ActionSpec
 
 
@@ -11,7 +12,7 @@ class PlaybookAction(Action):
             "description": "Action playbook"
         })
 
-    def perform(self, executor=None, playbook=None, **args: Any) -> Any:
+    def perform(self, executor=None, playbook=None, *args, **kwargs) -> Any:
         if not executor or not playbook:
             return
 

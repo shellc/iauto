@@ -1,7 +1,8 @@
 from prompt_toolkit import prompt
-from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
-from . import create_llm, Session, Message
+from prompt_toolkit.history import InMemoryHistory
+
+from . import Message, Session, create_llm
 
 
 def run():

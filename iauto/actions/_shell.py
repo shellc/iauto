@@ -1,12 +1,13 @@
+import json
 import os
 import sys
-import json
 from typing import Any, Dict
-from ._action import Action, ActionSpec
 
 from prompt_toolkit import prompt
-from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
+from prompt_toolkit.history import InMemoryHistory
+
+from ._action import Action, ActionSpec
 
 _platform = sys.platform
 _env = {

@@ -1,5 +1,6 @@
 import importlib
-from typing import Union, Dict
+from typing import Dict, Union
+
 from ._action import Action
 
 

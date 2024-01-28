@@ -1,10 +1,5 @@
+from . import _browser, _flow, _log, _math, _shell, _time
 from ._playbook import PlaybookAction
-from . import _flow
-from . import _log
-from . import _time
-from . import _math
-from . import _shell
-from . import _browser
 
 
 def get_buildin_actions():

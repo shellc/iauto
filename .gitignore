@@ -2,11 +2,13 @@
 __pycache__/
  *.py[cod]
  *$py.class
- 
+
 *.spec
 build/
 dist/
 *.egg-info
+
+.venv
 
  # C extensions
  *.so

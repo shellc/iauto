@@ -1,6 +1,8 @@
-from typing import Dict, Any, Tuple
-from yaml import load
+from typing import Any, Dict, Tuple
+
 from yaml import CLoader as yaml_loader
+from yaml import load
+
 from ._action import Action
 from ._loader import loader
 

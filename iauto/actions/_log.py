@@ -1,6 +1,7 @@
 from typing import Any
-from ._action import Action
+
 from .._logging import get_logger
+from ._action import Action
 
 
 class LogAction(Action):

@@ -1,6 +1,8 @@
 from typing import Any
+
+from playwright.sync_api import Browser, Page, sync_playwright
+
 from ._action import Action
-from playwright.sync_api import sync_playwright, Browser, Page
 
 
 class OpenBrowserAction(Action):

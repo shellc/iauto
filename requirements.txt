@@ -8,3 +8,4 @@ openai
 chatglm-cpp
 
 playwright
+Appium-Python-Client
