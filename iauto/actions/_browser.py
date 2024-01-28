@@ -4,7 +4,7 @@ from playwright.sync_api import sync_playwright, Browser, Page
 
 
 class OpenBrowserAction(Action):
-    def perform(self, **args: Any) -> Dict:
+    def perform(self, **args: Any) -> Browser:
         # browser_type = args.get("browser") or "chromium"
         exec_path = args.get("exec_path")
 
@@ -18,7 +18,7 @@ class OpenBrowserAction(Action):
 
 
 class NewPageAction(Action):
-    def perform(self, **args: Any) -> Dict:
+    def perform(self, **args: Any) -> Page:
         browser: Browser = args.get("browser")
 
         page = browser.new_page()
@@ -27,7 +27,7 @@ class NewPageAction(Action):
 
 
 class GotoAction(Action):
-    def perform(self, **args: Any) -> Dict:
+    def perform(self, **args: Any) -> Page:
         page: Page = args.get("page")
         url = args.get("url")
 
@@ -37,7 +37,7 @@ class GotoAction(Action):
 
 
 class EvaluateJavascriptAction(Action):
-    def perform(self, **args: Any) -> Dict:
+    def perform(self, **args: Any) -> Any:
         page: Page = args.get("page")
         javascript = args.get("javascript")
         result = page.evaluate(javascript)

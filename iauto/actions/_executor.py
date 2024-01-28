@@ -22,11 +22,10 @@ class PlaybookExecutor:
 
         args, kwargs = self.eval_args(playbook=playbook_)
 
-        kwargs['executor'] = self
-        kwargs['playbook'] = playbook_
-        result = action.perform(*args, **kwargs)
+        result = action.perform(self, playbook_, *args, **kwargs)
 
-        self.extract_vars(data=result, playbook=playbook_.get(KEY_RESULT))
+        if isinstance(playbook_, dict):
+            self.extract_vars(data=result, playbook=playbook_.get(KEY_RESULT))
 
     def get_action(self, playbook: Dict[str, Any]) -> Tuple[str, Action]:
         if playbook is None or not isinstance(playbook, Dict):
@@ -40,10 +39,11 @@ class PlaybookExecutor:
 
         playbook_ = playbook[name]
 
-        keys = list(playbook_.keys())
-        for k in keys:
-            if k not in VALID_KEYS:
-                raise ValueError(f"Invalid Action definition: key={k}")
+        if isinstance(playbook_, dict):
+            keys = list(playbook_.keys())
+            for k in keys:
+                if k not in VALID_KEYS:
+                    raise ValueError(f"Invalid Action definition: key={k}")
 
         action = loader.get(name=name)
 
@@ -91,8 +91,13 @@ class PlaybookExecutor:
         args = []
         kwargs = {}
 
-        evaled_args = self.eval_vars(playbook=playbook.get(KEY_ARGS))
-        if evaled_args:
+        playbook_ = playbook
+        if isinstance(playbook_, dict):
+            playbook_ = playbook.get(KEY_ARGS)
+
+        evaled_args = self.eval_vars(playbook=playbook_)
+
+        if evaled_args is not None:
             if isinstance(evaled_args, list):
                 args = evaled_args
             elif isinstance(evaled_args, dict):

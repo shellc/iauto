@@ -5,32 +5,21 @@ playbook:
   actions:
     - repeat:
         description: do forever
-        args:
-          any:
-            - true
         actions:
           - time.now:
-              result:
-                $now: timestamp
+              result: $now
           - math.mod:
-              args:
-                left: $now
-                right: 2
-              result:
-                $tick: result
+              args: [$now, 2]
+              result: $tick
           - when:
               args:
                 eq:
                   - $tick
                   - 0
               actions:
-                - log:
-                    args:
-                      TICK: "TOCK"
+                - log: "tick: {$tick}"
           - log:
               args:
                 now: $now
                 tick: $tick
-          - time.wait:
-              args:
-                seconds: 3
+          - time.wait: 3

@@ -98,33 +98,20 @@ def eval_args(args, kwargs, vars={}):
 
 
 class RepeatAction(Action):
-    def perform(self, *args, **kwargs: Any) -> Dict:
-        executor = kwargs['executor']
-        playbook = kwargs['playbook']
-
-        kwds = kwargs.copy()
-        kwds.pop("executor")
-        kwds.pop("playbook")
+    def perform(self, executor, playbook, *args, **kwargs: Any) -> None:
 
         args, kwargs = executor.eval_args(playbook=playbook)
-        while eval_args(args, kwds, vars=executor.variables):
+        while eval_args(args, kwargs, vars=executor.variables):
             actions = playbook.get("actions") or []
             for action in actions:
                 executor.perform(playbook=action)
 
-            args, kwds = executor.eval_args(playbook=playbook)
+            args, kwargs = executor.eval_args(playbook=playbook)
 
 
 class WhenAction(Action):
-    def perform(self, *args, **kwargs: Any) -> Dict:
-        executor = kwargs['executor']
-        playbook = kwargs['playbook']
-
-        kwds = kwargs.copy()
-        kwds.pop("executor")
-        kwds.pop("playbook")
-
-        if eval_args(args, kwds, vars=executor.variables):
+    def perform(self, executor, playbook, *args, **kwargs: Any) -> None:
+        if eval_args(args, kwargs, vars=executor.variables):
             actions = playbook.get("actions") or []
             for action in actions:
                 executor.perform(playbook=action)
