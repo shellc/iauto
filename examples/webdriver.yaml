@@ -1,0 +1,50 @@
+playbook:
+  actions:
+    - wd.connect:
+        args:
+          server: http://192.168.64.7:4723
+          caps:
+            platformName: Windows
+            automationName: Chromium
+            browserName: chrome
+            useSystemExecutable: true
+            newCommandTimeout: 10
+            goog:chromeOptions:
+              args:
+                - user-data-dir=C:\\Users\\shellc\\AppData\\Local\\Google\\Chrome\\User Data
+                - app=https://bing.com
+            noReset: true
+            verbose: false
+            unicodeKeyboard: true
+            resetKeyboard: true
+        result: $wd
+    - wd.get_element:
+        args:
+          webdriver: $wd
+          selector: "[id='sb_form_q']"
+        result: $search_input
+    - wd.send_keys:
+        args:
+          element: $search_input
+          content: "LLM"
+    - wd.get_element:
+        args:
+          webdriver: $wd
+          selector: "[id='search_icon']"
+        result: $search_btn
+    - wd.click: $search_btn
+    - wd.get_elements:
+        args:
+          webdriver: $wd
+          selector: "[id='b_results'] .b_algo .tilk"
+        result: $search_results
+    - log: $search_results
+    - repeat:
+        actions:
+          - wd.execute_script:
+              args:
+                webdriver: $wd
+                javascript: "return new Date().toString()"
+              result: $now
+          - log: $now
+          - time.wait: 2

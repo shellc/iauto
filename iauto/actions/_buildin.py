@@ -1,4 +1,4 @@
-from . import _browser, _flow, _log, _math, _shell, _time
+from . import _browser, _flow, _log, _math, _shell, _time, _webdriver
 from ._playbook import PlaybookAction
 
 
@@ -24,5 +24,8 @@ def get_buildin_actions():
     actions["browser.new"] = _browser.NewPageAction()
     actions["browser.goto"] = _browser.GotoAction()
     actions["browser.eval"] = _browser.EvaluateJavascriptAction()
+
+    wd_actions = _webdriver.create_actions()
+    actions.update(wd_actions)
 
     return actions

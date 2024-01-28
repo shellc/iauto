@@ -1,5 +1,5 @@
 import time
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from appium.options.common.base import AppiumOptions
 from appium.webdriver.appium_connection import AppiumConnection
@@ -10,7 +10,7 @@ from selenium.common.exceptions import (ElementNotInteractableException,
                                         NoSuchElementException)
 
 from .._logging import get_logger
-from ._action import create_action
+from ._action import Action, create_action
 
 _log = get_logger("webdriver")
 
@@ -48,7 +48,7 @@ class Element(WebElement):
         not_found_ignore: bool = False,
         retries: int = 0,
         delay: float = 0.5
-    ) -> 'Element':
+    ) -> Union['Element', None]:
         return Element._get_element(
             obj=self,
             by=by,
@@ -127,7 +127,7 @@ class Element(WebElement):
         not_found_ignore: bool = False,
         retries: int = 0,
         delay: float = 0.5
-    ) -> 'Element':
+    ) -> Union['Element', None]:
         e = None
         exc = None
 
@@ -201,7 +201,7 @@ class Remote(AppiumWebDriver):
         not_found_ignore: bool = False,
         retries: int = 0,
         delay: float = 0.5
-    ) -> 'Element':
+    ) -> Union['Element', None]:
         return Element._get_element(
             obj=self,
             by=by,
@@ -287,11 +287,43 @@ class Remote(AppiumWebDriver):
                         raise e
 
 
-def create_webdriver(*args, server="http://127.0.0.1:4723", caps={}, **kwargs):
+def connect(*args, server="http://127.0.0.1:4723", caps={}, **kwargs):
     options = AppiumOptions().load_capabilities(caps=caps)
     return Remote(command_executor=server, options=options, strict_ssl=False)
 
 
-def create_actions():
+def execute_script(*args, webdriver: Remote, javascript: str, **kwargs) -> Any:
+    return webdriver.execute_script(javascript)
+
+
+def get_element(*args, webdriver: Remote, selector: str, **kwargs) -> Optional[Element]:
+    return webdriver.get_element(by=AppiumBy.CSS_SELECTOR, value=selector)
+
+
+def get_elements(*args, webdriver: Remote, selector: str, **kwargs) -> List[Element]:
+    return webdriver.get_elements(by=AppiumBy.CSS_SELECTOR, value=selector)
+
+
+def send_keys(*args, element: Element, content, **kwargs):
+    element.send_keys(content)
+
+
+def click(executor, playbook, element: Element, *args, **kwargs):
+    element.click()
+
+
+def get_attr(*args, element: Element, name: str, **kwargs) -> Any:
+    return element.get_attribute(name=name)
+
+
+def create_actions() -> Dict[str, Action]:
     actions = {}
-    actions["wd.create"] = create_action(func=create_webdriver, spec={})
+    actions["wd.connect"] = create_action(func=connect, spec={})
+    actions["wd.execute_script"] = create_action(func=execute_script, spec={})
+    actions["wd.get_element"] = create_action(func=get_element, spec={})
+    actions["wd.get_elements"] = create_action(func=get_elements, spec={})
+    actions["wd.get_attr"] = create_action(func=get_attr, spec={})
+    actions["wd.send_keys"] = create_action(func=send_keys, spec={})
+    actions["wd.click"] = create_action(func=click, spec={})
+
+    return actions

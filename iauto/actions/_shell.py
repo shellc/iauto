@@ -46,7 +46,7 @@ class ShellCommandAction(Action):
         super().__init__()
         self.spec = _spec
 
-    def perform(self, **kwargs: Any) -> Any:
+    def perform(self, *args, **kwargs: Any) -> Any:
         cmd = kwargs.get('command')
 
         try:

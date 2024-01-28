@@ -5,10 +5,10 @@ import os
 import sys
 import traceback
 
-from iauto import llms
 from iauto.actions import PlaybookExecutor, loader
+from iauto.llms.actions import register_actions as register_llm_actions
 
-llms.register_actions()
+register_llm_actions()
 
 
 def list_actions():
