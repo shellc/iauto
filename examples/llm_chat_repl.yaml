@@ -17,7 +17,5 @@ playbook:
                 session: $llm_session
                 prompt: $prompt
               result: $message
-          - shell.print:
-              args:
-                message: "AI: {$message}"
+          - shell.print: "AI: {$message}"
 

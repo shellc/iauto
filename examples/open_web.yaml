@@ -3,30 +3,19 @@ playbook:
   actions:
     - browser.open:
         args:
-          exec_path: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
+          exec: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
         result: $browser
-    - browser.new:
-        args:
-          browser: $browser
-        result: $page
     - browser.goto:
         args:
-          page: $page
+          browser: $browser
           url: https://bing.com
+        result: $page
     - repeat:
-        args:
-          any:
-            - true
         actions:
-          - browser.evaluate:
+          - browser.eval:
               args:
                 page: $page
                 javascript: new Date()
               result: $now
-          - log:
-              args:
-                now: $now
-          - time.wait:
-              args:
-                seconds: 2
-    
+          - log: $now
+          - time.wait: 2
