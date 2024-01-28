@@ -1,5 +1,6 @@
 import os
 import sys
+import traceback
 import importlib
 import json
 import argparse
@@ -67,9 +68,11 @@ def parse_args(argv):
         "playbook", nargs="?", default=None, help="playbook file, like: playbook.yaml"
     )
 
-    parser.add_argument('-l', '--load', nargs="+", default=[], metavar="module", help="load modules, like: --load module1 module2")
+    parser.add_argument('-l', '--load', nargs="+", default=[], metavar="module",
+                        help="load modules, like: --load module1 module2")
     parser.add_argument('--list-actions', action="store_true", help="list actions")
-    parser.add_argument('--spec', default=None, help="print action spec")
+    parser.add_argument('--spec', metavar="action", default=None, help="print action spec")
+    parser.add_argument('--traceback', action="store_true", help="print error traceback")
 
     parser.set_defaults(func=run)
 
@@ -81,7 +84,13 @@ def main():
     args, parser = parse_args(sys.argv[1:])
 
     if hasattr(args, "func"):
-        args.func(args, parser)
+        try:
+            args.func(args, parser)
+        except Exception as e:
+            if args.traceback:
+                traceback.print_exception(e)
+            else:
+                print(f"Error: {e}")
     else:
         parser.print_help()
 

@@ -13,8 +13,8 @@ def get_buildin_actions():
     actions["playbook"] = PlaybookAction()
     actions["log"] = _log.LogAction()
 
-    actions["while"] = _flow.WhileAction()
-    actions["if"] = _flow.IfAction()
+    actions["repeat"] = _flow.RepeatAction()
+    actions["when"] = _flow.WhenAction()
 
     actions["time.wait"] = _time.WaitAction()
     actions["time.now"] = _time.GetNowTimestamp()
@@ -22,8 +22,8 @@ def get_buildin_actions():
     actions["math.mod"] = _math.ModAction()
 
     actions["shell.command"] = _shell.ShellCommandAction()
-    actions["shell.prompt"] = _shell.PromptAction()
     actions["shell.print"] = _shell.PrintAction()
+    actions["shell.prompt"] = _shell.PromptAction()
 
     actions["browser.open"] = _browser.OpenBrowserAction()
     actions["browser.new"] = _browser.NewPageAction()

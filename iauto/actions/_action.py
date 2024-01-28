@@ -65,11 +65,11 @@ class Action(ABC):
         self.spec = ActionSpec(name="UNNAMED", description="")
 
     @abstractmethod
-    def perform(self, **args: Any) -> Dict:
+    def perform(self, *args, **kwargs: Any) -> Dict:
         raise NotImplementedError()
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
-        return self.perform(**kwargs)
+        return self.perform(*args, **kwargs)
 
 
 class FunctionAction(Action):

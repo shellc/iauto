@@ -3,7 +3,7 @@
 playbook:
   description: this is a playbook example
   actions:
-    - while:
+    - repeat:
         description: do forever
         args:
           any:
@@ -11,14 +11,14 @@ playbook:
         actions:
           - time.now:
               result:
-                timestamp: $now
+                $now: timestamp
           - math.mod:
               args:
                 left: $now
                 right: 2
               result:
-                result: $tick
-          - if:
+                $tick: result
+          - when:
               args:
                 eq:
                   - $tick

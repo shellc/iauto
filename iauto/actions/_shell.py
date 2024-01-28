@@ -60,13 +60,13 @@ class PromptAction(Action):
         super().__init__()
         self._history = InMemoryHistory()
 
-    def perform(self, **args: Any) -> Dict:
-        p = prompt("Human: ", history=self._history, auto_suggest=AutoSuggestFromHistory())
-        return {"prompt": p}
+    def perform(self, *args, **kwargs: Any) -> Dict:
+        p = ''
+        if len(args) == 1:
+            p = args[0]
+        return prompt(p, history=self._history, auto_suggest=AutoSuggestFromHistory())
 
 
 class PrintAction(Action):
-    def perform(self, message, begin=None, end="\n", **args: Any) -> Dict:
-        if begin:
-            print(begin, end='')
+    def perform(self, message, end="\n", **kwargs: Any) -> Dict:
         print(message, end=end)

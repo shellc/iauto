@@ -4,18 +4,16 @@ playbook:
     - browser.open:
         args:
           exec_path: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
-        result:
-          browser: $browser
+        result: $browser
     - browser.new:
         args:
           browser: $browser
-        result:
-          page: $page
+        result: $page
     - browser.goto:
         args:
           page: $page
           url: https://bing.com
-    - while:
+    - repeat:
         args:
           any:
             - true
@@ -24,8 +22,7 @@ playbook:
               args:
                 page: $page
                 javascript: new Date()
-              result:
-                result: $now
+              result: $now
           - log:
               args:
                 now: $now

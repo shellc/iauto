@@ -4,7 +4,12 @@ from yaml import CLoader as yaml_loader
 from ._action import Action
 from ._loader import loader
 
-VALID_KEYS = ["args", "actions", "result", "description"]
+KEY_ARGS = "args"
+KEY_ACTIONS = "actions"
+KEY_RESULT = "result"
+KEY_DESCRIPTION = "description"
+
+VALID_KEYS = [KEY_ARGS, KEY_ACTIONS, KEY_RESULT, KEY_DESCRIPTION]
 
 
 class PlaybookExecutor:
@@ -13,11 +18,15 @@ class PlaybookExecutor:
 
     def perform(self, playbook: Dict[str, Any]):
         name, action = self.get_action(playbook=playbook)
-        args = self.eval_args(playbook=playbook[name])
+        playbook_ = playbook[name]
 
-        result = action.perform(executor=self, playbook=playbook[name], **args)
+        args, kwargs = self.eval_args(playbook=playbook_)
 
-        self.eval_result(result=result, playbook=playbook[name])
+        kwargs['executor'] = self
+        kwargs['playbook'] = playbook_
+        result = action.perform(*args, **kwargs)
+
+        self.extract_vars(data=result, playbook=playbook_.get(KEY_RESULT))
 
     def get_action(self, playbook: Dict[str, Any]) -> Tuple[str, Action]:
         if playbook is None or not isinstance(playbook, Dict):
@@ -43,26 +52,54 @@ class PlaybookExecutor:
 
         return name, action
 
+    def eval_vars(self, playbook):
+        if playbook is None:
+            return None
+        elif isinstance(playbook, str):
+            if playbook.startswith("$"):
+                return self._variables.get(playbook)
+            else:
+                return playbook.format(**self._variables)
+        elif isinstance(playbook, list):
+            return [self.eval_vars(x) for x in playbook]
+        elif isinstance(playbook, dict):
+            evaled = {}
+            for k, v in playbook.items():
+                evaled[self.eval_vars(k)] = self.eval_vars(v)
+            return evaled
+        else:
+            return playbook
+
+    def extract_vars(self, data, playbook):
+        if playbook is None:
+            pass
+        elif isinstance(playbook, str) and playbook.strip().startswith("$"):
+            self._variables[playbook.strip()] = data
+        elif isinstance(playbook, list) and isinstance(data, list):
+            for i in range(len(playbook)):
+                v = playbook[i]
+                if isinstance(v, str) and v.strip().startswith("$") and i < len(data):
+                    v = v.strip()
+                    self._variables[v] = data[i]
+        elif isinstance(playbook, dict) and isinstance(data, dict):
+            for k, v in playbook.items():
+                if isinstance(k, str) and k.strip().startswith("$"):
+                    k = k.strip()
+                    self._variables[k] = data.get(v)
+
     def eval_args(self, playbook):
-        args = playbook.get("args")
-        extracted = {}
-        if args:
-            for k, v in args.items():
-                if isinstance(v, str) and v.startswith("$"):
-                    extracted[k] = self._variables.get(v)
-                else:
-                    extracted[k] = v
-        return extracted
+        args = []
+        kwargs = {}
 
-    def eval_result(self, result, playbook):
-        result_ = playbook.get("result")
-        if result and result_:
-            for k, v in result_.items():
-                if k not in result:
-                    raise ValueError(f"Key error: {k}, result={result}")
-                r = result.get(k)
-
-                self._variables[v] = r
+        evaled_args = self.eval_vars(playbook=playbook.get(KEY_ARGS))
+        if evaled_args:
+            if isinstance(evaled_args, list):
+                args = evaled_args
+            elif isinstance(evaled_args, dict):
+                kwargs = evaled_args
+            else:
+                args.append(evaled_args)
+        return args, kwargs
 
     @property
     def variables(self):

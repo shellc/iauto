@@ -12,7 +12,7 @@ def is_operator(d):
         return False
 
 
-def eval_operator(operator, variables={}) -> bool:
+def eval_operator(operator, vars={}) -> bool:
     """
     all: all true
     any: any is true
@@ -40,7 +40,7 @@ def eval_operator(operator, variables={}) -> bool:
     for i in range(len(values)):
         v = values[i]
         if v is not None and isinstance(v, str) and v.startswith("$"):
-            values[i] = variables.get(v)
+            values[i] = vars.get(v)
 
     if o == "all" or o == "any":
         results = []
@@ -72,23 +72,59 @@ def eval_operator(operator, variables={}) -> bool:
         raise ValueError(f"Bug: {operator}")
 
 
-class WhileAction(Action):
-    def perform(self, executor, playbook, **args: Any) -> Dict:
-        args = executor.eval_args(playbook)
+def eval_operators(operators, vars={}) -> bool:
+    if operators is None:
+        return False
+    elif isinstance(operators, dict):
+        return eval_operator(operator=operators, vars=vars)
+    elif isinstance(operators, list):
+        r = [eval_operators(x) for x in operators]
+        return all(r)
+    else:
+        return bool(operators)
 
-        while eval_operator(args, variables=executor.variables):
+
+def eval_args(args, kwargs, vars={}):
+    if len(args) > 0:
+        r1 = eval_operators(args, vars=vars)
+    else:
+        r1 = True
+
+    if len(kwargs) > 0:
+        r2 = eval_operators(kwargs, vars=vars)
+    else:
+        r2 = True
+    return r1 and r2
+
+
+class RepeatAction(Action):
+    def perform(self, *args, **kwargs: Any) -> Dict:
+        executor = kwargs['executor']
+        playbook = kwargs['playbook']
+
+        kwds = kwargs.copy()
+        kwds.pop("executor")
+        kwds.pop("playbook")
+
+        args, kwargs = executor.eval_args(playbook=playbook)
+        while eval_args(args, kwds, vars=executor.variables):
             actions = playbook.get("actions") or []
             for action in actions:
                 executor.perform(playbook=action)
 
-            args = executor.eval_args(playbook)
+            args, kwds = executor.eval_args(playbook=playbook)
 
 
-class IfAction(Action):
-    def perform(self, executor, playbook, **args: Any) -> Dict:
-        args = executor.eval_args(playbook)
+class WhenAction(Action):
+    def perform(self, *args, **kwargs: Any) -> Dict:
+        executor = kwargs['executor']
+        playbook = kwargs['playbook']
 
-        if eval_operator(args, variables=executor.variables):
+        kwds = kwargs.copy()
+        kwds.pop("executor")
+        kwds.pop("playbook")
+
+        if eval_args(args, kwds, vars=executor.variables):
             actions = playbook.get("actions") or []
             for action in actions:
                 executor.perform(playbook=action)

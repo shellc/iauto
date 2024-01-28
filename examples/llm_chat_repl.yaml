@@ -6,24 +6,18 @@ playbook:
           provider: chatglm
           llm_args:
             model_path: /Users/shellc/Workspaces/chatglm.cpp/chatglm-ggml.bin
-        result:
-          session: $llm_session
-    - while:
-        args:
-          any:
-            - true
+        result: $llm_session
+    - repeat:
         actions:
           - shell.prompt:
-              result:
-                prompt: $prompt
+              args: "Human: "
+              result: $prompt
           - llm.chat:
               args:
                 session: $llm_session
                 prompt: $prompt
-              result:
-                message: $message
+              result: $message
           - shell.print:
               args:
-                begin: "AI: "
-                message: $message
-                  
+                message: "AI: {$message}"
+

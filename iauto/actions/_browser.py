@@ -14,7 +14,7 @@ class OpenBrowserAction(Action):
             headless=False
         )
 
-        return {"browser": browser}
+        return browser
 
 
 class NewPageAction(Action):
@@ -23,7 +23,7 @@ class NewPageAction(Action):
 
         page = browser.new_page()
 
-        return {"page": page}
+        return page
 
 
 class GotoAction(Action):
@@ -33,7 +33,7 @@ class GotoAction(Action):
 
         page.goto(url=url)
 
-        return {"page": page}
+        return page
 
 
 class EvaluateJavascriptAction(Action):
@@ -42,4 +42,4 @@ class EvaluateJavascriptAction(Action):
         javascript = args.get("javascript")
         result = page.evaluate(javascript)
 
-        return {"result": result}
+        return result

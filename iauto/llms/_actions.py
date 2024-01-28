@@ -9,14 +9,14 @@ class CreateSessionAction(Action):
     def perform(self, provider, llm_args={}, functions=None, **args: Any) -> Dict:
         llm = create_llm(provider=provider, **llm_args)
         session = Session(llm=llm, actions=functions)
-        return {"session": session}
+        return session
 
 
 class ChatAction(Action):
     def perform(self, session: Session, prompt, **args: Any) -> Dict:
         session.add(Message(role="user", content=prompt))
         m = session.run()
-        return {"message": m.content}
+        return m.content
 
 
 def register_actions():
