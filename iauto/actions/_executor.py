@@ -108,6 +108,9 @@ class PlaybookExecutor:
                 args.append(evaled_args)
         return args, kwargs
 
+    def set_variable(self, name: str, value: Any):
+        self._variables[name] = value
+
     @property
     def variables(self):
         return self._variables

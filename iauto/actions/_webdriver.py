@@ -316,6 +316,10 @@ def get_attr(*args, element: Element, name: str, **kwargs) -> Any:
     return element.get_attribute(name=name)
 
 
+def text(executor, playbook, element: Element, *args, **kwargs) -> Any:
+    return element.text
+
+
 def create_actions() -> Dict[str, Action]:
     actions = {}
     actions["wd.connect"] = create_action(func=connect, spec={})
@@ -323,6 +327,7 @@ def create_actions() -> Dict[str, Action]:
     actions["wd.get_element"] = create_action(func=get_element, spec={})
     actions["wd.get_elements"] = create_action(func=get_elements, spec={})
     actions["wd.get_attr"] = create_action(func=get_attr, spec={})
+    actions["wd.text"] = create_action(func=text, spec={})
     actions["wd.send_keys"] = create_action(func=send_keys, spec={})
     actions["wd.click"] = create_action(func=click, spec={})
 

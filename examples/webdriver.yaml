@@ -8,7 +8,7 @@ playbook:
             automationName: Chromium
             browserName: chrome
             useSystemExecutable: true
-            newCommandTimeout: 10
+            newCommandTimeout: 2
             goog:chromeOptions:
               args:
                 - user-data-dir=C:\\Users\\shellc\\AppData\\Local\\Google\\Chrome\\User Data
@@ -38,13 +38,23 @@ playbook:
           webdriver: $wd
           selector: "[id='b_results'] .b_algo .tilk"
         result: $search_results
-    - log: $search_results
-    - repeat:
+    - each:
+        args: $search_results
         actions:
+          - wd.get_attr:
+              args:
+                element: $_
+                name: href
+              result: $link
+          - wd.text:
+              args: $_
+              result: $text
+          - log:
+              - $link
+              - $text
           - wd.execute_script:
               args:
                 webdriver: $wd
                 javascript: "return new Date().toString()"
               result: $now
           - log: $now
-          - time.wait: 2

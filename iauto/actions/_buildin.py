@@ -10,6 +10,7 @@ def get_buildin_actions():
 
     actions["repeat"] = _flow.RepeatAction()
     actions["when"] = _flow.WhenAction()
+    actions["each"] = _flow.ForEachAction()
 
     actions["time.wait"] = _time.WaitAction()
     actions["time.now"] = _time.GetNowTimestamp()

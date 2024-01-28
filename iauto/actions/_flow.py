@@ -115,3 +115,27 @@ class WhenAction(Action):
             actions = playbook.get("actions") or []
             for action in actions:
                 executor.perform(playbook=action)
+
+
+class ForEachAction(Action):
+    def perform(self, executor, playbook, *args, **kwargs: Any) -> Any:
+        actions = playbook.get("actions") or []
+        if len(actions) == 0:
+            return
+
+        data = []
+        if len(args) > 0:
+            if len(args) == 1:
+                if isinstance(args[0], list):
+                    data = args[0]
+                else:
+                    data = args
+            else:
+                data = args
+        elif len(kwargs) > 0:
+            data = [kwargs]
+
+        for i in data:
+            executor.set_variable("$_", i)
+            for action in actions:
+                executor.perform(playbook=action)
