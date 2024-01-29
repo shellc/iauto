@@ -1,0 +1,21 @@
+playbook:
+  description: Chat to OpenAI
+  actions:
+    - llm.session:
+        #args:
+        #  llm_args:
+        #    api_key: sk-xxx
+        #    base_url: https://<YOUR_API_HOST>/v1
+        #    model: gpt-4
+        result: $session
+    - repeat:
+        actions:
+          - shell.prompt:
+              args: "Human: "
+              result: $prompt
+          - llm.chat:
+              args:
+                session: $session
+                prompt: $prompt
+              result: $message
+          - shell.print: "AI: {$message}"

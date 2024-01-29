@@ -17,11 +17,11 @@ class ActionSpec(BaseModel):
     arguments: Optional[List[ActionArg]] = None
 
     @staticmethod
-    def from_dict(d: Dict) -> 'ActionSpec':
+    def from_dict(d: Dict = {}) -> 'ActionSpec':
         try:
             func = ActionSpec(
-                name=d.get("name"),
-                description=d.get("description"),
+                name=d.get("name") or "UNNAMED",
+                description=d.get("description") or "",
                 arguments=[]
             )
 
@@ -74,7 +74,7 @@ class Action(ABC):
 
 
 class FunctionAction(Action):
-    def __init__(self, func, spec: Dict = None) -> None:
+    def __init__(self, func, spec: Optional[Dict] = None) -> None:
         super().__init__()
         self._func = func
         if spec:

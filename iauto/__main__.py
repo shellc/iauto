@@ -24,9 +24,9 @@ def print_action_spec(name):
     action = loader.get(name=name)
     if not action:
         print(f"No action found: {name}")
-
-    spec = action.spec
-    print(json.dumps(spec.model_dump(), ensure_ascii=False, indent=2))
+    else:
+        spec = action.spec
+        print(json.dumps(spec.model_dump(), ensure_ascii=False, indent=2))
 
 
 def run(args, parser):

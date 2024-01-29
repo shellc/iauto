@@ -296,12 +296,44 @@ def execute_script(*args, webdriver: Remote, javascript: str, **kwargs) -> Any:
     return webdriver.execute_script(javascript)
 
 
-def get_element(*args, webdriver: Remote, selector: str, **kwargs) -> Optional[Element]:
-    return webdriver.get_element(by=AppiumBy.CSS_SELECTOR, value=selector)
+def get_element(
+    *args,
+    webdriver: Optional[Remote] = None,
+    element: Optional[Element] = None,
+    selector: str,
+    by: str = "css",
+    **kwargs
+) -> Optional[Element]:
+    a_by = AppiumBy.CSS_SELECTOR
+    if by == "xpath":
+        a_by = AppiumBy.XPATH
+
+    if element is not None:
+        return element.get_element(by=a_by, value=selector)
+    elif webdriver is not None:
+        return webdriver.get_element(by=a_by, value=selector)
+    else:
+        raise ValueError("No element or webdriver specified.")
 
 
-def get_elements(*args, webdriver: Remote, selector: str, **kwargs) -> List[Element]:
-    return webdriver.get_elements(by=AppiumBy.CSS_SELECTOR, value=selector)
+def get_elements(
+    *args,
+    webdriver: Optional[Remote] = None,
+    element: Optional[Element] = None,
+    selector: str,
+    by: str = "css",
+    **kwargs
+) -> List[Element]:
+    a_by = AppiumBy.CSS_SELECTOR
+    if by == "xpath":
+        a_by = AppiumBy.XPATH
+
+    if element is not None:
+        return element.get_elements(by=a_by, value=selector)
+    elif webdriver is not None:
+        return webdriver.get_elements(by=a_by, value=selector)
+    else:
+        raise ValueError("No element or webdriver specified.")
 
 
 def send_keys(*args, element: Element, content, **kwargs):
@@ -318,6 +350,10 @@ def get_attr(*args, element: Element, name: str, **kwargs) -> Any:
 
 def text(executor, playbook, element: Element, *args, **kwargs) -> Any:
     return element.text
+
+
+def execute(*args, webdriver: Remote, command: str, params, **kwargs) -> Any:
+    return webdriver.execute(driver_command=command, params=params)
 
 
 def create_actions() -> Dict[str, Action]:

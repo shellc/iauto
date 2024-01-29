@@ -7,7 +7,10 @@ __pycache__/
 build/
 dist/
 *.egg-info
+*.zip
+*.tar.gz
 
+.env
 .venv
 
  # C extensions

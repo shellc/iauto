@@ -61,7 +61,7 @@ class PromptAction(Action):
         super().__init__()
         self._history = InMemoryHistory()
 
-    def perform(self, executor, playbook, *args, **kwargs: Any) -> Dict:
+    def perform(self, executor=None, playbook=None, *args, **kwargs: Any) -> str:
         p = ''
         if len(args) == 1:
             p = args[0]
@@ -69,5 +69,5 @@ class PromptAction(Action):
 
 
 class PrintAction(Action):
-    def perform(self, executor, playbook, message, *args, end="\n", **kwargs: Any) -> Dict:
+    def perform(self, executor, playbook, message, *args, end="\n", **kwargs: Any) -> None:
         print(message, end=end)

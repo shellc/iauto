@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 
 from playwright.sync_api import Browser, Page, sync_playwright
 
@@ -17,14 +17,20 @@ class OpenBrowserAction(Action):
 
 
 class NewPageAction(Action):
-    def perform(self, *args, browser: Browser = None, **kwargs) -> Page:
+    def perform(self, *args, browser: Browser, **kwargs) -> Page:
         page = browser.new_page()
 
         return page
 
 
 class GotoAction(Action):
-    def perform(self, *args, browser: Browser = None, page: Page = None, url: str = None, **kwargs) -> Page:
+    def perform(
+        self,
+        *args,
+        browser: Optional[Browser] = None,
+        page: Optional[Page] = None,
+        url: str, **kwargs
+    ) -> Page:
         if page is None and browser is None:
             raise ValueError("got action must specify browser or page.")
 
@@ -36,7 +42,7 @@ class GotoAction(Action):
 
 
 class EvaluateJavascriptAction(Action):
-    def perform(self, *args, page: Page = None, javascript: str = None, **kwargs) -> Any:
+    def perform(self, *args, page: Page, javascript: str, **kwargs) -> Any:
         result = page.evaluate(javascript)
 
         return result

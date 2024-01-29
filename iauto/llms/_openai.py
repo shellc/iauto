@@ -1,5 +1,5 @@
 import json
-from typing import List
+from typing import List, Optional
 
 import openai
 
@@ -10,12 +10,12 @@ from ._llm import LLM, Message
 class OpenAI(LLM):
     """"""
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, model: Optional[str] = None, **kwargs) -> None:
         super().__init__()
-
+        self._model = model or "gpt-3.5-turbo"
         self._openai = openai.OpenAI(**kwargs)
 
-    def generate(self, instructions: str, functions: List[Action] = None, **kwargs) -> Message:
+    def generate(self, instructions: str, functions: Optional[List[Action]] = None, **kwargs) -> Message:
         messages = []
         messages.append(Message(
             role="user",
@@ -24,18 +24,24 @@ class OpenAI(LLM):
 
         return self.chat(messages=messages, functions=functions, **kwargs)
 
-    def chat(self, messages: List[Message] = [], functions: List[Action] = None, **kwargs) -> Message:
-        tools = []
+    def chat(self, messages: List[Message] = [], functions: Optional[List[Action]] = None, **kwargs) -> Message:
+        tools = None
+        tool_choice = None
         if functions is not None:
+            tools = []
+            tool_choice = "auto"
             function_spec = [f.spec.openai_spec() for f in functions]
             tools.extend(function_spec)
 
-        messages = [{"role": m.role, "content": m.content} for m in messages]
+        msgs = [{"role": m.role, "content": m.content} for m in messages]
+
+        if "model" not in kwargs:
+            kwargs["model"] = self._model
 
         r = self._openai.chat.completions.create(
-            messages=messages,
+            messages=msgs,
             tools=tools,
-            tool_choice="auto",
+            tool_choice=tool_choice,
             **kwargs
         )
 
@@ -47,7 +53,7 @@ class OpenAI(LLM):
                 [(func.spec.name, func) for func in functions]
             )
 
-            messages.append(m)
+            msgs.append(m)
 
             for tool_call in tool_calls:
                 func_name = tool_call.function.name
@@ -59,14 +65,14 @@ class OpenAI(LLM):
                 except Exception as e:
                     func_resp = str(e)
 
-                messages.append({
+                msgs.append({
                     "tool_call_id": tool_call.id,
                     "role": "tool",
                     "name": func_name,
                     "content": json.dumps(func_resp or {}, ensure_ascii=False)
                 })
             r = self._openai.chat.completions.create(
-                messages=messages,
+                messages=msgs,
                 **kwargs
             )
             m = r.choices[0].message

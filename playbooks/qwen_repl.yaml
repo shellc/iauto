@@ -1,12 +1,13 @@
 playbook:
-  description: Chat to a LLM
+  description: Chat to QWen
   actions:
     - llm.session:
         args:
-          provider: chatglm
           llm_args:
-            model_path: /Users/shellc/Workspaces/chatglm.cpp/chatglm-ggml.bin
-        result: $llm_session
+            api_key: sk-xxx
+            base_url: http://100.64.0.8:8888/v1/
+            model: Qwen-14B-Chat-Int4
+        result: $session
     - repeat:
         actions:
           - shell.prompt:
@@ -14,8 +15,7 @@ playbook:
               result: $prompt
           - llm.chat:
               args:
-                session: $llm_session
+                session: $session
                 prompt: $prompt
               result: $message
           - shell.print: "AI: {$message}"
-
