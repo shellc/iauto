@@ -26,6 +26,7 @@ def get_buildin_actions():
     actions["shell.prompt"] = _shell.PromptAction()
 
     actions["browser.open"] = _browser.OpenBrowserAction()
+    actions["browser.close"] = _browser.CloseBrowserAction()
     actions["browser.new"] = _browser.NewPageAction()
     actions["browser.goto"] = _browser.GotoAction()
     actions["browser.eval"] = _browser.EvaluateJavascriptAction()

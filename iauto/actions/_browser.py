@@ -21,14 +21,19 @@ class OpenBrowserAction(Action):
             ]
         })
 
-    def perform(self, *args, exec=None, **kwargs) -> Browser:
+    def perform(self, *args, exec=None, headless=False, **kwargs) -> Browser:
         pw = sync_playwright().start()
         browser = pw.chromium.launch(
             executable_path=exec,
-            headless=False
+            headless=headless
         )
 
         return browser
+
+
+class CloseBrowserAction(Action):
+    def perform(self, browser: Browser, *args, **kwargs) -> Any:
+        return browser.close()
 
 
 class NewPageAction(Action):

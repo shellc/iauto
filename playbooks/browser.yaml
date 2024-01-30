@@ -6,23 +6,23 @@ playbook:
       - name: url,
         type: string,
         description: HTTP URL,
-        required: true
+        required: false
   actions:
     - browser.open:
         args:
           exec: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
+          headless: true
         result: $browser
     - browser.goto:
         args:
           browser: $browser
           url: $url
         result: $page
-    - repeat:
-        actions:
-          - browser.eval:
-              args:
-                page: $page
-                javascript: new Date()
-              result: $now
-          - log: $now
-          - time.wait: 2
+    - browser.eval:
+        args:
+          page: $page
+          javascript: new Date()
+        result: $now
+    - log: $now
+    - time.wait: 2
+    - browser.close: $browser
