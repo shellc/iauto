@@ -1,6 +1,7 @@
-from typing import Any
+import os
+from typing import Any, Optional
 
-from ._action import Action, ActionSpec
+from ._action import Action, ActionSpec, Executor, Playbook
 
 
 class PlaybookAction(Action):
@@ -9,13 +10,43 @@ class PlaybookAction(Action):
 
         self.spec = ActionSpec.from_dict({
             "name": "playbook",
-            "description": "Action playbook"
+            "description": "Playbook is used to execute Actions"
         })
 
-    def perform(self, executor=None, playbook=None, *args, **kwargs) -> Any:
-        if not executor or not playbook:
-            return
+    def perform(
+        self,
+        *args,
+        executor: Optional[Executor] = None,
+        playbook: Optional[Playbook] = None,
+        **kwargs
+    ) -> Any:
+        if executor is None or playbook is None:
+            raise ValueError("Executor and playbook are required.")
 
-        actions = playbook.get("actions") or []
+        for k, v in kwargs:
+            executor.set_variable(f"${k}", v)
+
+        actions = []
+
+        if len(args) > 0:
+            fpath = None
+            fname = executor.variables.get("__file__")
+            if fname is not None:
+                if fname is not None:
+                    fpath = os.path.dirname(fname)
+
+            for p in args:
+                if not isinstance(p, str):
+                    raise ValueError(f"Invalid playbook path: {p}")
+                if not os.path.isabs(p) and fpath is not None:
+                    p = os.path.join(fpath, p)
+
+                pb = Playbook.load(p)
+                actions.append(pb)
+
+        actions.extend(playbook.actions or [])
+
+        result = None
         for action in actions:
-            executor.perform(playbook=action)
+            result = executor.perform(playbook=action)
+        return result

@@ -1,12 +1,18 @@
 import time
 from datetime import datetime
-from typing import Any
+from typing import Optional
 
-from ._action import Action
+from ._action import Action, Executor, Playbook
 
 
 class WaitAction(Action):
-    def perform(self, executor, playbook, *args, **kwargs: Any) -> None:
+    def perform(
+        self,
+        *args,
+        executor: Optional[Executor] = None,
+        playbook: Optional[Playbook] = None,
+        **kwargs
+    ) -> None:
         if len(args) > 0:
             seconds = args[0]
         elif 'seconds' in kwargs:

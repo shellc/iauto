@@ -1,0 +1,3 @@
+playbook:
+  actions:
+    - playbook: ./control_flow.yaml

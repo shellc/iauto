@@ -66,7 +66,10 @@ class ChatGLM(LLM):
                 except Exception as e:
                     func_resp = str(e)
                 if not isinstance(func_resp, str):
-                    func_resp = json.dumps(func_resp or {}, ensure_ascii=False, indent=4)
+                    try:
+                        func_resp = json.dumps(func_resp or {}, ensure_ascii=False, indent=4)
+                    except TypeError:
+                        func_resp = str(func_resp)
                 resp.append(func_resp)
 
             r_content = '\n'.join(resp) if len(resp) > 0 else "."

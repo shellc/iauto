@@ -1,5 +1,12 @@
+# python -m iauto ./playbooks/browser.yaml --kwargs url=https://bing.com
 playbook:
-  description: Open browser and goto https://bing.com
+  spec:
+    description: Open browser and goto the URL specified.
+    arguments:
+      - name: url,
+        type: string,
+        description: HTTP URL,
+        required: true
   actions:
     - browser.open:
         args:
@@ -8,7 +15,7 @@ playbook:
     - browser.goto:
         args:
           browser: $browser
-          url: https://bing.com
+          url: $url
         result: $page
     - repeat:
         actions:

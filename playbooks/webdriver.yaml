@@ -1,4 +1,13 @@
+# python -m iauto ./playbooks/webdriver.yaml --kwargs keywords=LLM
 playbook:
+  spec:
+    name: search_engine
+    description: Use search engines to search the web.
+    arguments:
+      - name: keywords,
+        type: string,
+        description: keywords to search for,
+        required: true
   actions:
     - wd.connect:
         args:
@@ -26,7 +35,7 @@ playbook:
     - wd.send_keys:
         args:
           element: $search_input
-          content: "LLM"
+          content: "{$keywords}"
     - wd.get_element:
         args:
           webdriver: $wd

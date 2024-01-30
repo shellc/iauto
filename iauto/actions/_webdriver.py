@@ -340,7 +340,7 @@ def send_keys(*args, element: Element, content, **kwargs):
     element.send_keys(content)
 
 
-def click(executor, playbook, element: Element, *args, **kwargs):
+def click(element: Element, *args, **kwargs):
     element.click()
 
 
@@ -348,7 +348,7 @@ def get_attr(*args, element: Element, name: str, **kwargs) -> Any:
     return element.get_attribute(name=name)
 
 
-def text(executor, playbook, element: Element, *args, **kwargs) -> Any:
+def text(element: Element, *args, **kwargs) -> Any:
     return element.text
 
 

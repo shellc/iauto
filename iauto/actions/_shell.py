@@ -1,7 +1,7 @@
 import json
 import os
 import sys
-from typing import Any, Dict
+from typing import Any
 
 from prompt_toolkit import prompt
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
@@ -18,7 +18,7 @@ _env = {
 }
 
 _spec = ActionSpec.from_dict({
-    "name": "shell_command",
+    "name": "shell.cmd",
     "description": f"""
 Use this tool to execute Linux, macOS, and DOS commands and output the execution results.
 
@@ -46,14 +46,12 @@ class ShellCommandAction(Action):
         super().__init__()
         self.spec = _spec
 
-    def perform(self, *args, **kwargs: Any) -> Any:
-        cmd = kwargs.get('command')
-
+    def perform(self, *args, command: str, **kwargs: Any) -> Any:
         try:
-            with os.popen(cmd=cmd) as p:
+            with os.popen(cmd=command) as p:
                 return p.read()
         except Exception as e:
-            return f"Execute `{cmd}` failed: {e}"
+            return f"Execute `{command}` failed: {e}"
 
 
 class PromptAction(Action):
@@ -61,7 +59,7 @@ class PromptAction(Action):
         super().__init__()
         self._history = InMemoryHistory()
 
-    def perform(self, executor=None, playbook=None, *args, **kwargs: Any) -> str:
+    def perform(self, *args, **kwargs: Any) -> str:
         p = ''
         if len(args) == 1:
             p = args[0]
@@ -69,5 +67,5 @@ class PromptAction(Action):
 
 
 class PrintAction(Action):
-    def perform(self, executor, playbook, message, *args, end="\n", **kwargs: Any) -> None:
-        print(message, end=end)
+    def perform(self, *args, end="\n", **kwargs) -> None:
+        print(end.join(args), end=end)

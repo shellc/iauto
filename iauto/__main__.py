@@ -56,7 +56,16 @@ def run(args, parser):
         print(f"Invalid playbook file: {p}")
         sys.exit(-1)
 
-    PlaybookExecutor.execute(playbook_file=p)
+    PlaybookExecutor.execute(playbook_file=p, variables=args.kwargs)
+
+
+class ParseDict(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        setattr(namespace, self.dest, dict())
+        if values is not None:
+            for value in values:
+                key, value = value.split('=')
+                getattr(namespace, self.dest)[key] = value
 
 
 def parse_args(argv):
@@ -69,6 +78,7 @@ def parse_args(argv):
         "playbook", nargs="?", default=None, help="playbook file, like: playbook.yaml"
     )
 
+    parser.add_argument('--kwargs', nargs="*", metavar="arg", action=ParseDict, help="specify playbook kwargs")
     parser.add_argument('-l', '--load', nargs="+", default=[], metavar="module",
                         help="load modules, like: --load module1 module2")
     parser.add_argument('--list-actions', action="store_true", help="list actions")

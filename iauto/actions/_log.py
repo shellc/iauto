@@ -1,7 +1,7 @@
-from typing import Any
+from typing import Optional
 
 from .._logging import get_logger
-from ._action import Action
+from ._action import Action, Executor, Playbook
 
 
 class LogAction(Action):
@@ -9,7 +9,13 @@ class LogAction(Action):
         super().__init__()
         self._log = get_logger("Log")
 
-    def perform(self, executor, playbook, *args, **kwargs: Any) -> None:
+    def perform(
+        self,
+        *args,
+        executor: Optional[Executor] = None,
+        playbook: Optional[Playbook] = None,
+        **kwargs
+    ) -> None:
         message = ""
 
         if len(args) > 0:

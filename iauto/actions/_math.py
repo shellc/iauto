@@ -2,7 +2,11 @@ from ._action import Action
 
 
 class ModAction(Action):
-    def perform(self, executor=None, playbook=None, *args, **kwargs) -> int:
+    def perform(
+        self,
+        *args,
+        **kwargs
+    ) -> int:
         if len(args) != 2:
             raise ValueError("mod requires 2 numbers, like: [10, 2]")
 

@@ -1,10 +1,7 @@
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, List, Tuple, Union
 
-from yaml import CLoader as yaml_loader
-from yaml import load
-
-from ._action import Action
-from ._loader import loader
+from ._action import Action, Executor, Playbook
+from ._loader import ActionLoader, loader
 
 KEY_ARGS = "args"
 KEY_ACTIONS = "actions"
@@ -14,111 +11,101 @@ KEY_DESCRIPTION = "description"
 VALID_KEYS = [KEY_ARGS, KEY_ACTIONS, KEY_RESULT, KEY_DESCRIPTION]
 
 
-class PlaybookExecutor:
+class PlaybookExecutor(Executor):
     def __init__(self) -> None:
-        self._variables = {}
+        super().__init__()
+        self._action_loader = ActionLoader()
 
-    def perform(self, playbook: Dict[str, Any]):
-        name, action = self.get_action(playbook=playbook)
-        playbook_ = playbook[name]
+    def perform(self, playbook: Playbook) -> Any:
+        action = self.get_action(playbook=playbook)
+        if not action:
+            raise ValueError(f"Action not found: {playbook.name}")
 
-        args, kwargs = self.eval_args(playbook=playbook_)
+        args, kwargs = self.eval_args(args=playbook.args)
 
-        result = action.perform(self, playbook_, *args, **kwargs)
+        result = action.perform(*args, executor=self, playbook=playbook, **kwargs)
 
-        if isinstance(playbook_, dict):
-            self.extract_vars(data=result, playbook=playbook_.get(KEY_RESULT))
+        self.extract_vars(data=result, vars=playbook.result)
 
-    def get_action(self, playbook: Dict[str, Any]) -> Tuple[str, Action]:
-        if playbook is None or not isinstance(playbook, Dict):
+        return result
+
+    def get_action(self, playbook: Playbook) -> Union[Action, None]:
+        if playbook is None or not isinstance(playbook, Playbook) or playbook.name is None:
             raise ValueError(f"Invalid playbook: {playbook}")
 
-        keys = list(playbook.keys())
-        if len(keys) != 1:
-            raise ValueError(f"Invalid playbook, more than one Action={keys}")
+        action = self._action_loader.get(name=playbook.name)
+        if action is None:
+            action = loader.get(name=playbook.name)
 
-        name = keys[0]
+            if action is not None and playbook.spec is not None:
+                action = action.copy()
+                action.spec = playbook.spec
+                self._action_loader.register(actions={
+                    playbook.name: action
+                })
 
-        playbook_ = playbook[name]
+        return action
 
-        if isinstance(playbook_, dict):
-            keys = list(playbook_.keys())
-            for k in keys:
-                if k not in VALID_KEYS:
-                    raise ValueError(f"Invalid Action definition: key={k}")
-
-        action = loader.get(name=name)
-
-        if not action:
-            raise ValueError(f"Action not found: {name}")
-
-        return name, action
-
-    def eval_vars(self, playbook):
-        if playbook is None:
+    def eval_vars(self, vars):
+        if vars is None:
             return None
-        elif isinstance(playbook, str):
-            if playbook.startswith("$"):
-                return self._variables.get(playbook)
+        elif isinstance(vars, str):
+            if vars.startswith("$"):
+                return self._variables.get(vars)
             else:
-                return playbook.format(**self._variables)
-        elif isinstance(playbook, list):
-            return [self.eval_vars(x) for x in playbook]
-        elif isinstance(playbook, dict):
+                return vars.format(**self._variables)
+        elif isinstance(vars, list):
+            return [self.eval_vars(x) for x in vars]
+        elif isinstance(vars, dict):
             evaled = {}
-            for k, v in playbook.items():
+            for k, v in vars.items():
                 evaled[self.eval_vars(k)] = self.eval_vars(v)
             return evaled
         else:
-            return playbook
+            return vars
 
-    def extract_vars(self, data, playbook):
-        if playbook is None:
+    def eval_args(self, args: Union[str, List, Dict, None] = None) -> Tuple[List, Dict]:
+        args_ = []
+        kwargs = {}
+
+        evaled_args = self.eval_vars(vars=args)
+
+        if evaled_args is not None:
+            if isinstance(evaled_args, list):
+                args_ = evaled_args
+            elif isinstance(evaled_args, dict):
+                kwargs = evaled_args
+            else:
+                args_.append(evaled_args)
+
+        return args_, kwargs
+
+    def extract_vars(self, data, vars):
+        if vars is None:
             pass
-        elif isinstance(playbook, str) and playbook.strip().startswith("$"):
-            self._variables[playbook.strip()] = data
-        elif isinstance(playbook, list) and isinstance(data, list):
-            for i in range(len(playbook)):
-                v = playbook[i]
+        elif isinstance(vars, str) and vars.strip().startswith("$"):
+            self._variables[vars.strip()] = data
+        elif isinstance(vars, list) and isinstance(data, list):
+            for i in range(len(vars)):
+                v = vars[i]
                 if isinstance(v, str) and v.strip().startswith("$") and i < len(data):
                     v = v.strip()
                     self._variables[v] = data[i]
-        elif isinstance(playbook, dict) and isinstance(data, dict):
-            for k, v in playbook.items():
+        elif isinstance(vars, dict) and isinstance(data, dict):
+            for k, v in vars.items():
                 if isinstance(k, str) and k.strip().startswith("$"):
                     k = k.strip()
                     self._variables[k] = data.get(v)
 
-    def eval_args(self, playbook):
-        args = []
-        kwargs = {}
-
-        playbook_ = playbook
-        if isinstance(playbook_, dict):
-            playbook_ = playbook.get(KEY_ARGS)
-
-        evaled_args = self.eval_vars(playbook=playbook_)
-
-        if evaled_args is not None:
-            if isinstance(evaled_args, list):
-                args = evaled_args
-            elif isinstance(evaled_args, dict):
-                kwargs = evaled_args
-            else:
-                args.append(evaled_args)
-        return args, kwargs
-
-    def set_variable(self, name: str, value: Any):
-        self._variables[name] = value
-
-    @property
-    def variables(self):
-        return self._variables
-
     @staticmethod
-    def execute(playbook_file):
-        with open(playbook_file, 'r', encoding='utf-8') as f:
-            playbook = load(f, Loader=yaml_loader)
+    def execute(playbook_file, variables={}):
+        playbook = Playbook.load(playbook_file)
 
         executor = PlaybookExecutor()
+        executor.set_variable("__file__", playbook_file)
+
+        if variables is not None:
+            for k, v in variables.items():
+                executor.set_variable(f"${k}", v)
+
         executor.perform(playbook=playbook)

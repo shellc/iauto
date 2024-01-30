@@ -1,6 +1,6 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
-from ._action import Action
+from ._action import Action, Executor, Playbook
 
 _operators = set(["all", "any", "lt", 'le', 'eq', 'ne', 'ge', 'gt'])
 
@@ -98,28 +98,54 @@ def eval_args(args, kwargs, vars={}):
 
 
 class RepeatAction(Action):
-    def perform(self, executor, playbook, *args, **kwargs: Any) -> None:
+    def perform(
+        self,
+        *args,
+        executor: Optional[Executor] = None,
+        playbook: Optional[Playbook] = None,
+        **kwargs
+    ) -> None:
+        if executor is None or playbook is None:
+            raise ValueError("executor and playbook can't be None")
 
-        args, kwargs = executor.eval_args(playbook=playbook)
+        args, kwargs = executor.eval_args(args=playbook.args)
         while eval_args(args, kwargs, vars=executor.variables):
-            actions = playbook.get("actions") or []
+            actions = playbook.actions or []
             for action in actions:
                 executor.perform(playbook=action)
 
-            args, kwargs = executor.eval_args(playbook=playbook)
+            args, kwargs = executor.eval_args(args=playbook.args)
 
 
 class WhenAction(Action):
-    def perform(self, executor, playbook, *args, **kwargs: Any) -> None:
+    def perform(
+        self,
+        *args,
+        executor: Optional[Executor] = None,
+        playbook: Optional[Playbook] = None,
+        **kwargs
+    ) -> None:
+        if executor is None or playbook is None:
+            raise ValueError("executor and playbook can't be None")
+
         if eval_args(args, kwargs, vars=executor.variables):
-            actions = playbook.get("actions") or []
+            actions = playbook.actions or []
             for action in actions:
                 executor.perform(playbook=action)
 
 
 class ForEachAction(Action):
-    def perform(self, executor, playbook, *args, **kwargs: Any) -> Any:
-        actions = playbook.get("actions") or []
+    def perform(
+        self,
+        *args,
+        executor: Optional[Executor] = None,
+        playbook: Optional[Playbook] = None,
+        **kwargs
+    ) -> Any:
+        if executor is None or playbook is None:
+            raise ValueError("executor and playbook can't be None")
+
+        actions = playbook.actions or []
         if len(actions) == 0:
             return
 
