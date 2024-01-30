@@ -1,4 +1,5 @@
-from . import _browser, _flow, _log, _math, _shell, _time, _webdriver
+from . import (_browser, _collections, _flow, _log, _math, _shell, _time,
+               _webdriver)
 from ._playbook import PlaybookAction
 
 
@@ -11,6 +12,9 @@ def get_buildin_actions():
     actions["repeat"] = _flow.RepeatAction()
     actions["when"] = _flow.WhenAction()
     actions["each"] = _flow.ForEachAction()
+
+    actions["list.append"] = _collections.ListAppendAction()
+    actions["dict.put"] = _collections.DictPutAction()
 
     actions["time.wait"] = _time.WaitAction()
     actions["time.now"] = _time.GetNowTimestamp()

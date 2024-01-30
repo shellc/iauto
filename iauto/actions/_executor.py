@@ -51,7 +51,7 @@ class PlaybookExecutor(Executor):
             return None
         elif isinstance(vars, str):
             if vars.startswith("$"):
-                return self._variables.get(vars)
+                return self._variables.get(vars) or vars
             else:
                 return vars.format(**self._variables)
         elif isinstance(vars, list):
