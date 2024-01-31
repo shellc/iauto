@@ -1,0 +1,35 @@
+playbook:
+  spec:
+    name: bing_search
+    description: Search the web, return links with title and caption
+    arguments:
+      - name: keywords
+        type: string
+        description: Keywords used for searching the web
+        required: true
+  actions:
+    - browser.open:
+        args:
+          exec: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
+          headless: false
+        result: $browser
+    - browser.goto:
+        args:
+          browser: $browser
+          url: "https://cn.bing.com/search?q={$keywords}&mkt=zh-CN&ensearch=1"
+          timeout: 10000
+        result: $page
+    - time.wait: 10
+    - browser.eval:
+        args:
+          page: $page
+          javascript: |
+            [...document.querySelectorAll("#b_results .b_algo")].map(v => {{
+                title = v.querySelector(".b_title")?.innerText;
+                link = v.querySelector(".b_title a")?.href;
+                caption = v.querySelector(".b_caption")?.innerText;
+                return {{title, link, caption}}
+            }}).filter(v => v.title && v.link)
+        result: $results
+    - browser.close: $browser
+    - echo: $results

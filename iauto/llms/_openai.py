@@ -47,7 +47,7 @@ class OpenAI(LLM):
 
         m = r.choices[0].message
         tool_calls = m.tool_calls
-
+        observations = []
         if tool_calls and functions:
             available_function = dict(
                 [(func.spec.name, func) for func in functions]
@@ -63,17 +63,31 @@ class OpenAI(LLM):
                 try:
                     func_resp = func_to_call(**func_args)
                 except Exception as e:
+                    print(f"Function call err: {e}, func_name={func_name}, args={func_args}, resp={func_resp}")
                     func_resp = str(e)
+                    import traceback
+                    traceback.print_exception(e)
+
+                if func_resp is not None and not isinstance(func_resp, str):
+                    try:
+                        func_resp = json.dumps(func_resp or {}, ensure_ascii=False, indent=4)
+                    except TypeError:
+                        pass
 
                 msgs.append({
                     "tool_call_id": tool_call.id,
                     "role": "tool",
                     "name": func_name,
-                    "content": json.dumps(func_resp or {}, ensure_ascii=False)
+                    "content": func_resp
                 })
+
+                observations.append(Message(
+                    role="assistant",
+                    content=func_resp
+                ))
             r = self._openai.chat.completions.create(
                 messages=msgs,
                 **kwargs
             )
             m = r.choices[0].message
-        return Message(role="assistant", content=m.content)
+        return Message(role="assistant", content=m.content, observations=observations)

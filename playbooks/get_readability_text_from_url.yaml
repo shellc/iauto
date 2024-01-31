@@ -1,0 +1,30 @@
+playbook:
+  spec:
+    name: get_readability_text_from_url
+    description: Get web content suitable for humans to read.
+    arguments:
+      - name: url
+        type: string
+        description: HTTP URL
+        required: true
+  actions:
+    - browser.open:
+        args:
+          exec: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
+          headless: true
+        result: $browser
+    - browser.goto:
+        args:
+          browser: $browser
+          url: $url
+        result: $page
+    - browser.content:
+        args:
+          page: $page
+        result: $html
+    - browser.readability:
+        args:
+          content: $html
+        result: $text
+    - browser.close: $browser
+    - echo: $text

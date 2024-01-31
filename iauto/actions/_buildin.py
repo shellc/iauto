@@ -8,6 +8,7 @@ def get_buildin_actions():
 
     actions["playbook"] = PlaybookAction()
     actions["log"] = _log.LogAction()
+    actions["echo"] = _log.EchoAction()
 
     actions["repeat"] = _flow.RepeatAction()
     actions["when"] = _flow.WhenAction()
@@ -30,6 +31,8 @@ def get_buildin_actions():
     actions["browser.new"] = _browser.NewPageAction()
     actions["browser.goto"] = _browser.GotoAction()
     actions["browser.eval"] = _browser.EvaluateJavascriptAction()
+    actions["browser.content"] = _browser.GetContentAction()
+    actions["browser.readability"] = _browser.ReadabilityAction()
 
     wd_actions = _webdriver.create_actions()
     actions.update(wd_actions)

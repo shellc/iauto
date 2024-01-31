@@ -11,7 +11,7 @@ playbook:
     - browser.open:
         args:
           exec: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
-          headless: true
+          headless: false
         result: $browser
     - browser.goto:
         args:

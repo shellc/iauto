@@ -1,0 +1,33 @@
+playbook:
+  spec:
+    name: google_news
+    description: Use keywords to query news
+    arguments:
+      - name: keywords
+        type: string
+        description: Keywords used for searching news topics
+        required: true
+  actions:
+    - browser.open:
+        args:
+          exec: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
+          headless: true
+        result: $browser
+    - browser.goto:
+        args:
+          browser: $browser
+          url: "https://news.google.com/search?q={$keywords}"
+          timeout: 120000
+        result: $page
+    - browser.eval:
+        args:
+          page: $page
+          javascript: |
+            [...document.querySelectorAll("a")].map(v => {{
+                title = v.innerText;
+                link = v.href;
+                return {{title, link}}
+            }}).filter(v => v.title !== '' && v.link.startsWith("https://news.google.com/articles/"))
+        result: $news
+    - browser.close: $browser
+    - echo: $news

@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Dict, List, Tuple, Union
 
 from ._action import Action, Executor, Playbook
@@ -15,6 +16,7 @@ class PlaybookExecutor(Executor):
     def __init__(self) -> None:
         super().__init__()
         self._action_loader = ActionLoader()
+        self._thread_executor = ThreadPoolExecutor()
 
     def perform(self, playbook: Playbook) -> Any:
         action = self.get_action(playbook=playbook)
@@ -24,7 +26,20 @@ class PlaybookExecutor(Executor):
         args, kwargs = self.eval_args(args=playbook.args)
 
         result = action.perform(*args, executor=self, playbook=playbook, **kwargs)
+        """
+        if asyncio.iscoroutine(result):
+            def _thread(coro):
+                loop = _asyncio.ensure_event_loop()
+                #loop = asyncio.get_running_loop()
+                #print("run in thread: ", coro)
+                #future = asyncio.run_coroutine_threadsafe(coro=coro, loop=loop)
+                #return future.result()
 
+                return loop.run_until_complete(coro)
+
+            future = self._thread_executor.submit(_thread, coro=result)
+            result = future.result()
+        """
         self.extract_vars(data=result, vars=playbook.result)
 
         return result
@@ -36,13 +51,6 @@ class PlaybookExecutor(Executor):
         action = self._action_loader.get(name=playbook.name)
         if action is None:
             action = loader.get(name=playbook.name)
-
-            if action is not None and playbook.spec is not None:
-                action = action.copy()
-                action.spec = playbook.spec
-                self._action_loader.register(actions={
-                    playbook.name: action
-                })
 
         return action
 
@@ -98,7 +106,7 @@ class PlaybookExecutor(Executor):
                     self._variables[k] = data.get(v)
 
     @staticmethod
-    def execute(playbook_file, variables={}):
+    def execute(playbook_file, variables={}) -> Any:
         playbook = Playbook.load(playbook_file)
 
         executor = PlaybookExecutor()
@@ -108,4 +116,4 @@ class PlaybookExecutor(Executor):
             for k, v in variables.items():
                 executor.set_variable(f"${k}", v)
 
-        executor.perform(playbook=playbook)
+        return executor.perform(playbook=playbook)

@@ -21,7 +21,8 @@ def get_level(name: str):
         return logging.NOTSET
 
 
-def get_logger(name, level="INFO"):
+def get_logger(name, level=None):
+    level = level or os.environ.get("IA_LOG_LEVEL") or "INFO"
     log_level = get_level(level) or logging.INFO
     logger = logging.getLogger(name=name)
     logger.setLevel(level=log_level)

@@ -63,7 +63,7 @@ class PromptAction(Action):
         p = ''
         if len(args) == 1:
             p = args[0]
-        return prompt(p, history=self._history, auto_suggest=AutoSuggestFromHistory())
+        return prompt(p, history=self._history, auto_suggest=AutoSuggestFromHistory(), in_thread=True)
 
 
 class PrintAction(Action):

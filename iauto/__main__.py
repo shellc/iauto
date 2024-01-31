@@ -30,6 +30,9 @@ def print_action_spec(name):
 
 
 def run(args, parser):
+    if args.log_level:
+        os.environ["IA_LOG_LEVEL"] = args.log_level
+
     if args.load:
         try:
             for m in args.load:
@@ -56,7 +59,9 @@ def run(args, parser):
         print(f"Invalid playbook file: {p}")
         sys.exit(-1)
 
-    PlaybookExecutor.execute(playbook_file=p, variables=args.kwargs)
+    result = PlaybookExecutor.execute(playbook_file=p, variables=args.kwargs)
+    if result is not None:
+        print(result)
 
 
 class ParseDict(argparse.Action):
@@ -84,6 +89,7 @@ def parse_args(argv):
     parser.add_argument('--list-actions', action="store_true", help="list actions")
     parser.add_argument('--spec', metavar="action", default=None, help="print action spec")
     parser.add_argument('--traceback', action="store_true", help="print error traceback")
+    parser.add_argument('--log-level', default=None, help="log level, default INFO")
 
     parser.set_defaults(func=run)
 
@@ -107,6 +113,8 @@ def main():
 
 
 try:
+    # import asyncio
+    # asyncio.run(main=main())
     main()
 except KeyboardInterrupt:
     print("Bye.\n")

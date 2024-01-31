@@ -49,4 +49,24 @@ class PlaybookAction(Action):
         result = None
         for action in actions:
             result = executor.perform(playbook=action)
+
         return result
+
+
+class PlaybookRunAction(Action):
+    def __init__(self, executor: Executor, playbook: Playbook) -> None:
+        super().__init__()
+        self._executor = executor
+        self._playbook = playbook
+        self.spec = playbook.spec
+
+    def perform(
+        self,
+        *args,
+        executor: Optional[Executor] = None,
+        playbook: Optional[Playbook] = None,
+        **kwargs
+    ) -> Any:
+        for k, v in kwargs.items():
+            self._executor.set_variable(f"${k}", v)
+        return self._executor.perform(playbook=self._playbook)

@@ -1,7 +1,7 @@
 import os
 from typing import Any, List, Optional
 
-from ..actions import Action, Executor, Playbook, create_action, loader
+from ..actions import Action, Executor, Playbook, PlaybookRunAction, loader
 from ._llm import Message
 from ._llm_factory import create_llm
 from ._session import Session
@@ -40,13 +40,14 @@ class CreateSessionAction(Action):
                     pb_name = os.path.join(root_path, pb_name)
                     pb = Playbook.load(pb_name)
 
-                    def _action_func(*args, **kwargs):
-                        for k, v in kwargs.items():
-                            executor.set_variable(f"${k}", v)
-                        return executor.perform(playbook=pb)
+                    # def _action_func(*args, **kwargs):
+                    #    for k, v in kwargs.items():
+                    #        executor.set_variable(f"${k}", v)
+                    #    return executor.perform(playbook=pb)
                     if pb.spec is None:
                         raise ValueError("As the function of an LLM, playbook must have spec.")
-                    action = create_action(func=_action_func, spec=pb.spec.model_dump())
+                    # action = create_action(func=_action_func, spec=pb.spec.model_dump())
+                    action = PlaybookRunAction(executor=executor, playbook=pb)
                     functions.append(action)
 
         session = Session(llm=llm, actions=functions)

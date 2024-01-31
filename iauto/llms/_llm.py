@@ -9,6 +9,7 @@ from ..actions import Action
 class Message(BaseModel):
     role: str
     content: str
+    observations: Optional[List['Message']] = None
 
 
 class LLM(ABC):

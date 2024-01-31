@@ -9,8 +9,6 @@ class ActionLoader:
         self._actions = {}
 
     def register(self, actions: Dict[str, Action]):
-        for k, v in actions.items():
-            v.spec.name = k
         self._actions.update(actions)
 
     def get(self, name) -> Union[Action, None]:

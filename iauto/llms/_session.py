@@ -18,6 +18,10 @@ class Session:
         return self._messages
 
     def run(self):
-        m = self._llm.chat(messages=self._messages, functions=self._actions)
+        m = self._llm.chat(messages=self._messages[-5:], functions=self._actions)
+        if m.observations is not None:
+            for om in m.observations:
+                om.role = "assistant"
+                self.add(om)
         self.add(m)
         return m

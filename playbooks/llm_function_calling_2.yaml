@@ -7,7 +7,8 @@ playbook:
           llm_args:
             model_path: /Users/shellc/Workspaces/chatglm.cpp/chatglm-ggml.bin
           playbooks:
-           - ./webdriver.yaml
+           - ./bing.yaml
+           - ./get_readability_text_from_url.yaml
         result: $session
     - repeat:
         actions:
