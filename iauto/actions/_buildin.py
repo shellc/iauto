@@ -37,4 +37,8 @@ def get_buildin_actions():
     wd_actions = _webdriver.create_actions()
     actions.update(wd_actions)
 
+    for name, action in actions.items():
+        if action.spec.name is None or action.spec.name == 'UNNAMED':
+            action.spec.name = name
+
     return actions

@@ -1,9 +1,15 @@
 from typing import Any, Optional
 
-from ._action import Action, Executor, Playbook
+from ._action import Action, ActionSpec, Executor, Playbook
 
 
 class ListAppendAction(Action):
+    def __init__(self) -> None:
+        super().__init__()
+        self.spec = ActionSpec.from_dict({
+            "description": "Add an elements to the end of the list.",
+        })
+
     def perform(
         self,
         *args,
@@ -29,6 +35,12 @@ class ListAppendAction(Action):
 
 
 class DictPutAction(Action):
+    def __init__(self) -> None:
+        super().__init__()
+        self.spec = ActionSpec.from_dict({
+            "description": "Add an element to the dictionary.",
+        })
+
     def perform(
         self,
         *args,

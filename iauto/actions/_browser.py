@@ -15,13 +15,19 @@ class OpenBrowserAction(Action):
         super().__init__()
         self.spec = ActionSpec.from_dict({
             "name": "browser.open",
-            "description": "Use this tool to open browser.",
+            "description": "Use Playwright to open a browser.",
             "arguments": [
                 {
                     "name": "exec",
                     "type": "string",
                     "description": "Browser executable path.",
                     "required": True
+                },
+                {
+                    "name": "headless",
+                    "type": "bool",
+                    "description": "Is the headless mode used.",
+                    "required": False
                 }
             ]
         })
@@ -39,6 +45,12 @@ class OpenBrowserAction(Action):
 
 
 class CloseBrowserAction(Action):
+    def __init__(self) -> None:
+        super().__init__()
+        self.spec = ActionSpec.from_dict({
+            "description": "Close the browser.",
+        })
+
     def perform(self, browser: Browser, *args, **kwargs) -> Any:
         async def _func():
             return await browser.close()
@@ -46,6 +58,12 @@ class CloseBrowserAction(Action):
 
 
 class NewPageAction(Action):
+    def __init__(self) -> None:
+        super().__init__()
+        self.spec = ActionSpec.from_dict({
+            "description": "Open a new tab in the browser.",
+        })
+
     def perform(self, *args, browser: Browser, **kwargs) -> Page:
         async def _func(browser):
             if len(browser.contexts) == 0:
@@ -59,6 +77,12 @@ class NewPageAction(Action):
 
 
 class GotoAction(Action):
+    def __init__(self) -> None:
+        super().__init__()
+        self.spec = ActionSpec.from_dict({
+            "description": "Open URL in the browser.",
+        })
+
     def perform(
         self,
         *args,
@@ -86,6 +110,12 @@ class GotoAction(Action):
 
 
 class EvaluateJavascriptAction(Action):
+    def __init__(self) -> None:
+        super().__init__()
+        self.spec = ActionSpec.from_dict({
+            "description": "Execute JavaScript in the browser page.",
+        })
+
     def perform(self, *args, page: Page, javascript: str, **kwargs) -> Any:
         async def _func(page):
             return await page.evaluate(javascript)
@@ -94,6 +124,12 @@ class EvaluateJavascriptAction(Action):
 
 
 class GetContentAction(Action):
+    def __init__(self) -> None:
+        super().__init__()
+        self.spec = ActionSpec.from_dict({
+            "description": "Get the HTML content of the page.",
+        })
+
     def perform(self, *args, page: Page, **kwargs) -> Any:
         async def _func(page):
             return await page.content()
@@ -101,6 +137,12 @@ class GetContentAction(Action):
 
 
 class ReadabilityAction(Action):
+    def __init__(self) -> None:
+        super().__init__()
+        self.spec = ActionSpec.from_dict({
+            "description": "Convert the HTML content to easy-to-read pure text content.",
+        })
+
     def perform(self, content: str, *args, **kwargs) -> Any:
         try:
             from bs4 import BeautifulSoup

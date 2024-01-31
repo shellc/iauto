@@ -1,13 +1,17 @@
 from typing import Any, Optional
 
 from .._logging import get_logger
-from ._action import Action, Executor, Playbook
+from ._action import Action, ActionSpec, Executor, Playbook
 
 
 class LogAction(Action):
     def __init__(self) -> None:
         super().__init__()
         self._log = get_logger("Log")
+
+        self.spec = ActionSpec.from_dict({
+            "description": "Print the log to the terminal.",
+        })
 
     def perform(
         self,
@@ -28,6 +32,12 @@ class LogAction(Action):
 
 
 class EchoAction(Action):
+    def __init__(self) -> None:
+        super().__init__()
+        self.spec = ActionSpec.from_dict({
+            "description": "Output the input args.",
+        })
+
     def perform(
         self,
         *args,

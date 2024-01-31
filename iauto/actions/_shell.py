@@ -59,6 +59,10 @@ class PromptAction(Action):
         super().__init__()
         self._history = InMemoryHistory()
 
+        self.spec = ActionSpec.from_dict({
+            "description": "Receive user input from the terminal.",
+        })
+
     def perform(self, *args, **kwargs: Any) -> str:
         p = ''
         if len(args) == 1:
@@ -67,5 +71,12 @@ class PromptAction(Action):
 
 
 class PrintAction(Action):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.spec = ActionSpec.from_dict({
+            "description": "Print to the terminal.",
+        })
+
     def perform(self, *args, end="\n", **kwargs) -> None:
         print(end.join(args), end=end)

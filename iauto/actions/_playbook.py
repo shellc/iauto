@@ -10,7 +10,7 @@ class PlaybookAction(Action):
 
         self.spec = ActionSpec.from_dict({
             "name": "playbook",
-            "description": "Playbook is used to execute Actions"
+            "description": "Playbook is the top-level Action used to execute other Actions."
         })
 
     def perform(

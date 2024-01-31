@@ -358,13 +358,29 @@ def execute(*args, webdriver: Remote, command: str, params, **kwargs) -> Any:
 
 def create_actions() -> Dict[str, Action]:
     actions = {}
-    actions["wd.connect"] = create_action(func=connect, spec={})
-    actions["wd.execute_script"] = create_action(func=execute_script, spec={})
-    actions["wd.get_element"] = create_action(func=get_element, spec={})
-    actions["wd.get_elements"] = create_action(func=get_elements, spec={})
-    actions["wd.get_attr"] = create_action(func=get_attr, spec={})
-    actions["wd.text"] = create_action(func=text, spec={})
-    actions["wd.send_keys"] = create_action(func=send_keys, spec={})
-    actions["wd.click"] = create_action(func=click, spec={})
+    actions["wd.connect"] = create_action(func=connect, spec={
+        "description": "Connect to the Appium server."
+    })
+    actions["wd.execute_script"] = create_action(func=execute_script, spec={
+        "description": "Execute the script."
+    })
+    actions["wd.get_element"] = create_action(func=get_element, spec={
+        "description": "Get the element."
+    })
+    actions["wd.get_elements"] = create_action(func=get_elements, spec={
+        "description": "Get all elements."
+    })
+    actions["wd.get_attr"] = create_action(func=get_attr, spec={
+        "description": "Get element attribute value"
+    })
+    actions["wd.text"] = create_action(func=text, spec={
+        "description": "Get element text content."
+    })
+    actions["wd.send_keys"] = create_action(func=send_keys, spec={
+        "description": "Send content."
+    })
+    actions["wd.click"] = create_action(func=click, spec={
+        "description": "Click the element."
+    })
 
     return actions

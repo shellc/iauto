@@ -1,13 +1,22 @@
 import os
 from typing import Any, List, Optional
 
-from ..actions import Action, Executor, Playbook, PlaybookRunAction, loader
+from ..actions import (Action, ActionSpec, Executor, Playbook,
+                       PlaybookRunAction, loader)
 from ._llm import Message
 from ._llm_factory import create_llm
 from ._session import Session
 
 
 class CreateSessionAction(Action):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.spec = ActionSpec.from_dict({
+            "name": "llm.session",
+            "description": "Create a session for chat with LLM.",
+        })
+
     def perform(
         self,
         *args,
@@ -55,6 +64,14 @@ class CreateSessionAction(Action):
 
 
 class ChatAction(Action):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.spec = ActionSpec.from_dict({
+            "name": "llm.chat",
+            "description": "Send a message to LLM and wait for a reply.",
+        })
+
     def perform(self, *args, session: Session, prompt, **kwargs: Any) -> str:
         session.add(Message(role="user", content=prompt))
         m = session.run()

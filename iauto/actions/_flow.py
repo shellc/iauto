@@ -1,6 +1,6 @@
 from typing import Any, Dict, Optional
 
-from ._action import Action, Executor, Playbook
+from ._action import Action, ActionSpec, Executor, Playbook
 
 _operators = set(["all", "any", "lt", 'le', 'eq', 'ne', 'ge', 'gt'])
 
@@ -98,6 +98,12 @@ def eval_args(args, kwargs, vars={}):
 
 
 class RepeatAction(Action):
+    def __init__(self) -> None:
+        super().__init__()
+        self.spec = ActionSpec.from_dict({
+            "description": "Repeat the execution based on specified conditions.",
+        })
+
     def perform(
         self,
         *args,
@@ -118,6 +124,12 @@ class RepeatAction(Action):
 
 
 class WhenAction(Action):
+    def __init__(self) -> None:
+        super().__init__()
+        self.spec = ActionSpec.from_dict({
+            "description": "Execute actions when the condition is met.",
+        })
+
     def perform(
         self,
         *args,
@@ -135,6 +147,12 @@ class WhenAction(Action):
 
 
 class ForEachAction(Action):
+    def __init__(self) -> None:
+        super().__init__()
+        self.spec = ActionSpec.from_dict({
+            "description": "Execute 'actions' for each element in the set.",
+        })
+
     def perform(
         self,
         *args,

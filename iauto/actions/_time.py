@@ -2,10 +2,17 @@ import time
 from datetime import datetime
 from typing import Optional
 
-from ._action import Action, Executor, Playbook
+from ._action import Action, ActionSpec, Executor, Playbook
 
 
 class WaitAction(Action):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.spec = ActionSpec.from_dict({
+            "description": "Wait for a specified seconds.",
+        })
+
     def perform(
         self,
         *args,
@@ -25,5 +32,12 @@ class WaitAction(Action):
 
 
 class GetNowTimestamp(Action):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.spec = ActionSpec.from_dict({
+            "description": "Get the current timestamp (in milliseconds).",
+        })
+
     def perform(self, *args, **kwargs) -> int:
         return int(datetime.now().timestamp() * 1000)

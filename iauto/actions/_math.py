@@ -1,7 +1,14 @@
-from ._action import Action
+from ._action import Action, ActionSpec
 
 
 class ModAction(Action):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.spec = ActionSpec.from_dict({
+            "description": "Calculate the modulus and return the result.",
+        })
+
     def perform(
         self,
         *args,
