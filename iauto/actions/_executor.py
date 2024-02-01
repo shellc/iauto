@@ -12,6 +12,11 @@ KEY_DESCRIPTION = "description"
 VALID_KEYS = [KEY_ARGS, KEY_ACTIONS, KEY_RESULT, KEY_DESCRIPTION]
 
 
+class SafeDict(dict):
+    def __missing__(self, key):
+        return '{' + key + '}'
+
+
 class PlaybookExecutor(Executor):
     def __init__(self) -> None:
         super().__init__()
@@ -61,7 +66,7 @@ class PlaybookExecutor(Executor):
             if vars.startswith("$"):
                 return self._variables.get(vars) or vars
             else:
-                return vars.format(**self._variables)
+                return vars.format_map(SafeDict(self._variables))
         elif isinstance(vars, list):
             return [self.eval_vars(x) for x in vars]
         elif isinstance(vars, dict):

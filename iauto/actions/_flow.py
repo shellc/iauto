@@ -114,13 +114,15 @@ class RepeatAction(Action):
         if executor is None or playbook is None:
             raise ValueError("executor and playbook can't be None")
 
+        result = None
         args, kwargs = executor.eval_args(args=playbook.args)
         while eval_args(args, kwargs, vars=executor.variables):
             actions = playbook.actions or []
             for action in actions:
-                executor.perform(playbook=action)
+                result = executor.perform(playbook=action)
 
             args, kwargs = executor.eval_args(args=playbook.args)
+        return result
 
 
 class WhenAction(Action):
@@ -140,10 +142,12 @@ class WhenAction(Action):
         if executor is None or playbook is None:
             raise ValueError("executor and playbook can't be None")
 
+        result = None
         if eval_args(args, kwargs, vars=executor.variables):
             actions = playbook.actions or []
             for action in actions:
-                executor.perform(playbook=action)
+                result = executor.perform(playbook=action)
+        return result
 
 
 class ForEachAction(Action):
@@ -179,7 +183,9 @@ class ForEachAction(Action):
         elif len(kwargs) > 0:
             data = [kwargs]
 
+        result = None
         for i in data:
             executor.set_variable("$_", i)
             for action in actions:
-                executor.perform(playbook=action)
+                result = executor.perform(playbook=action)
+        return result

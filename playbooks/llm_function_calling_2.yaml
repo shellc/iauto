@@ -8,6 +8,7 @@ playbook:
             model_path: /Users/shellc/Workspaces/chatglm.cpp/chatglm-ggml.bin
           playbooks:
            - ./bing.yaml
+           - ./google_news.yaml
            - ./get_readability_text_from_url.yaml
         result: $session
     - repeat:

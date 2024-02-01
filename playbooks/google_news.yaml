@@ -8,6 +8,15 @@ playbook:
         description: Keywords used for searching news topics
         required: true
   actions:
+    - when:
+        args: {eq: [$keywords, null]}
+        actions:
+          - setvar: [url, https://news.google.com]
+    - when:
+        args: {ne: [$keywords, null]}
+        actions:
+          - setvar: [url, "https://news.google.com/search?q={$keywords}"]
+    - log: "Visit GoogleNews: {$url}"
     - browser.open:
         args:
           exec: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
@@ -16,7 +25,7 @@ playbook:
     - browser.goto:
         args:
           browser: $browser
-          url: "https://news.google.com/search?q={$keywords}"
+          url: $url
           timeout: 120000
         result: $page
     - browser.eval:
@@ -30,4 +39,12 @@ playbook:
             }}).filter(v => v.title !== '' && v.link.startsWith("https://news.google.com/articles/"))
         result: $news
     - browser.close: $browser
-    - echo: $news
+    - each:
+        args: $news
+        actions:
+          - dict.get:
+              args: [$_, title]
+              result: $title
+          #- log: $title
+          - list.append: [$news_titles, $title]
+    - echo: $news_titles

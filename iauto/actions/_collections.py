@@ -63,3 +63,22 @@ class DictPutAction(Action):
             raise ValueError("args[0] is not a dict")
 
         d[args[1]] = args[2]
+
+
+class DictGetAction(Action):
+    def __init__(self) -> None:
+        super().__init__()
+        self.spec = ActionSpec.from_dict({
+            "description": "Get value from the dictionary. like: dict.get: [$dict, key]",
+        })
+
+    def perform(
+        self,
+        *args,
+        executor: Optional[Executor] = None,
+        playbook: Optional[Playbook] = None,
+        **kwargs
+    ) -> Any:
+        if len(args) != 2 or not isinstance(args[0], dict):
+            raise ValueError("invalid args")
+        return args[0].get(args[1])

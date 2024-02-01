@@ -46,7 +46,10 @@ class EchoAction(Action):
         **kwargs
     ) -> Any:
         if len(args) > 0:
-            return args
+            if len(args) == 1:
+                return args[0]
+            else:
+                return list(args)
         elif len(kwargs) > 0:
             return kwargs
         else:

@@ -1,18 +1,21 @@
 playbook:
-  description: Chat to ChatGLM
+  description: LLM ReAct reasoning
   actions:
     - llm.session:
         args:
           provider: chatglm
           llm_args:
             model_path: /Users/shellc/Workspaces/chatglm.cpp/chatglm-ggml.bin
+          playbooks:
+            - ./bing.yaml
+            - ./get_readability_text_from_url.yaml
         result: $session
     - repeat:
         actions:
           - shell.prompt:
               args: "Human: "
               result: $prompt
-          - llm.chat:
+          - llm.react:
               args:
                 session: $session
                 prompt: $prompt

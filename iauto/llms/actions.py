@@ -72,14 +72,46 @@ class ChatAction(Action):
             "description": "Send a message to LLM and wait for a reply.",
         })
 
-    def perform(self, *args, session: Session, prompt, **kwargs: Any) -> str:
+    def perform(
+        self,
+        *args,
+        session: Session,
+        prompt,
+        history: int = 5,
+        rewrite: bool = False,
+        **kwargs: Any
+    ) -> str:
         session.add(Message(role="user", content=prompt))
-        m = session.run()
+        m = session.run(history=history, rewrite=rewrite)
+        return m.content
+
+
+class ReactAction(Action):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.spec = ActionSpec.from_dict({
+            "name": "llm.react",
+            "description": "ReAct reasoning.",
+        })
+
+    def perform(
+        self,
+        *args,
+        session: Session,
+        prompt,
+        history: int = 1,
+        rewrite: bool = False,
+        **kwargs: Any
+    ) -> str:
+        session.add(Message(role="user", content=prompt))
+        m = session.react(history=history, rewrite=rewrite)
         return m.content
 
 
 def register_actions():
     loader.register({
         "llm.session": CreateSessionAction(),
-        "llm.chat": ChatAction()
+        "llm.chat": ChatAction(),
+        "llm.react": ReactAction()
     })

@@ -1,12 +1,12 @@
-from . import (_browser, _collections, _flow, _log, _math, _shell, _time,
-               _webdriver)
-from ._playbook import PlaybookAction
+from . import (_browser, _collections, _flow, _log, _math, _playbook, _shell,
+               _time, _webdriver)
 
 
 def get_buildin_actions():
     actions = {}
 
-    actions["playbook"] = PlaybookAction()
+    actions["playbook"] = _playbook.PlaybookAction()
+    actions["setvar"] = _playbook.SetVarAction()
     actions["log"] = _log.LogAction()
     actions["echo"] = _log.EchoAction()
 
@@ -16,6 +16,7 @@ def get_buildin_actions():
 
     actions["list.append"] = _collections.ListAppendAction()
     actions["dict.put"] = _collections.DictPutAction()
+    actions["dict.get"] = _collections.DictGetAction()
 
     actions["time.wait"] = _time.WaitAction()
     actions["time.now"] = _time.GetNowTimestamp()

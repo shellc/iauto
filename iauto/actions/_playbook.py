@@ -70,3 +70,26 @@ class PlaybookRunAction(Action):
         for k, v in kwargs.items():
             self._executor.set_variable(f"${k}", v)
         return self._executor.perform(playbook=self._playbook)
+
+
+class SetVarAction(Action):
+    def __init__(self) -> None:
+        super().__init__()
+        self.spec = ActionSpec.from_dict({
+            "name": "setvar",
+            "description": "Set a value to a variable, like: setvar: [var, value]"
+        })
+
+    def perform(
+        self,
+        *args,
+        executor: Optional[Executor] = None,
+        playbook: Optional[Playbook] = None,
+        **kwargs
+    ) -> Any:
+        if executor is None:
+            raise ValueError("executor is None")
+
+        if len(args) != 2:
+            raise ValueError("2 args required")
+        executor.set_variable(f"${args[0]}", args[1])
