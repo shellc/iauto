@@ -5,7 +5,7 @@ playbook:
         args:
           provider: chatglm
           llm_args:
-            model_path: /Users/shellc/Workspaces/chatglm.cpp/chatglm-ggml.bin
+            model_path: /Volumes/Workspaces/models/chatglm3-6b/chatglm3-6b-ggml.bin
         result: $session
     - repeat:
         actions:
@@ -16,6 +16,6 @@ playbook:
               args:
                 session: $session
                 prompt: $prompt
-                rewrite: True
+                rewrite: False
               result: $message
           - shell.print: "AI: {$message}"

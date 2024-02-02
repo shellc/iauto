@@ -49,10 +49,9 @@ Solve a question answering task with interleaving Thought, Action, Observation s
 Thought can reason about the current situation, and Action can be three types:
 (1) Retrieve[entity], which searchs the exact entity on the web or database and returns the items.
 If not, it will return some similar entities to search.
+If need current date, it's : {datetime}
 (2) Lookup[keyword], which returns the next sentence containing keyword in the current passage.
 (3) Finish[answer], which returns the answer and finishes the task.
-
-Retrieve real-time information using the current datetime: {datetime}
 
 Example:
 ```
@@ -133,9 +132,8 @@ Your Answer:
 
     def rewrite(self, history: int = 5):
         instructions = """
+Current datetime: {datetime}
 Rewrite the following user question into a clearer and more complete question based on the context of the conversation.
-
-Retrieve real-time information using the current datetime: {datetime}
 
 Conversation:
 ```

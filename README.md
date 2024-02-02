@@ -8,6 +8,9 @@
 * **Playwright Integration**: Automate web workflows with Playwright
 * **Appium Integration**: Automate web, iOS, Android, Windows, and macOS workflows with Appium
 * **LLMs Integration**: Integrate AI into automated workflows, support OpenAI API and self-hosting LLMs
+    * OpenAI Chat completion API
+    * ChatGLM by chatglm.cpp
+    * QWen by qwen.cpp
 
 ### Roadmap
 
@@ -112,14 +115,17 @@ Run the playbook:
 python -m iauto ./chatbot.yaml
 ```
 
-**[More example playbooks](./playbooks)**
-
 * [Control Flow](./playbooks/control_flow.yaml)
 * [Appium Webdriver](./playbooks/webdriver.yaml)
 * [Playwright Browser](./playbooks/browser.yaml)
 * [OpenAI REPL Chatbot](./playbooks/openai_repl.yaml)
 * [ChatGLM REPL Chatbot](./playbooks/chatglm_repl.yaml)
 * [QWen REPL Chatbot](./playbooks/qwen_repl.yaml)
+* [LLM ReAct reasoning](./playbooks/llm_react_repl.yaml)
+* [Bing search](./playbooks/bing.yaml)
+* [Google News](./playbooks/google_news.yaml)
+
+**[More example playbooks](./playbooks)**
 
 ## Contribution
 
@@ -150,4 +156,4 @@ pre-commit install
 
 ## License
 
-MIT
+[MIT](./LICENSE)

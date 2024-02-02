@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+import os
 from typing import List, Optional
 
 import chatglm_cpp
@@ -14,6 +14,8 @@ _log = get_logger("ChatGLM")
 class ChatGLM(LLM):
     def __init__(self, model_path) -> None:
         super().__init__()
+        if not os.path.isfile(model_path):
+            raise ValueError(f"model_path must be a ggml file: {model_path}")
         self._llm = chatglm_cpp.Pipeline(model_path=model_path)
 
     def generate(self, instructions: str, functions: Optional[List[Action]] = None, **kwargs) -> Message:
@@ -43,9 +45,7 @@ class ChatGLM(LLM):
 
         if functions is not None:
             function_spec = [f.spec.openai_spec() for f in functions]
-            system_instructions = f"""
-                Retrieve real-time information using the current datetime: {datetime.now()}
-
+            system_instructions = """
                 Answer the following questions as best as you can. You have access to the following tools:\n
             """
             system_instructions += json.dumps(function_spec, ensure_ascii=False, indent=4)

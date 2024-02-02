@@ -3,10 +3,11 @@ playbook:
   actions:
     - llm.session:
         args:
+          provider: llama
           llm_args:
-            api_key: sk-xxx
-            base_url: http://100.64.0.8:8888/v1/
-            model: Qwen-14B-Chat-Int4
+            model_path: /Volumes/Workspaces/models/Qwen-1_8B/qwen1_8-ggml-q4_0.bin
+            chat_format: qwen
+            #model_path: /Volumes/Workspaces/models/chinese-alpaca-2-7b-hf/ggml-model-q4_0.gguf
         result: $session
     - repeat:
         actions:

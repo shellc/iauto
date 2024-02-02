@@ -5,6 +5,8 @@ prompt_toolkit
 
 openai
 chatglm-cpp
+qwen-cpp
+llama-cpp-python
 
 playwright
 Appium-Python-Client

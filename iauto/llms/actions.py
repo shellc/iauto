@@ -75,6 +75,8 @@ class ChatAction(Action):
     def perform(
         self,
         *args,
+        executor: Optional[Executor] = None,
+        playbook: Optional[Playbook] = None,
         session: Session,
         prompt,
         history: int = 5,
@@ -98,6 +100,8 @@ class ReactAction(Action):
     def perform(
         self,
         *args,
+        executor: Optional[Executor] = None,
+        playbook: Optional[Playbook] = None,
         session: Session,
         prompt,
         history: int = 5,
