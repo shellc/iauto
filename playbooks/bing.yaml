@@ -8,16 +8,17 @@ playbook:
         description: Keywords used for searching the web
         required: true
   actions:
-    - log: "Bing search: {$keywords}"
+    #- log: "Bing search: {$keywords}"
     - browser.open:
         args:
           exec: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
-          headless: true
+          headless: false
+          user_data_dir: /tmp/.chrome
         result: $browser
     - browser.goto:
         args:
           browser: $browser
-          url: "https://cn.bing.com/search?q={$keywords}&mkt=zh-CN&ensearch=1"
+          url: "https://bing.com/search?q={$keywords}&mkt=zh-CN&ensearch=1"
           timeout: 120000
         result: $page
     - time.wait: 10
@@ -25,12 +26,17 @@ playbook:
         args:
           page: $page
           javascript: |
-            [...document.querySelectorAll("#b_results .b_algo")].map(v => {{
-                title = v.querySelector("h2")?.innerText || v.querySelector(".b_title")?.innerText;
-                link = v.querySelector("h2 a")?.href || v.querySelector(".b_title a")?.href;
-                caption = v.querySelector(".b_caption")?.innerText;
-                return {{title, link, caption}}
-            }}).filter(v => v.title && v.link)
+
+            [{{fact: document.querySelector("#b_results .b_ans")?.innerText,
+            items: [...document.querySelectorAll("#b_results .b_algo")].map(v => {{
+                    title = v.querySelector("h2")?.innerText || v.querySelector(".b_title")?.innerText;
+                    link = v.querySelector("h2 a")?.href || v.querySelector(".b_title a")?.href;
+                    caption = v.querySelector(".b_caption")?.innerText;
+                    return {{title, link, caption}}
+              }}).filter(v => v.title && v.link)
+            }}]
+
         result: $results
     - browser.close: $browser
+    #- log: $results
     - echo: $results

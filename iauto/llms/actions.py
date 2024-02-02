@@ -100,12 +100,13 @@ class ReactAction(Action):
         *args,
         session: Session,
         prompt,
-        history: int = 1,
+        history: int = 5,
         rewrite: bool = False,
+        log: bool = False,
         **kwargs: Any
     ) -> str:
         session.add(Message(role="user", content=prompt))
-        m = session.react(history=history, rewrite=rewrite)
+        m = session.react(history=history, rewrite=rewrite, log=log)
         return m.content
 
 

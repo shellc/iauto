@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from typing import List, Optional
 
 import chatglm_cpp
@@ -42,7 +43,9 @@ class ChatGLM(LLM):
 
         if functions is not None:
             function_spec = [f.spec.openai_spec() for f in functions]
-            system_instructions = """
+            system_instructions = f"""
+                Retrieve real-time information using the current datetime: {datetime.now()}
+
                 Answer the following questions as best as you can. You have access to the following tools:\n
             """
             system_instructions += json.dumps(function_spec, ensure_ascii=False, indent=4)

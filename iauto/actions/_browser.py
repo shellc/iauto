@@ -1,8 +1,9 @@
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
-from playwright.async_api import Browser, Page, async_playwright
+from playwright.async_api import (Browser, BrowserContext, Page,
+                                  async_playwright)
 
 from ._action import Action, ActionSpec
 
@@ -32,14 +33,39 @@ class OpenBrowserAction(Action):
             ]
         })
 
-    def perform(self, *args, exec=None, headless=False, timeout=30000, **kwargs) -> Browser:
+    def perform(self,
+                *args,
+                exec=None,
+                headless=False,
+                timeout=30000,
+                user_data_dir=None,
+                **kwargs
+                ) -> Union[Browser, BrowserContext]:
         async def _func():
+            b_args = [
+                "--mute-audio",
+                "--disable-features=AudioServiceOutOfProcess,VideoCapture"
+            ]
+
+            if headless:
+                b_args.append("--disable-gpu")
+
             _playwright = await async_playwright().start()
-            browser = await _playwright.chromium.launch(
-                executable_path=exec,
-                headless=headless,
-                timeout=timeout
-            )
+            if user_data_dir:
+                browser = await _playwright.chromium.launch_persistent_context(
+                    user_data_dir=user_data_dir,
+                    executable_path=exec,
+                    headless=headless,
+                    timeout=timeout,
+                    args=b_args
+                )
+            else:
+                browser = await _playwright.chromium.launch(
+                    executable_path=exec,
+                    headless=headless,
+                    timeout=timeout,
+                    args=b_args
+                )
             return browser
         return _event_loop.run_until_complete(_func())
 
@@ -51,7 +77,7 @@ class CloseBrowserAction(Action):
             "description": "Close the browser.",
         })
 
-    def perform(self, browser: Browser, *args, **kwargs) -> Any:
+    def perform(self, browser: Union[Browser, BrowserContext], *args, **kwargs) -> Any:
         async def _func():
             return await browser.close()
         return _event_loop.run_until_complete(_func())
@@ -64,11 +90,14 @@ class NewPageAction(Action):
             "description": "Open a new tab in the browser.",
         })
 
-    def perform(self, *args, browser: Browser, **kwargs) -> Page:
+    def perform(self, *args, browser: Union[Browser, BrowserContext], **kwargs) -> Page:
         async def _func(browser):
-            if len(browser.contexts) == 0:
-                await browser.new_context()
-            context = browser.contexts[0]
+            if not isinstance(browser, BrowserContext):
+                if len(browser.contexts) == 0:
+                    await browser.new_context()
+                context = browser.contexts[0]
+            else:
+                context = browser
 
             page = await context.new_page()
             return page
@@ -86,7 +115,7 @@ class GotoAction(Action):
     def perform(
         self,
         *args,
-        browser: Optional[Browser] = None,
+        browser: Union[Browser, BrowserContext, None] = None,
         page: Optional[Page] = None,
         url: str,
         timeout=30000,
@@ -96,9 +125,12 @@ class GotoAction(Action):
             if page is None and browser is None:
                 raise ValueError("got action must specify browser or page.")
 
-            if len(browser.contexts) == 0:
-                await browser.new_context()
-            context = browser.contexts[0]
+            if not isinstance(browser, BrowserContext):
+                if len(browser.contexts) == 0:
+                    await browser.new_context()
+                context = browser.contexts[0]
+            else:
+                context = browser
 
             if page is None:
                 page = await context.new_page()

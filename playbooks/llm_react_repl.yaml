@@ -20,5 +20,7 @@ playbook:
                 session: $session
                 prompt: $prompt
                 rewrite: True
+                log: True
+                history: 1
               result: $message
           - shell.print: "AI: {$message}"
