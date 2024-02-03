@@ -84,7 +84,7 @@ class ChatAction(Action):
         **kwargs: Any
     ) -> str:
         session.add(Message(role="user", content=prompt))
-        m = session.run(history=history, rewrite=rewrite)
+        m = session.run(history=history, rewrite=rewrite, **kwargs)
         return m.content
 
 
@@ -110,7 +110,7 @@ class ReactAction(Action):
         **kwargs: Any
     ) -> str:
         session.add(Message(role="user", content=prompt))
-        m = session.react(history=history, rewrite=rewrite, log=log)
+        m = session.react(history=history, rewrite=rewrite, log=log, **kwargs)
         return m.content
 
 

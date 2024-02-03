@@ -5,9 +5,8 @@ playbook:
         args:
           provider: llama
           llm_args:
-            model_path: /Volumes/Workspaces/models/Qwen-1_8B/qwen1_8-ggml-q4_0.bin
+            model_path: /Volumes/Workspaces/models/Qwen-1_8B-Chat/ggml-model-q4_0.gguf
             chat_format: qwen
-            #model_path: /Volumes/Workspaces/models/chinese-alpaca-2-7b-hf/ggml-model-q4_0.gguf
         result: $session
     - repeat:
         actions:

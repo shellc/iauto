@@ -10,7 +10,7 @@ def create_llm(provider: str = "openai", **kwargs) -> LLM:
         return OpenAI(**kwargs)
     elif provider.lower() == "llama":
         try:
-            from ._llama import LLaMA
+            from .llama import LLaMA
             return LLaMA(**kwargs)
         except ImportError as e:
             raise ImportError(

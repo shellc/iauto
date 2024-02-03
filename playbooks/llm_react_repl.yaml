@@ -5,12 +5,11 @@ playbook:
         args:
           provider: llama
           llm_args:
-            #model_path: /Volumes/Workspaces/models/chatglm3-6b/chatglm3-6b-ggml.bin
-            model_path: /Volumes/Workspaces/models/Qwen-1_8B/qwen1_8-ggml-q4_0.bin
-            chat_format: qwen
+            model_path: /Volumes/Workspaces/models/Qwen-1_8B-Chat/ggml-model-q4_0.gguf
+            chat_format: qwen-fn
           playbooks:
             - ./bing.yaml
-            - ./get_readability_text_from_url.yaml
+            #- ./get_readability_text_from_url.yaml
         result: $session
     - repeat:
         actions:
@@ -21,7 +20,7 @@ playbook:
               args:
                 session: $session
                 prompt: $prompt
-                rewrite: True
+                rewrite: False
                 log: True
                 history: 1
               result: $message
