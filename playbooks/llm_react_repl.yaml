@@ -9,7 +9,7 @@ playbook:
             chat_format: qwen-fn
           playbooks:
             - ./bing.yaml
-            #- ./get_readability_text_from_url.yaml
+            - ./get_readability_text_from_url.yaml
         result: $session
     - repeat:
         actions:
@@ -23,5 +23,11 @@ playbook:
                 rewrite: False
                 log: True
                 history: 1
+                top_k: 2
+                repeat_penalty: 1.2
+                temperature: 0
               result: $message
-          - shell.print: "AI: {$message}"
+          - shell.print:
+              args:
+                message: "AI: {$message}"
+                color: green

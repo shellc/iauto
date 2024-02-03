@@ -78,5 +78,27 @@ class PrintAction(Action):
             "description": "Print to the terminal.",
         })
 
-    def perform(self, *args, end="\n", **kwargs) -> None:
-        print(end.join(args), end=end)
+    def perform(self, *args, message=None, end="\n", color="", **kwargs) -> None:
+        if color.lower() == "red":
+            color = "\033[91m"
+        elif color.lower() == "green":
+            color = "\033[92m"
+        elif color.lower() == "yellow":
+            color = "\033[93m"
+        elif color.lower() == "blue":
+            color = "\033[94m"
+        elif color.lower() == "purple":
+            color = "\033[95m"
+        else:
+            color = ""
+
+        if color:
+            print(color, end='')
+        if message:
+            print(message, end='')
+        else:
+            print(end.join(args), end='')
+        print(end=end)
+
+        if color:
+            print("\033[0m", end='')

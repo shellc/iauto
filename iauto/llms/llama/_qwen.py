@@ -10,6 +10,12 @@ from ..._logging import get_logger
 
 _log = get_logger(__name__)
 
+IM_START = '<|im_start|>'
+IM_END = '<|im_end|>'
+END_OF_TEXT = "<|endoftext|>"
+
+STOPS = [IM_END, END_OF_TEXT, "Observation"]
+
 
 @register_chat_completion_handler("qwen-fn")
 def qwen_chat_handler(
@@ -40,21 +46,17 @@ def qwen_chat_handler(
     grammar: Optional[llama.LlamaGrammar] = None,
     **kwargs,  # type: ignore
 ) -> Union[llama_types.ChatCompletion, Iterator[llama_types.ChatCompletionChunk]]:
-    # _log.debug(f"Original: {messages}")
-    messages = _parse_messages(messages=messages, functions=tools)
-    # _log.debug(f"Parsed: {messages}")
+    messages = _parse_request_messages(messages=messages, functions=tools)
 
-    prompt = _format_prompt(messages=messages)
+    prompt = _format_raw_prompt(messages=messages)
 
-    if messages[-1]["role"] != "user":
-        prompt = prompt[:-len(f"{im_end}\n{im_start}assistant\n")]
-    _log.debug(f"Prompt: {prompt}")
-
-    stop = [_STOP, im_end, "Observation"]
+    if len(messages) > 0 and messages[-1]["role"] != "user":  # Completion
+        prompt = prompt[:-len(f"{IM_END}\n{IM_START}assistant\n")]
+    _log.debug(f"Raw prompt: {prompt}")
 
     resp = llama.create_completion(
         prompt=prompt,
-        stop=stop,
+        stop=STOPS,
         stream=False,
         grammar=grammar,
         max_tokens=max_tokens,
@@ -75,14 +77,23 @@ def qwen_chat_handler(
     )
     _log.debug(f"Resp: {resp}")
 
+    if isinstance(resp, Iterator):
+        raise ValueError(f"Invalid resp: {resp}")
+
+    content = resp["choices"][0]["text"].strip()
     if tools is not None:
-        choice = _parse_response(resp=resp["choices"][0]["text"])
+        choice = _parse_response(resp=content)
     else:
         choice = {
             "index": 0,
-            "message": {"role": "assistant", "content": resp["choices"][0]["text"].strip()},
+            "message": {"role": "assistant", "content": content},
             "finish_reason": "stop"
         }
+    usage = resp.get("usage") or llama_types.CompletionUsage(
+        prompt_tokens=0,
+        completion_tokens=0,
+        total_tokens=0
+    )
 
     _log.debug(f"Choice: {choice}")
     return llama_types.CreateChatCompletionResponse(
@@ -90,10 +101,8 @@ def qwen_chat_handler(
         object="chat.completion",
         created=resp["created"],
         model=resp["model"],
-        choices=[
-            choice
-        ],
-        usage=resp["usage"],
+        choices=[llama_types.ChatCompletionResponseChoice(**choice)],
+        usage=usage,
     )
 
 
@@ -120,12 +129,8 @@ Final Answer: the final answer to the original input question
 
 Begin!"""
 
-im_start = '<|im_start|>'
-im_end = '<|im_end|>'
-_STOP = "<|endoftext|>"
 
-
-def _format_prompt(messages):
+def _format_raw_prompt(messages):
     prompt = []
 
     system_messages = []
@@ -133,22 +138,22 @@ def _format_prompt(messages):
         role = m['role']
         content = m["content"]
         if role in ["user", "assistant"]:
-            prompt.append(f"{im_start}{role}\n{content}{im_end}")
+            prompt.append(f"{IM_START}{role}\n{content}{IM_END}")
         elif role == "system":
             system_messages.append(content)
-    prompt.append(f"{im_start}assistant\n")
+    prompt.append(f"{IM_START}assistant\n")
 
     system = "You are a helpful assistant."
     if len(system_messages) > 0:
         system = "\n".join(system_messages).strip()
-    system = f"{im_start}system\n{system}{im_end}"
+    system = f"{IM_START}system\n{system}{IM_END}"
 
     prompt.insert(0, system)
 
     return "\n".join(prompt)
 
 
-def _parse_messages(messages, functions):
+def _parse_request_messages(messages, functions):
     if all(m["role"] != 'user' for m in messages):
         raise ValueError('Invalid request: Expecting at least one user message.')
 

@@ -6,7 +6,7 @@ playbook:
           provider: llama
           llm_args:
             model_path: /Volumes/Workspaces/models/Qwen-1_8B-Chat/ggml-model-q4_0.gguf
-            chat_format: qwen
+            chat_format: qwen-fn
         result: $session
     - repeat:
         actions:
@@ -17,5 +17,11 @@ playbook:
               args:
                 session: $session
                 prompt: $prompt
+                top_k: 2
+                repeat_penalty: 1.2
+                max_tokens: 500
               result: $message
-          - shell.print: "AI: {$message}"
+          - shell.print:
+              args:
+                message: "AI: {$message}"
+                color: green

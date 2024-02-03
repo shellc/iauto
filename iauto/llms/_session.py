@@ -24,7 +24,7 @@ class Session:
 
     def run(self, history: int = 5, rewrite: bool = False, **kwargs):
         if rewrite:
-            self.rewrite(history=history)
+            self.rewrite(history=history, **kwargs)
 
         m = self._llm.chat(messages=self._messages[-1 * history:], functions=self._actions, **kwargs)
         if m.observations is not None:
@@ -41,7 +41,7 @@ class Session:
         original_question = self._messages[-1].content
 
         if rewrite:
-            self.rewrite(history=history)
+            self.rewrite(history=history, **kwargs)
 
         primary_prompt = """
 Solve a question answering task with interleaving Thought, Action, Observation steps.
@@ -72,8 +72,6 @@ Action: Finish["Harry Styles, Olivia Wilde's boyfriend, is 29 years old and his 
 2.169459462491557."]
 ```
 
-Task and Steps:
-
 Task: {task}
 
         """
@@ -85,7 +83,7 @@ Task: {task}
 
         # Generate steps
         instructions = primary_prompt.format(task=task, datetime=datetime.now())
-        m = self._llm.chat(messages=[Message(role="user", content=instructions)])
+        m = self._llm.chat(messages=[Message(role="user", content=instructions)], **kwargs)
 
         content = m.content
         ss = content.split("\n")
@@ -126,13 +124,12 @@ Final question: {question}
 Your Answer:
         """
         instructions = final_anwser_prompt.format(steps="\n".join(steps), question=original_question)
-        anwser = self._llm.chat(messages=[Message(role="user", content=instructions)])
+        anwser = self._llm.chat(messages=[Message(role="user", content=instructions)], **kwargs)
         self.add(anwser)
         return anwser
 
-    def rewrite(self, history: int = 5):
+    def rewrite(self, history: int = 5, **kwargs):
         instructions = """
-Current datetime: {datetime}
 Rewrite the following user question into a clearer and more complete question based on the context of the conversation.
 
 Conversation:
@@ -152,7 +149,7 @@ Rewrite as:
         instructions = instructions.format(
             conversation=plain, question=self._messages[-1].content, datetime=datetime.now())
 
-        m = self._llm.chat(messages=[Message(role="user", content=instructions)])
+        m = self._llm.chat(messages=[Message(role="user", content=instructions)], **kwargs)
         self._messages[-1].content = m.content
 
     def plain_messages(self, messages: List[Message], norole=False, nowrap=False):
