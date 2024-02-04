@@ -3,10 +3,11 @@ playbook:
   actions:
     - llm.session:
         args:
-          provider: llama
+          provider: chatglm
           llm_args:
-            model_path: /Volumes/Workspaces/models/Qwen-1_8B-Chat/ggml-model-q4_0.gguf
-            chat_format: qwen-fn
+            model_path: /Volumes/Workspaces/models/chatglm3-6b/chatglm3-6b-ggml.bin
+            #model_path: /Volumes/Workspaces/models/Qwen-1_8B-Chat/ggml-model-q4_0.gguf
+            #chat_format: qwen-fn
           playbooks:
             - ./bing.yaml
             - ./get_readability_text_from_url.yaml
@@ -24,7 +25,7 @@ playbook:
                 log: True
                 history: 1
                 top_k: 2
-                repeat_penalty: 1.2
+                #repeat_penalty: 1.2
                 temperature: 0
               result: $message
           - shell.print:

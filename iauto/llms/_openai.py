@@ -4,7 +4,7 @@ from typing import List, Optional
 import openai
 
 from ..actions import Action
-from ._llm import LLM, Message
+from ._llm import LLM, ChatMessage, Message
 
 
 class OpenAI(LLM):
@@ -13,18 +13,21 @@ class OpenAI(LLM):
     def __init__(self, model: Optional[str] = None, **kwargs) -> None:
         super().__init__()
         self._model = model or "gpt-3.5-turbo"
+
         self._openai = openai.OpenAI(**kwargs)
 
-    def generate(self, instructions: str, functions: Optional[List[Action]] = None, **kwargs) -> Message:
-        messages = []
-        messages.append(Message(
-            role="user",
-            content=instructions
-        ))
+    def generate(self, instructions: str, **kwargs) -> Message:
+        if "model" not in kwargs:
+            kwargs["model"] = self._model
 
-        return self.chat(messages=messages, functions=functions, **kwargs)
+        r = self._openai.completions.create(
+            prompt=instructions,
+            stream=False,
+            **kwargs
+        )
+        return Message(content=r.choices[0].text)
 
-    def chat(self, messages: List[Message] = [], functions: Optional[List[Action]] = None, **kwargs) -> Message:
+    def chat(self, messages: List[ChatMessage] = [], functions: Optional[List[Action]] = None, **kwargs) -> ChatMessage:
         tools = None
         tool_choice = None
         if functions is not None:
@@ -47,7 +50,6 @@ class OpenAI(LLM):
 
         m = r.choices[0].message
         tool_calls = m.tool_calls
-        observations = []
         if tool_calls and functions:
             available_function = dict(
                 [(func.spec.name, func) for func in functions]
@@ -81,13 +83,9 @@ class OpenAI(LLM):
                     "content": func_resp
                 })
 
-                observations.append(Message(
-                    role="assistant",
-                    content=func_resp
-                ))
             r = self._openai.chat.completions.create(
                 messages=msgs,
                 **kwargs
             )
             m = r.choices[0].message
-        return Message(role="assistant", content=m.content, observations=observations)
+        return ChatMessage(role="assistant", content=m.content)

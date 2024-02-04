@@ -3,7 +3,7 @@ from typing import Any, List, Optional
 
 from ..actions import (Action, ActionSpec, Executor, Playbook,
                        PlaybookRunAction, loader)
-from ._llm import Message
+from ._llm import ChatMessage
 from ._llm_factory import create_llm
 from ._session import Session
 
@@ -83,7 +83,7 @@ class ChatAction(Action):
         rewrite: bool = False,
         **kwargs: Any
     ) -> str:
-        session.add(Message(role="user", content=prompt))
+        session.add(ChatMessage(role="user", content=prompt))
         m = session.run(history=history, rewrite=rewrite, **kwargs)
         return m.content
 
@@ -104,12 +104,13 @@ class ReactAction(Action):
         playbook: Optional[Playbook] = None,
         session: Session,
         prompt,
-        history: int = 5,
+        history: int = 1,
         rewrite: bool = False,
         log: bool = False,
+        max_steps: int = 3,
         **kwargs: Any
     ) -> str:
-        session.add(Message(role="user", content=prompt))
+        session.add(ChatMessage(role="user", content=prompt))
         m = session.react(history=history, rewrite=rewrite, log=log, **kwargs)
         return m.content
 

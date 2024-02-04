@@ -14,7 +14,7 @@ IM_START = '<|im_start|>'
 IM_END = '<|im_end|>'
 END_OF_TEXT = "<|endoftext|>"
 
-STOPS = [IM_END, END_OF_TEXT, "Observation"]
+STOPS = [IM_END, END_OF_TEXT, "\n\n\n"]
 
 
 @register_chat_completion_handler("qwen-fn")
@@ -54,9 +54,12 @@ def qwen_chat_handler(
         prompt = prompt[:-len(f"{IM_END}\n{IM_START}assistant\n")]
     _log.debug(f"Raw prompt: {prompt}")
 
+    stop = STOPS[::]
+    if tools:
+        stop.append("Observation")
     resp = llama.create_completion(
         prompt=prompt,
-        stop=STOPS,
+        stop=stop,
         stream=False,
         grammar=grammar,
         max_tokens=max_tokens,

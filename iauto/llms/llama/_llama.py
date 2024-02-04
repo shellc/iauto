@@ -1,11 +1,11 @@
 import json
-from typing import List, Optional
+from typing import Iterator, List, Optional
 
 import llama_cpp
 
 from ..._logging import get_logger
 from ...actions import Action
-from .._llm import LLM, Message
+from .._llm import LLM, ChatMessage, Message
 
 _log = get_logger("LLaMA")
 
@@ -30,17 +30,17 @@ class LLaMA(LLM):
         # kwargs["chat_handler"] = llama_cpp.llama_chat_format.functionary_chat_handler
         self._llm = llama_cpp.Llama(**kwargs)
 
-    def generate(self, instructions: str, functions: Optional[List[Action]] = None, **kwargs) -> Message:
+    def generate(self, instructions: str, **kwargs) -> Message:
         """"""
-        messages = []
-        messages.append(Message(
-            role="user",
-            content=instructions
-        ))
+        r = self._llm.create_completion(prompt=instructions, **kwargs)
+        print(instructions)
+        if isinstance(r, Iterator):
+            raise ValueError(f"Invalid response: {r}")
+        return Message(content=r["choices"][0]["text"])
 
-        return self.chat(messages=messages, functions=functions, **kwargs)
+    def chat(self, messages: List[ChatMessage] = [], functions: Optional[List[Action]] = None, **kwargs) -> ChatMessage:
+        # last_message = messages[-1]
 
-    def chat(self, messages: List[Message] = [], functions: Optional[List[Action]] = None, **kwargs) -> Message:
         tools = None
         tool_choice = None
         if functions is not None:
@@ -112,4 +112,4 @@ class LLaMA(LLM):
                 **kwargs
             )
             m = r["choices"][0]["message"]
-        return Message(role="assistant", content=m["content"])
+        return ChatMessage(role="assistant", content=m["content"])

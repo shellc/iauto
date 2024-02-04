@@ -7,9 +7,11 @@ from ..actions import Action
 
 
 class Message(BaseModel):
-    role: str
     content: str
-    observations: Optional[List['Message']] = None
+
+
+class ChatMessage(Message):
+    role: str
 
 
 class LLM(ABC):
@@ -19,9 +21,9 @@ class LLM(ABC):
         super().__init__()
 
     @abstractmethod
-    def generate(self, instructions: str, functions: Optional[List[Action]] = None, **kwargs) -> Message:
+    def generate(self, instructions: str, **kwargs) -> Message:
         """"""
 
     @abstractmethod
-    def chat(self, messages: List[Message], functions: Optional[List[Action]] = None, **kwargs) -> Message:
+    def chat(self, messages: List[ChatMessage], functions: Optional[List[Action]] = None, **kwargs) -> ChatMessage:
         """"""
