@@ -113,15 +113,22 @@ class RepeatAction(Action):
     ) -> None:
         if executor is None or playbook is None:
             raise ValueError("executor and playbook can't be None")
+        actions = playbook.actions or []
 
         result = None
-        args, kwargs = executor.eval_args(args=playbook.args)
-        while eval_args(args, kwargs, vars=executor.variables):
-            actions = playbook.actions or []
-            for action in actions:
-                result = executor.perform(playbook=action)
 
+        if len(kwargs) == 0 and len(args) == 1 and isinstance(args[0], int):
+            for _ in range(args[0]):
+                for action in actions:
+                    result = executor.perform(playbook=action)
+        else:
             args, kwargs = executor.eval_args(args=playbook.args)
+            while eval_args(args, kwargs, vars=executor.variables):
+
+                for action in actions:
+                    result = executor.perform(playbook=action)
+
+                args, kwargs = executor.eval_args(args=playbook.args)
         return result
 
 

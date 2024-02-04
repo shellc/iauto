@@ -21,8 +21,8 @@ playbook:
               args:
                 session: $session
                 prompt: $prompt
-                rewrite: False
-                log: True
+                rewrite: True
+                log: False
                 history: 1
                 top_k: 2
                 #repeat_penalty: 1.2

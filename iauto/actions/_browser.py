@@ -2,7 +2,7 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Optional, Union
 
-from playwright.async_api import (Browser, BrowserContext, Page,
+from playwright.async_api import (Browser, BrowserContext, Locator, Page,
                                   async_playwright)
 
 from ._action import Action, ActionSpec
@@ -38,6 +38,7 @@ class OpenBrowserAction(Action):
                 exec=None,
                 headless=False,
                 timeout=30000,
+                entry=None,
                 user_data_dir=None,
                 **kwargs
                 ) -> Union[Browser, BrowserContext]:
@@ -49,6 +50,12 @@ class OpenBrowserAction(Action):
 
             if headless:
                 b_args.append("--disable-gpu")
+
+            if entry:
+                b_args.append(f"--app={entry}")
+
+            if "size" in kwargs:
+                b_args.append(f"--window-size={kwargs['size']}")
 
             _playwright = await async_playwright().start()
             if user_data_dir:
@@ -139,6 +146,57 @@ class GotoAction(Action):
             await page.wait_for_load_state(state="domcontentloaded", timeout=timeout)
             return page
         return _event_loop.run_until_complete(_func(browser=browser, page=page))
+
+
+class LocatorAction(Action):
+    def __init__(self) -> None:
+        super().__init__()
+        self.spec = ActionSpec.from_dict({
+            "description": "Locate elements in the page.",
+        })
+
+    def perform(
+        self,
+        *args,
+        page: Page,
+        selector: str,
+        **kwargs
+    ) -> Locator:
+        return page.locator(selector=selector)
+
+
+class ClickAction(Action):
+    def __init__(self) -> None:
+        super().__init__()
+        self.spec = ActionSpec.from_dict({
+            "description": "Click a element.",
+        })
+
+    def perform(
+        self,
+        *args,
+        locator: Locator,
+        **kwargs
+    ) -> Locator:
+        return _event_loop.run_until_complete(locator.click())
+
+
+class ScrollAction(Action):
+    def __init__(self) -> None:
+        super().__init__()
+        self.spec = ActionSpec.from_dict({
+            "description": "Scroll the mouse wheel.",
+        })
+
+    def perform(
+        self,
+        *args,
+        page: Page,
+        x: int = 0,
+        y: int = 0,
+        **kwargs
+    ) -> Locator:
+        return _event_loop.run_until_complete(page.mouse.wheel(x, y))
 
 
 class EvaluateJavascriptAction(Action):

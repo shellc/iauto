@@ -1,5 +1,5 @@
-from . import (_browser, _collections, _flow, _log, _math, _playbook, _shell,
-               _time, _webdriver)
+from . import (_browser, _collections, _file, _flow, _log, _math, _playbook,
+               _shell, _time, _webdriver)
 
 
 def get_buildin_actions():
@@ -26,11 +26,15 @@ def get_buildin_actions():
     actions["shell.cmd"] = _shell.ShellCommandAction()
     actions["shell.print"] = _shell.PrintAction()
     actions["shell.prompt"] = _shell.PromptAction()
+    actions["file.write"] = _file.FileWriteAction()
 
     actions["browser.open"] = _browser.OpenBrowserAction()
     actions["browser.close"] = _browser.CloseBrowserAction()
     actions["browser.new"] = _browser.NewPageAction()
     actions["browser.goto"] = _browser.GotoAction()
+    actions["browser.locator"] = _browser.LocatorAction()
+    actions["browser.click"] = _browser.ClickAction()
+    actions["browser.scroll"] = _browser.ScrollAction()
     actions["browser.eval"] = _browser.EvaluateJavascriptAction()
     actions["browser.content"] = _browser.GetContentAction()
     actions["browser.readability"] = _browser.ReadabilityAction()
