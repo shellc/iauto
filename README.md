@@ -8,15 +8,9 @@
 * **Playwright Integration**: Automate web workflows with Playwright
 * **Appium Integration**: Automate web, iOS, Android, Windows, and macOS workflows with Appium
 * **LLMs Integration**: Integrate AI into automated workflows, support OpenAI API and self-hosting LLMs
-    * OpenAI Chat completion API
+    * [OpenAI Chat completion API](https://platform.openai.com/docs/api-reference)
+    * [llama.cpp](https://github.com/ggerganov/llama.cpp) with more than 20 modles
     * ChatGLM by chatglm.cpp
-    * QWen by qwen.cpp
-
-### Roadmap
-
-* **pyautogui Integration**: Cross-platform keyboard and mouse control
-* **OCR**: Support ORC-based screen element recognition
-* **OpenAI Assistants API**: Support Orchestrating OpenAI Assistants API
 
 ## Quick Start
 
