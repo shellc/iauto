@@ -2,7 +2,12 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel
-from yaml import CLoader as yaml_loader
+
+try:
+    from yaml import CLoader as yaml_loader
+except ImportError:
+    from yaml import Loader as yaml_loader
+
 from yaml import load
 
 
