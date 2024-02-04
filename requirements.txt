@@ -4,8 +4,6 @@ PyYAML
 prompt_toolkit
 
 openai
-chatglm-cpp
-qwen-cpp
 llama-cpp-python
 
 playwright
