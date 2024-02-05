@@ -34,11 +34,11 @@ class ListAppendAction(Action):
         ls.append(args[1])
 
 
-class DictPutAction(Action):
+class DictSetAction(Action):
     def __init__(self) -> None:
         super().__init__()
         self.spec = ActionSpec.from_dict({
-            "description": "Add an element to the dictionary.",
+            "description": "Set dict value.",
         })
 
     def perform(
@@ -51,7 +51,7 @@ class DictPutAction(Action):
         if executor is None:
             raise ValueError("executor is None")
         if len(args) != 3:
-            raise ValueError("dict.put needs 2 args, like: [$dict, $key, $value]")
+            raise ValueError("dict.set needs 2 args, like: [$dict, key, value]")
 
         d = args[0]
         if isinstance(d, str) and d.startswith("$"):

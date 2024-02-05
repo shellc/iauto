@@ -23,7 +23,7 @@ class PlaybookAction(Action):
         if executor is None or playbook is None:
             raise ValueError("Executor and playbook are required.")
 
-        for k, v in kwargs:
+        for k, v in kwargs.items():
             executor.set_variable(f"${k}", v)
 
         actions = []

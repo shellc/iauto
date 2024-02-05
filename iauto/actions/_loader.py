@@ -1,7 +1,7 @@
 import importlib
 from typing import Dict, Union
 
-from ._action import Action
+from ._action import Action, create_action
 
 
 class ActionLoader:
@@ -30,3 +30,11 @@ class ActionLoader:
 
 
 loader = ActionLoader()
+
+
+def register_action(name: str, spec: Dict):
+    def decrator(func, *args, **kwargs):
+        action = create_action(func=func, spec=spec)
+        action.spec.name = name
+        loader.register({name: action})
+    return decrator

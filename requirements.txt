@@ -8,3 +8,6 @@ llama-cpp-python
 
 playwright
 Appium-Python-Client
+
+SQLAlchemy
+pandas

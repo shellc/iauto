@@ -1,6 +1,6 @@
 import time
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Union
 
 from ._action import Action, ActionSpec, Executor, Playbook
 
@@ -31,13 +31,17 @@ class WaitAction(Action):
             time.sleep(seconds)
 
 
-class GetNowTimestamp(Action):
+class GetNow(Action):
     def __init__(self) -> None:
         super().__init__()
 
         self.spec = ActionSpec.from_dict({
-            "description": "Get the current timestamp (in milliseconds).",
+            "description": "Get the current datetime.",
         })
 
-    def perform(self, *args, **kwargs) -> int:
-        return int(datetime.now().timestamp() * 1000)
+    def perform(self, *args, format: Optional[str] = None, **kwargs) -> Union[int, str]:
+        now = datetime.now()
+        if format is None:
+            return int(now.timestamp() * 1000)
+        else:
+            return now.strftime(format)

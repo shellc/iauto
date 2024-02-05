@@ -12,12 +12,17 @@ register_llm_actions()
 
 
 def list_actions():
+    actions = []
     for a in loader.actions:
         desc = a.spec.description or ""
         desc = [x for x in desc.split('\n') if x != ""]
         desc = desc[0] if len(desc) > 0 else ""
 
-        print(f"{a.spec.name} : {desc}")
+        actions.append(f"{a.spec.name} : {desc}")
+
+    actions.sort()
+
+    print('\n'.join(actions))
 
 
 def print_action_spec(name):
@@ -105,7 +110,7 @@ def main():
             args.func(args, parser)
         except Exception as e:
             if args.traceback:
-                traceback.print_exception(e)
+                traceback.print_exc()
             else:
                 print(f"Error: {e}")
     else:

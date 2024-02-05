@@ -1,5 +1,6 @@
-from . import (_browser, _collections, _file, _flow, _log, _math, _playbook,
-               _shell, _time, _webdriver)
+from . import (_browser, _collections, _db, _file, _flow, _hash, _json, _log,
+               _math, _playbook, _shell, _time, _webdriver)
+from ._loader import loader
 
 
 def get_buildin_actions():
@@ -15,11 +16,11 @@ def get_buildin_actions():
     actions["each"] = _flow.ForEachAction()
 
     actions["list.append"] = _collections.ListAppendAction()
-    actions["dict.put"] = _collections.DictPutAction()
+    actions["dict.set"] = _collections.DictSetAction()
     actions["dict.get"] = _collections.DictGetAction()
 
     actions["time.wait"] = _time.WaitAction()
-    actions["time.now"] = _time.GetNowTimestamp()
+    actions["time.now"] = _time.GetNow()
 
     actions["math.mod"] = _math.ModAction()
 
@@ -47,3 +48,8 @@ def get_buildin_actions():
             action.spec.name = name
 
     return actions
+
+
+_buildin_actions = get_buildin_actions()
+
+loader.register(_buildin_actions)

@@ -59,12 +59,29 @@ class PlaybookExecutor(Executor):
 
         return action
 
+    def _eval_var_with_attr(self, var):
+        ss = var.split(".")
+        o = self._variables.get(ss[0])
+        if o is None:
+            return None
+
+        for s in ss[1:]:
+            if isinstance(o, dict):
+                o = o.get(s)
+            else:
+                o = getattr(o, s)
+        return o
+
     def eval_vars(self, vars):
         if vars is None:
             return None
         elif isinstance(vars, str):
             if vars.startswith("$"):
-                return self._variables.get(vars) or vars
+                o = self._eval_var_with_attr(vars)
+                if o is None:
+                    return vars
+                else:
+                    return o
             else:
                 return vars.format_map(SafeDict(self._variables))
         elif isinstance(vars, list):
