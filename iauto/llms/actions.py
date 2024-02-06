@@ -1,5 +1,5 @@
 import os
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Union
 
 from ..actions import (Action, ActionSpec, Executor, Playbook,
                        PlaybookRunAction, loader)
@@ -81,11 +81,15 @@ class ChatAction(Action):
         prompt,
         history: int = 5,
         rewrite: bool = False,
+        expect_json: int = 0,
         **kwargs: Any
-    ) -> str:
+    ) -> Union[str, Any]:
         session.add(ChatMessage(role="user", content=prompt))
-        m = session.run(history=history, rewrite=rewrite, **kwargs)
-        return m.content
+        m = session.run(history=history, rewrite=rewrite, expect_json=expect_json, **kwargs)
+        if expect_json > 0:
+            return m
+        else:
+            return m.content if m is not None else None
 
 
 class ReactAction(Action):

@@ -1,3 +1,4 @@
+import json
 import re
 from datetime import datetime
 from typing import List, Optional
@@ -22,13 +23,28 @@ class Session:
     def messages(self) -> List[ChatMessage]:
         return self._messages
 
-    def run(self, history: int = 5, rewrite: bool = False, **kwargs):
+    def run(self, history: int = 5, rewrite: bool = False, expect_json: int = 0, **kwargs):
         if rewrite:
             self.rewrite(history=history, **kwargs)
 
         m = self._llm.chat(messages=self._messages[-1 * history:], functions=self._actions, **kwargs)
-        self.add(m)
-        return m
+
+        if expect_json > 0:
+            json_obj = None
+            for i in range(expect_json):
+                try:
+                    json_obj = json.loads(m.content)
+                    break
+                except json.JSONDecodeError:
+                    m = self._llm.chat(messages=self._messages[-1 * history:], functions=self._actions, **kwargs)
+            if json_obj is not None:
+                self.add(m)
+                return json_obj
+            else:
+                return None
+        else:
+            self.add(m)
+            return m
 
     def react(self, history: int = 1, rewrite: bool = False, log=False, max_steps=3, **kwargs):
         """Ref : https://www.width.ai/post/react-prompting"""
