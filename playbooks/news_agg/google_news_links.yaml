@@ -1,0 +1,46 @@
+playbook:
+  actions:
+    - browser.open:
+        args:
+          exec: $browser_exec
+          headless: $browser_headless
+          user_data_dir: $browser_user_data_dir
+          size: 1024,768
+        result: $browser
+    - browser.goto:
+        args:
+          browser: $browser
+          url: $url
+          timeout: 120000
+        result: $page
+    - repeat:
+        args: 1
+        actions:
+          - browser.scroll:
+              args:
+                page: $page
+                y: 150000
+          - time.wait: 5
+    - browser.eval:
+        args:
+          page: $page
+          javascript: |
+            [...document.querySelectorAll("article")].map(v => {{
+                a = v.querySelectorAll("a")[1]
+                title = a.innerText
+                link = a.href
+                date = v.querySelector("time")?.getAttribute("datetime")
+                source = 'google_news'
+                return {{title, link, date, source}}
+            }}).filter(v => v.title !== '' && v.date && v.link.startsWith("https://news.google.com/articles/"))
+        result: $news
+    - browser.close: $browser
+    - time.now:
+        args:
+          format: "%Y%m%d%H%M%S"
+        result: $now
+    - file.write:
+        args:
+          file: ./data/news/google-news-{$now}.json
+          content: $news
+    - echo: $news

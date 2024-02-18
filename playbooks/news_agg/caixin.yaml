@@ -1,0 +1,63 @@
+playbook:
+  actions:
+    - db.create_engine:
+        args:
+          url: sqlite:///avocado.db
+        result: $engine
+    - browser.open:
+        args:
+          exec: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
+          headless: false
+          user_data_dir: /tmp/.chrome
+          size: 1024,768
+        result: $browser
+    - list.append: [$entries, "https://www.caixin.com/?HOLDZH"]
+    - list.append: [$entries, "https://en.caixin.com"]
+    - each:
+        args: $entries
+        actions:
+          - log: $_
+          - browser.goto:
+              args:
+                browser: $browser
+                url: $_
+                timeout: 60000
+              result: $page
+          - repeat:
+              args: 10
+              actions:
+                - browser.locator:
+                    args:
+                      page: $page
+                      selector: "#moreArticle"
+                    result: $load_more
+                - browser.click:
+                    args:
+                      locator: $load_more
+                - time.wait: 3
+                #- log: click
+          - browser.eval:
+              args:
+                page: $page
+                javascript: |
+                  [...document.querySelectorAll("a")].map(v => {{
+                      title = v.innerText?.trim()
+                      link = v.href
+                      date = link.match(/\d{{4}}-\d{{2}}-\d{{2}}/)
+                      date = date ? date[0] : null
+                      source = "caixin"
+                      return {{title, link, date, source}}
+                  }}).filter(v => v.title.length > 5 && v.date)
+              result: $news
+
+          - time.now:
+              args:
+                format: "%Y%m%d%H%M%S"
+              result: $now
+          - file.write:
+              args:
+                file: ./data/news/caixin-{$now}.json
+                content: $news
+          #- log: $news
+          - playbook: ./news_import.yaml
+    - browser.close: $browser
