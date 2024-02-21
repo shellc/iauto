@@ -127,7 +127,31 @@ class ActionSpec(BaseModel):
             raise ValueError(f"Invalid ActionDef: {e}")
         return func
 
-    def openai_spec(self) -> Dict:
+    @staticmethod
+    def from_oai_dict(d: Dict = {}) -> 'ActionSpec':
+        try:
+            if d["type"] != "function":
+                raise ValueError(f"invalid function type: {d.get('type')}")
+            func = ActionSpec(
+                name=d["function"]["name"],
+                description=d["function"].get("description"),
+                arguments=[]
+            )
+
+            params = d.get("parameters")
+            if params:
+                for param in params["properties"].keys():
+                    func.arguments.append(ActionArg(
+                        name=param,
+                        type=params["properties"][param]["type"],
+                        description=params["properties"][param]["description"],
+                        required=params["required"].get(params) is not None
+                    ))
+        except Exception as e:
+            raise ValueError(f"Invalid ActionDef: {e}")
+        return func
+
+    def oai_spec(self) -> Dict:
         args = {}
         required = []
 
