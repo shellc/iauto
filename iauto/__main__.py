@@ -5,13 +5,9 @@ import os
 import sys
 import traceback
 
-from iauto.actions import PlaybookExecutor, loader
-from iauto.llms.actions import register_actions as register_llm_actions
-
-register_llm_actions()
-
 
 def list_actions():
+    from iauto.actions import loader
     actions = []
     for a in loader.actions:
         desc = a.spec.description or ""
@@ -26,6 +22,7 @@ def list_actions():
 
 
 def print_action_spec(name):
+    from iauto.actions import loader
     action = loader.get(name=name)
     if not action:
         print(f"No action found: {name}")
@@ -64,6 +61,7 @@ def run(args, parser):
         print(f"Invalid playbook file: {p}")
         sys.exit(-1)
 
+    from iauto.actions import PlaybookExecutor
     result = PlaybookExecutor.execute(playbook_file=p, variables=args.kwargs)
     if result is not None:
         print(result)
