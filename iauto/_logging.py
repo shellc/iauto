@@ -1,6 +1,11 @@
 import logging
 import os
 
+DEBUG = logging.DEBUG
+INFO = logging.INFO
+WARN = logging.WARN
+FATAL = logging.FATAL
+
 
 def get_level(name: str):
     if name is None:
