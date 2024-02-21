@@ -1,9 +1,20 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel
 
-from ..actions import Action
+from ..actions import ActionSpec
+
+
+class Function(BaseModel):
+    name: str
+    arguments: Optional[Dict[str, Any]] = None
+
+
+class ToolCall(BaseModel):
+    id: str
+    type: str
+    function: Optional[Function] = None
 
 
 class Message(BaseModel):
@@ -12,6 +23,7 @@ class Message(BaseModel):
 
 class ChatMessage(Message):
     role: str
+    tool_calls: Optional[List[ToolCall]] = None
 
 
 class LLM(ABC):
@@ -25,5 +37,9 @@ class LLM(ABC):
         """"""
 
     @abstractmethod
-    def chat(self, messages: List[ChatMessage], functions: Optional[List[Action]] = None, **kwargs) -> ChatMessage:
+    def chat(self, messages: List[ChatMessage], tools: Optional[List[ActionSpec]] = None, **kwargs) -> ChatMessage:
         """"""
+
+    @property
+    def model(self) -> str:
+        ...

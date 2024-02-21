@@ -7,6 +7,9 @@ def create_llm(provider: str = "openai", **kwargs) -> LLM:
         provider = ''
 
     if provider.lower() == "openai":
+        if kwargs.get("model", "").lower().find("qwen") >= 0:
+            from ._openai_qwen import QWen
+            return QWen(**kwargs)
         return OpenAI(**kwargs)
     elif provider.lower() == "llama":
         try:

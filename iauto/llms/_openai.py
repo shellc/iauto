@@ -3,8 +3,9 @@ from typing import List, Optional
 
 import openai
 
-from ..actions import Action
-from ._llm import LLM, ChatMessage, Message
+from .. import _logging
+from ..actions import ActionSpec
+from ._llm import LLM, ChatMessage, Function, Message, ToolCall
 
 
 class OpenAI(LLM):
@@ -15,6 +16,8 @@ class OpenAI(LLM):
         self._model = model or "gpt-3.5-turbo"
 
         self._openai = openai.OpenAI(**kwargs)
+
+        self._log = _logging.get_logger("OpenAI")
 
     def generate(self, instructions: str, **kwargs) -> Message:
         if "model" not in kwargs:
@@ -27,65 +30,56 @@ class OpenAI(LLM):
         )
         return Message(content=r.choices[0].text)
 
-    def chat(self, messages: List[ChatMessage] = [], functions: Optional[List[Action]] = None, **kwargs) -> ChatMessage:
-        tools = None
-        tool_choice = None
-        if functions is not None:
-            tools = []
-            tool_choice = "auto"
-            function_spec = [f.spec.openai_spec() for f in functions]
-            tools.extend(function_spec)
-
-        msgs = [{"role": m.role, "content": m.content} for m in messages]
-
+    def chat(self, messages: List[ChatMessage] = [], tools: Optional[List[ActionSpec]] = None, **kwargs) -> ChatMessage:
         if "model" not in kwargs:
             kwargs["model"] = self._model
 
+        tools_desciption = None
+        tool_choice = "auto"
+
+        if tools:
+            tools_desciption = [t.oai_spec() for t in tools]
+
+        msgs = [{"role": m.role, "content": m.content} for m in messages]
+
+        if self._log.isEnabledFor(_logging.DEBUG):
+            self._log.debug(json.dumps({
+                "messages": msgs,
+                "tools": tools_desciption
+            }, ensure_ascii=False, indent=4))
+
+        if tools_desciption:
+            kwargs["tools"] = tools_desciption
+            kwargs["tool_choice"] = tool_choice
+
         r = self._openai.chat.completions.create(
             messages=msgs,
-            tools=tools,
-            tool_choice=tool_choice,
             **kwargs
         )
 
         m = r.choices[0].message
+
+        resp = ChatMessage(role=m.role, content=m.content or "")
+
         tool_calls = m.tool_calls
-        if tool_calls and functions:
-            available_function = dict(
-                [(func.spec.name, func) for func in functions]
-            )
-
-            msgs.append(m)
-
-            for tool_call in tool_calls:
+        if tool_calls:
+            resp.tool_calls = []
+            for tool_call in tool_calls or []:
                 func_name = tool_call.function.name
-                func_to_call = available_function[func_name]
                 func_args = json.loads(tool_call.function.arguments)
-                func_resp = None
-                try:
-                    func_resp = func_to_call(**func_args)
-                except Exception as e:
-                    print(f"Function call err: {e}, func_name={func_name}, args={func_args}, resp={func_resp}")
-                    func_resp = str(e)
-                    import traceback
-                    traceback.print_exception(e)
+                resp.tool_calls.append(
+                    ToolCall(
+                        id=tool_call.id,
+                        type=tool_call.type,
+                        function=Function(
+                            name=func_name,
+                            arguments=func_args
+                        )
+                    )
+                )
 
-                if func_resp is not None and not isinstance(func_resp, str):
-                    try:
-                        func_resp = json.dumps(func_resp or {}, ensure_ascii=False, indent=4)
-                    except TypeError:
-                        pass
+        return resp
 
-                msgs.append({
-                    "tool_call_id": tool_call.id,
-                    "role": "tool",
-                    "name": func_name,
-                    "content": func_resp
-                })
-
-            r = self._openai.chat.completions.create(
-                messages=msgs,
-                **kwargs
-            )
-            m = r.choices[0].message
-        return ChatMessage(role="assistant", content=m.content)
+    @property
+    def model(self) -> str:
+        return self._model

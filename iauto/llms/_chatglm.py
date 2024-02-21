@@ -5,8 +5,8 @@ from typing import Iterator, List, Optional
 import chatglm_cpp
 
 from .._logging import get_logger
-from ..actions import Action
-from ._llm import LLM, ChatMessage, Message
+from ..actions import ActionSpec
+from ._llm import LLM, ChatMessage, Function, Message, ToolCall
 
 _log = get_logger("ChatGLM")
 
@@ -39,15 +39,15 @@ class ChatGLM(LLM):
                         _log.warn(f"function_name is null, retry: {i + 1}")
         return r
 
-    def chat(self, messages: List[ChatMessage] = [], functions: Optional[List[Action]] = None, **kwargs) -> ChatMessage:
-        last_message = messages[-1] if len(messages) > 0 else None
+    def chat(self, messages: List[ChatMessage] = [], tools: Optional[List[ActionSpec]] = None, **kwargs) -> ChatMessage:
+        use_tools = tools is not None and len(tools) > 0
 
-        if functions is not None:
-            function_spec = [f.spec.openai_spec() for f in functions]
+        if use_tools:
+            tools_desciption = [t.oai_spec() for t in tools]
             system_instructions = """
                 Answer the following questions as best as you can. You have access to the following tools:\n
             """
-            system_instructions += json.dumps(function_spec, ensure_ascii=False, indent=4)
+            system_instructions += json.dumps(tools_desciption, ensure_ascii=False, indent=4)
 
             messages.insert(-1, ChatMessage(
                 role="system",
@@ -58,60 +58,40 @@ class ChatGLM(LLM):
         for m in messages:
             chatglm_messages.append(chatglm_cpp.ChatMessage(role=m.role, content=m.content))
         _log.debug(chatglm_messages)
-        r = self._function_call_retry(messages=chatglm_messages, **kwargs)
+        if use_tools:
+            r = self._function_call_retry(messages=chatglm_messages, **kwargs)
+        else:
+            r = self._llm.chat(messages=chatglm_messages, stream=False, **kwargs)
 
         if not isinstance(r, chatglm_cpp.ChatMessage):
             raise ValueError(f"invalid message type: {r}, expected: ChatMessage")
 
+        resp = ChatMessage(role=r.role, content=r.content)
+
         tool_calls = r.tool_calls
 
-        if tool_calls and functions:
-            available_function = dict(
-                [(func.spec.name, func) for func in functions]
-            )
-
+        if tool_calls and use_tools:
             def tool_call(**kwargs):
                 return kwargs
+
+            resp.tool_calls = []
 
             for tc in tool_calls:
                 func_name = tc.function.name
                 if not func_name:
                     continue
                 _log.debug(f"Function to call: {func_name}")
-                func_to_call = available_function[func_name]
 
-                func_resp = None
-                func_args = None
-                try:
-                    func_args = eval(tc.function.arguments, dict(tool_call=tool_call))
-                    func_resp = func_to_call(**func_args)
-                except Exception as e:
-                    _log.warn(f"Function call error: {e}, func={func_name}, args={func_args}", exc_info=e)
+                func_args = eval(tc.function.arguments, dict(tool_call=tool_call))
 
-                if func_resp is not None and not isinstance(func_resp, str):
-                    try:
-                        func_resp = json.dumps(func_resp or {}, ensure_ascii=False, indent=4)
-                    except TypeError:
-                        _log.warn("Function call result is not jsonizable.")
-                        func_resp = str(func_resp)
-
-                if func_resp is not None:
-                    chatglm_messages.append(chatglm_cpp.ChatMessage(
-                        role="user",
-                        content=func_resp
-                    ))
-            if last_message is not None:
-                chatglm_messages.append(chatglm_cpp.ChatMessage(
-                    role=last_message.role,
-                    content=last_message.content
-                ))
-            _log.debug(chatglm_messages)
-            r = self._llm.chat(messages=chatglm_messages)
-
-            if not isinstance(r, chatglm_cpp.ChatMessage):
-                raise ValueError(f"invalid message type: {r}, expected: ChatMessage")
-
-        m = ChatMessage(role="assistant", content=r.content)
-        _log.debug(f"Generated: {m}")
-
-        return m
+                resp.tool_calls.append(
+                    ToolCall(
+                        id=func_name,
+                        type=tc.type,
+                        function=Function(
+                            name=func_name,
+                            arguments=func_args
+                        )
+                    )
+                )
+        return resp

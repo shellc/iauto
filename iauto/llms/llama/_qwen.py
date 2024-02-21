@@ -46,7 +46,8 @@ def qwen_chat_handler(
     grammar: Optional[llama.LlamaGrammar] = None,
     **kwargs,  # type: ignore
 ) -> Union[llama_types.ChatCompletion, Iterator[llama_types.ChatCompletionChunk]]:
-    messages = _parse_request_messages(messages=messages, functions=tools)
+    if tools is not None and len(tools) > 0:
+        messages = parse_messages(messages=messages, functions=tools)
 
     prompt = _format_raw_prompt(messages=messages)
 
@@ -85,7 +86,7 @@ def qwen_chat_handler(
 
     content = resp["choices"][0]["text"].strip()
     if tools is not None:
-        choice = _parse_response(resp=content)
+        choice = parse_response(resp=content)
     else:
         choice = {
             "index": 0,
@@ -156,46 +157,51 @@ def _format_raw_prompt(messages):
     return "\n".join(prompt)
 
 
-def _parse_request_messages(messages, functions):
+def generate_function_instructions(functions):
+    tools_text = []
+    tools_name_text = []
+
+    for func_info in functions:
+        type = func_info.get("type")
+        if type != "function":
+            continue
+        else:
+            func_info = func_info["function"]
+        name = func_info.get('name', '')
+        name_m = func_info.get('name_for_model', name)
+        name_h = func_info.get('name_for_human', name)
+        desc = func_info.get('description', '')
+        desc_m = func_info.get('description_for_model', desc)
+        tool = TOOL_DESC.format(
+            name_for_model=name_m,
+            name_for_human=name_h,
+            # Hint: You can add the following format requirements in description:
+            #   "Format the arguments as a JSON object."
+            #   "Enclose the code within triple backticks (`) at the beginning and end of the code."
+            description_for_model=desc_m,
+            parameters=json.dumps(func_info['parameters'], ensure_ascii=False),
+        )
+        tools_text.append(tool)
+        tools_name_text.append(name_m)
+    tools_text = '\n\n'.join(tools_text)
+    tools_name_text = ', '.join(tools_name_text)
+    instruction = (REACT_INSTRUCTION.format(
+        tools_text=tools_text,
+        tools_name_text=tools_name_text,
+    ).lstrip('\n').rstrip())
+
+    return instruction
+
+
+def parse_messages(messages, functions):
     if all(m["role"] != 'user' for m in messages):
         raise ValueError('Invalid request: Expecting at least one user message.')
 
     messages = copy.deepcopy(messages)
 
+    instruction = ''
     if functions:
-        tools_text = []
-        tools_name_text = []
-
-        for func_info in functions:
-            type = func_info.get("type")
-            if type != "function":
-                continue
-            else:
-                func_info = func_info["function"]
-            name = func_info.get('name', '')
-            name_m = func_info.get('name_for_model', name)
-            name_h = func_info.get('name_for_human', name)
-            desc = func_info.get('description', '')
-            desc_m = func_info.get('description_for_model', desc)
-            tool = TOOL_DESC.format(
-                name_for_model=name_m,
-                name_for_human=name_h,
-                # Hint: You can add the following format requirements in description:
-                #   "Format the arguments as a JSON object."
-                #   "Enclose the code within triple backticks (`) at the beginning and end of the code."
-                description_for_model=desc_m,
-                parameters=json.dumps(func_info['parameters'], ensure_ascii=False),
-            )
-            tools_text.append(tool)
-            tools_name_text.append(name_m)
-        tools_text = '\n\n'.join(tools_text)
-        tools_name_text = ', '.join(tools_name_text)
-        instruction = (REACT_INSTRUCTION.format(
-            tools_text=tools_text,
-            tools_name_text=tools_name_text,
-        ).lstrip('\n').rstrip())
-    else:
-        instruction = ''
+        instruction = generate_function_instructions(functions=functions)
 
     messages_with_fncall = messages
     messages = []
@@ -237,6 +243,8 @@ def _parse_request_messages(messages, functions):
                 "role": "user",
                 "content": content.lstrip('\n').rstrip()
             })
+        elif role == "system":
+            instruction = content.lstrip('\n').rstrip() + instruction
         else:
             raise ValueError(f'Invalid request: Incorrect role {role}.')
 
@@ -275,7 +283,7 @@ def _parse_request_messages(messages, functions):
     return messages
 
 
-def _parse_response(resp):
+def parse_response(resp):
     func_name, func_args = '', ''
     i = resp.find('\nAction:')
     j = resp.find('\nAction Input:')
@@ -325,7 +333,7 @@ def _parse_response(resp):
     if z >= 0:
         resp = resp[z + len('\nFinal Answer: '):]
 
-    resp = resp.replace("Answer: ", "")
+    resp = resp.replace("Final", "").replace("Answer:", "")
     choice = {
         "index": 0,
         "message": {"role": "assistant", "content": resp.strip()},

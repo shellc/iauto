@@ -4,10 +4,8 @@ from typing import Iterator, List, Optional
 import llama_cpp
 
 from ..._logging import get_logger
-from ...actions import Action
-from .._llm import LLM, ChatMessage, Message
-
-_log = get_logger("LLaMA")
+from ...actions import ActionSpec
+from .._llm import LLM, ChatMessage, Function, Message, ToolCall
 
 
 class LLaMA(LLM):
@@ -30,6 +28,8 @@ class LLaMA(LLM):
         # kwargs["chat_handler"] = llama_cpp.llama_chat_format.functionary_chat_handler
         self._llm = llama_cpp.Llama(**kwargs)
 
+        self._log = get_logger("LLaMA")
+
     def generate(self, instructions: str, **kwargs) -> Message:
         """"""
         r = self._llm.create_completion(prompt=instructions, **kwargs)
@@ -38,78 +38,39 @@ class LLaMA(LLM):
             raise ValueError(f"Invalid response: {r}")
         return Message(content=r["choices"][0]["text"])
 
-    def chat(self, messages: List[ChatMessage] = [], functions: Optional[List[Action]] = None, **kwargs) -> ChatMessage:
-        # last_message = messages[-1]
+    def chat(self, messages: List[ChatMessage] = [], tools: Optional[List[ActionSpec]] = None, **kwargs) -> ChatMessage:
+        tools_desciption = []
+        tool_choice = "auto"
 
-        tools = None
-        tool_choice = None
-        if functions is not None:
-            tools = []
-            tool_choice = "auto"
-            function_spec = [f.spec.openai_spec() for f in functions]
-            tools.extend(function_spec)
+        if tools:
+            tools_desciption = [t.oai_spec() for t in tools]
 
         msgs = [m.model_dump() for m in messages]
         r = self._llm.create_chat_completion(
             messages=msgs,
-            tools=tools,
+            tools=tools_desciption,
             tool_choice=tool_choice,
             **kwargs
         )
 
         m = r["choices"][0]["message"]
+
+        resp = ChatMessage(role=m["role"], content=m["content"] or "")
+
         tool_calls = m.get("tool_calls")
-        # observations = []
-        if tool_calls and functions:
-            available_function = dict(
-                [(func.spec.name, func) for func in functions]
-            )
-
-            msgs.append(m)
-
+        if tool_calls:
+            resp.tool_calls = []
             for tool_call in tool_calls:
                 func_name = tool_call["function"]["name"]
-                func_to_call = available_function.get(func_name)
-                if func_to_call is None:
-                    _log.warn(f"Function not found: {func_name}")
-                    continue
-
-                func_resp = None
-                try:
-                    func_args = json.loads(tool_call["function"]["arguments"])
-                    func_resp = func_to_call(**func_args)
-                except Exception as e:
-                    print(f"Function call err: {e}, func_name={func_name}, args={func_args}, resp={func_resp}")
-                    func_resp = str(e)
-
-                if func_resp is not None and not isinstance(func_resp, str):
-                    try:
-                        func_resp = json.dumps(func_resp or {}, ensure_ascii=False, indent=4)
-                    except TypeError:
-                        pass
-
-                msgs.append({
-                    "tool_call_id": tool_call["id"],
-                    "role": "function",
-                    "name": func_name,
-                    "content": func_resp
-                })
-
-                # observations.append(Message(
-                #    role="function",
-                #    content=func_resp
-                # ))
-
-                # if last_message is not None:
-                #    msgs.append({
-                #        "role": last_message.role,
-                #        "content": last_message.content
-                #    })
-            r = self._llm.create_chat_completion(
-                messages=msgs,
-                tools=tools,
-                tool_choice=tool_choice,
-                **kwargs
-            )
-            m = r["choices"][0]["message"]
-        return ChatMessage(role="assistant", content=m["content"])
+                func_args = json.loads(tool_call["function"]["arguments"])
+                resp.tool_calls.append(
+                    ToolCall(
+                        id=tool_call["id"],
+                        type=tool_call["type"],
+                        function=Function(
+                            name=func_name,
+                            arguments=func_args
+                        )
+                    )
+                )
+        return resp

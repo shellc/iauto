@@ -7,11 +7,10 @@ from .._logging import get_logger
 from ..actions import Action
 from ._llm import LLM, ChatMessage
 
-_log = get_logger("LLM")
-
 
 class Session:
     def __init__(self, llm: LLM, actions: Optional[List[Action]] = None) -> None:
+        self._log = get_logger("LLM")
         self._llm = llm
         self._actions = actions
         self._messages = []
@@ -20,14 +19,93 @@ class Session:
         self._messages.append(message)
 
     @property
+    def llm(self) -> LLM:
+        return self._llm
+
+    @property
     def messages(self) -> List[ChatMessage]:
         return self._messages
 
-    def run(self, history: int = 5, rewrite: bool = False, expect_json: int = 0, **kwargs):
+    @property
+    def actions(self) -> List[Action]:
+        return self._actions or []
+
+    def _execute_tools(
+        self,
+        message: ChatMessage,
+        history: List[ChatMessage],
+        actions: List[Action],
+        **kwargs
+    ) -> ChatMessage:
+        if message.tool_calls is None or len(message.tool_calls) == 0:
+            return message
+
+        functions = dict([(func.spec.name, func) for func in actions])
+
+        func_resps = []
+        for tool_call in message.tool_calls:
+            if not tool_call.function:
+                continue
+
+            func_name = tool_call.function.name
+            func_args = tool_call.function.arguments or {}
+
+            if func_name not in functions:
+                continue
+
+            func_to_call = functions[func_name]
+
+            func_resp = None
+            try:
+                func_resp = func_to_call(**func_args)
+            except Exception as e:
+                self._log.warn(f"Function call err: {e}, func_name={func_name}, args={func_args}, resp={func_resp}")
+                func_resp = str(e)
+
+            if func_resp is not None and not isinstance(func_resp, str):
+                try:
+                    func_resp = json.dumps(func_resp or {}, ensure_ascii=False, indent=4)
+                except TypeError:
+                    self._log.warn("Function return values cannot be JSONized")
+
+            if func_resp:
+                func_resps.append(func_resp)
+
+        message.role = "assistant"
+        if len(func_resps) > 0:
+            message.content = '\n'.join(func_resps)
+
+        return message
+
+    def run(
+        self,
+        instructions: Optional[str] = None,
+        messages: Optional[List[ChatMessage]] = None,
+        history: int = 5,
+        rewrite: bool = False,
+        expect_json: int = 0,
+        tools: Optional[List[Action]] = None,
+        use_tools: bool = True,
+        auto_exec_tools: bool = True,
+        **kwargs
+    ) -> ChatMessage:
         if rewrite:
             self.rewrite(history=history, **kwargs)
 
-        m = self._llm.chat(messages=self._messages[-1 * history:], functions=self._actions, **kwargs)
+        if messages is None or len(messages) == 0:
+            messages = self._messages[-1 * history:]
+        if instructions is not None:
+            messages.insert(0, ChatMessage(role="system", content=instructions))
+
+        tools_spec = None
+        if use_tools:
+            if tools:
+                tools_spec = [t.spec for t in tools]
+            elif self._actions:
+                tools_spec = [t.spec for t in self._actions]
+        m = self._llm.chat(messages=messages, tools=tools_spec, **kwargs)
+        if auto_exec_tools:
+            m = self._execute_tools(message=m, history=messages, actions=tools or self._actions or [], **kwargs)
 
         if expect_json > 0:
             json_obj = None
@@ -36,27 +114,55 @@ class Session:
                     json_obj = json.loads(m.content)
                     break
                 except json.JSONDecodeError:
-                    m = self._llm.chat(messages=self._messages[-1 * history:], functions=self._actions, **kwargs)
-            if json_obj is not None:
-                self.add(m)
-                return json_obj
-            else:
-                return None
-        else:
-            self.add(m)
-            return m
+                    m = self._llm.chat(messages=messages, functions=tools_spec, **kwargs)
+                    if auto_exec_tools:
+                        m = self._execute_tools(message=m, history=messages,
+                                                actions=tools or self._actions or [], **kwargs)
+            if json_obj is None:
+                m.content = "{}"
 
-    def react(self, history: int = 1, rewrite: bool = False, log=False, max_steps=3, **kwargs):
+        self.add(m)
+        return m
+
+    def react(
+        self,
+        instructions: Optional[str] = None,
+        messages: Optional[List[ChatMessage]] = None,
+        history: int = 1,
+        rewrite: bool = False,
+        log=False, max_steps=3,
+        tools: Optional[List[Action]] = None,
+        use_tools: bool = True,
+        auto_exec_tools: bool = True,
+        **kwargs
+    ) -> ChatMessage:
         """Ref : https://www.width.ai/post/react-prompting"""
-        if len(self._messages) < 1 and self._messages[-1].role != "user":
+
+        if messages is None or len(messages) == 0:
+            messages = self._messages[-1 * history:]
+
+        if len(messages) < 1 and messages[-1].role != "user":
             return ChatMessage(role="assistant", content="Ask me a question.")
 
-        original_question = self._messages[-1].content
+        tools_spec = None
+        if use_tools:
+            if tools:
+                tools_spec = [t.spec for t in tools]
+            elif self._actions:
+                tools_spec = [t.spec for t in self._actions]
+        m = self._llm.chat(messages=messages, tools=tools_spec, **kwargs)
+        if auto_exec_tools:
+            m = self._execute_tools(message=m, history=messages, actions=tools or self._actions or [], **kwargs)
+
+        original_question = messages[-1].content
 
         if rewrite:
             self.rewrite(history=history, **kwargs)
 
-        primary_prompt = """
+        if instructions is None:
+            instructions = ""
+
+        primary_prompt = """{instructions}
 Solve a question answering task with interleaving Thought, Action, Observation steps.
 
 Thought can reason about the current situation, and Action can be three types:
@@ -91,10 +197,9 @@ Task: {task}
         ACTION = "Action: "
         OBSERVATION = "Observation: "
 
-        messages = self._messages[-1 * history:]
         task = self.plain_messages(messages=messages, norole=True, nowrap=True)
         if log:
-            _log.info(f"Task: {task}")
+            self._log.info(f"Task: {task}")
 
         anwser = ChatMessage(role="assistant", content="NOT ENOUGH INFO")
 
@@ -107,12 +212,13 @@ Task: {task}
         def _save_step(s):
             steps.append(s)
             if log:
-                _log.info(s)
+                self._log.info(s)
 
         steps_count = 0
         while not finished and steps_count < max_steps:
-            instructions = primary_prompt.format(task=task, steps="\n".join(steps), datetime=datetime.now())
-            m = self._llm.chat(messages=[ChatMessage(role="user", content=instructions)], **kwargs)
+            prompt = primary_prompt.format(task=task, steps="\n".join(
+                steps), datetime=datetime.now(), instructions=instructions)
+            m = self._llm.chat(messages=[ChatMessage(role="user", content=prompt)], **kwargs)
 
             content = m.content
             ss = content.split("\n")
@@ -138,8 +244,14 @@ Task: {task}
                         actions = action_pattern.findall(s)
                         new_obversation = False
                         for action in actions:
-                            m = self._llm.chat(messages=[ChatMessage(
-                                role="user", content=action)], functions=self._actions)
+                            m = self._llm.chat(messages=[
+                                ChatMessage(role="user", content=action)
+                            ], tools=tools_spec)
+
+                            if auto_exec_tools:
+                                m = self._execute_tools(message=m, history=messages,
+                                                        actions=tools or self._actions or [], **kwargs)
+
                             o_content = m.content.replace("\n", " ")
                             observation = f"Observation: {o_content}"
                             _save_step(observation)
@@ -155,21 +267,26 @@ Task: {task}
                 _save_step("Thought: No enough infomation to solve this task, i have to give up.")
                 _save_step("Action: Finish[NOT ENOUGH INFO]")
 
-        final_anwser_prompt = """
-        Please answer the final user question based on the following thought steps.
+        final_anwser_prompt = """{instructions}
+Please answer the final user question based on the following thought steps.
 
-        Task: {task}
-        Thought Steps:
-        ```
-        {steps}
-        ```
+Task: {task}
+Thought Steps:
+```
+{steps}
+```
 
-        Final question: {question}
-        Your Answer:
+Final question: {question}
+Your Answer:
         """
         if not anwser_found:
-            instructions = final_anwser_prompt.format(task=task, steps="\n".join(steps), question=original_question)
-            anwser = self._llm.chat(messages=[ChatMessage(role="user", content=instructions)], **kwargs)
+            prompt = final_anwser_prompt.format(
+                task=task,
+                steps="\n".join(steps),
+                question=original_question,
+                instructions=instructions
+            )
+            anwser = self._llm.chat(messages=[ChatMessage(role="user", content=prompt)], **kwargs)
         self.add(anwser)
         return anwser
 
@@ -202,6 +319,6 @@ Rewrite as:
         plain = []
         for m in messages:
             role = "" if norole else f"{m.role}: "
-            content = m.content if nowrap else m.content.replace("\n", "\\n")
+            content = m.content if not nowrap else m.content.replace("\n", "\\n")
             plain.append(f"{role}{content}")
         return "\n".join(plain)
