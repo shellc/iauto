@@ -56,7 +56,10 @@ class ChatGLM(LLM):
 
         chatglm_messages = []
         for m in messages:
-            chatglm_messages.append(chatglm_cpp.ChatMessage(role=m.role, content=m.content))
+            role = m.role
+            if role == "tool":
+                role = "user"
+            chatglm_messages.append(chatglm_cpp.ChatMessage(role=role, content=m.content))
         _log.debug(chatglm_messages)
         if use_tools:
             r = self._function_call_retry(messages=chatglm_messages, **kwargs)
@@ -90,7 +93,7 @@ class ChatGLM(LLM):
                         type=tc.type,
                         function=Function(
                             name=func_name,
-                            arguments=func_args
+                            arguments=json.dumps(func_args, ensure_ascii=False)
                         )
                     )
                 )

@@ -47,12 +47,25 @@ def qwen_chat_handler(
     **kwargs,  # type: ignore
 ) -> Union[llama_types.ChatCompletion, Iterator[llama_types.ChatCompletionChunk]]:
     if tools is not None and len(tools) > 0:
-        messages = parse_messages(messages=messages, functions=tools)
+        question = messages[-1]["content"]
+        conversations = "\n".join([f"{m['role']}: {m['content']}" for m in messages])
+
+        tool_call_instruct = generate_function_instructions(functions=tools)
+        system_message = f"""Conversation:
+```
+{conversations}
+```
+{tool_call_instruct}
+Question: {question}
+Thought: I need to decide if I need to use a tool or function to answer the question.
+"""
+
+        messages = [{"role": "system", "content": system_message}]
 
     prompt = _format_raw_prompt(messages=messages)
 
-    if len(messages) > 0 and messages[-1]["role"] != "user":  # Completion
-        prompt = prompt[:-len(f"{IM_END}\n{IM_START}assistant\n")]
+    # if len(messages) > 0 and messages[-1]["role"] != "user":  # Completion
+    #    prompt = prompt[:-len(f"{IM_END}\n{IM_START}assistant\n")]
     _log.debug(f"Raw prompt: {prompt}")
 
     stop = STOPS[::]
@@ -137,6 +150,13 @@ Begin!"""
 def _format_raw_prompt(messages):
     prompt = []
 
+    for m in messages:
+        role = m['role']
+        content = m["content"]
+        prompt.append(f"{IM_START}{role}\n{content}{IM_END}")
+    prompt.append(f"{IM_START}assistant\n")
+
+    """
     system_messages = []
     for m in messages:
         role = m['role']
@@ -153,7 +173,7 @@ def _format_raw_prompt(messages):
     system = f"{IM_START}system\n{system}{IM_END}"
 
     prompt.insert(0, system)
-
+    """
     return "\n".join(prompt)
 
 

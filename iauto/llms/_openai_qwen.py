@@ -14,6 +14,13 @@ class QWen(OpenAI):
             if m.role == "tool":
                 m.role = "user"
 
+            if m.tool_call_id:
+                m.content += f"\ntool_call_id: {m.tool_call_id}"
+                m.tool_call_id = None
+            if m.tool_calls:
+                m.content += f"\ntool_calls: {m.tool_calls}"
+                m.tool_calls = None
+
         if tools is None or len(tools) == 0:
             return super().chat(messages, **kwargs)
 
@@ -51,7 +58,7 @@ class QWen(OpenAI):
                             type=tool_call["type"],
                             function=Function(
                                 name=tool_call["function"]["name"],
-                                arguments=json.loads(tool_call["function"]["arguments"])
+                                arguments=tool_call["function"]["arguments"]
                             )
                         )
                     )

@@ -40,7 +40,19 @@ class OpenAI(LLM):
         if tools:
             tools_desciption = [t.oai_spec() for t in tools]
 
-        msgs = [{"role": m.role, "content": m.content} for m in messages]
+        msgs = []
+        for m in messages:
+            msg = {
+                "role": m.role,
+                "content": m.content
+            }
+            if m.tool_call_id:
+                msg["tool_call_id"] = m.tool_call_id
+            if m.name:
+                msg["name"] = m.name
+            if m.tool_calls:
+                msg["tool_calls"] = [t.model_dump() for t in m.tool_calls]
+            msgs.append(msg)
 
         if self._log.isEnabledFor(_logging.DEBUG):
             self._log.debug(json.dumps({
@@ -66,7 +78,7 @@ class OpenAI(LLM):
             resp.tool_calls = []
             for tool_call in tool_calls or []:
                 func_name = tool_call.function.name
-                func_args = json.loads(tool_call.function.arguments)
+                func_args = tool_call.function.arguments
                 resp.tool_calls.append(
                     ToolCall(
                         id=tool_call.id,

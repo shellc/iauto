@@ -22,7 +22,16 @@ class IASessionClient(ModelClient):
         resp = SimpleNamespace()
         resp.choices = []
         resp.model = self._model
-        messages = [ChatMessage(role=x["role"], content=x["content"] or "") for x in params.get("messages") or []]
+        messages = []
+
+        for m in params.get("messages") or []:
+            messages.append(ChatMessage(
+                role=m["role"],
+                content=m["content"] or "",
+                tool_call_id=m.get("tool_call_id"),
+                name=m.get("name"),
+                tool_calls=m.get("tool_calls")
+            ))
 
         tool_calls = params.get("tools") or []
         use_tools = len(tool_calls) > 0
@@ -38,8 +47,8 @@ class IASessionClient(ModelClient):
         choice.message.tool_calls = None
         if m.tool_calls:
             choice.message.tool_calls = [t.model_dump() for t in m.tool_calls]
-            for tool_call in choice.message.tool_calls:
-                tool_call["function"]["arguments"] = json.dumps(tool_call["function"]["arguments"], ensure_ascii=False)
+            # for tool_call in choice.message.tool_calls:
+            #    tool_call["function"]["arguments"] = json.dumps(tool_call["function"]["arguments"], ensure_ascii=False)
 
         resp.choices.append(choice)
 

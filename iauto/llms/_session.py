@@ -48,7 +48,7 @@ class Session:
                 continue
 
             func_name = tool_call.function.name
-            func_args = tool_call.function.arguments or {}
+            func_args = tool_call.function.arguments or '{}'
 
             if func_name not in functions:
                 continue
@@ -57,6 +57,7 @@ class Session:
 
             func_resp = None
             try:
+                func_args = json.loads(func_args)
                 func_resp = func_to_call(**func_args)
             except Exception as e:
                 self._log.warn(f"Function call err: {e}, func_name={func_name}, args={func_args}, resp={func_resp}")

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -8,7 +8,7 @@ from ..actions import ActionSpec
 
 class Function(BaseModel):
     name: str
-    arguments: Optional[Dict[str, Any]] = None
+    arguments: Optional[str] = None
 
 
 class ToolCall(BaseModel):
@@ -24,6 +24,8 @@ class Message(BaseModel):
 class ChatMessage(Message):
     role: str
     tool_calls: Optional[List[ToolCall]] = None
+    tool_call_id: Optional[str] = None
+    name: Optional[str] = None
 
 
 class LLM(ABC):

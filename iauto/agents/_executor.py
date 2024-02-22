@@ -44,7 +44,7 @@ class AgentExecutor:
         if len(self._agents) == 1:
             self._recipient = self._agents[0]
         elif len(self._agents) > 1:
-            speaker_selection_method = "round_robin"  # if len(self._agents) == 2 else "auto"
+            speaker_selection_method = "round_robin" if len(self._agents) == 2 else "auto"
             groupchat = GroupChat(
                 agents=agents + [self._user_proxy],
                 messages=[],

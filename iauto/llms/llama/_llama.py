@@ -1,4 +1,3 @@
-import json
 from typing import Iterator, List, Optional
 
 import llama_cpp
@@ -62,7 +61,7 @@ class LLaMA(LLM):
             resp.tool_calls = []
             for tool_call in tool_calls:
                 func_name = tool_call["function"]["name"]
-                func_args = json.loads(tool_call["function"]["arguments"])
+                func_args = tool_call["function"]["arguments"]
                 resp.tool_calls.append(
                     ToolCall(
                         id=tool_call["id"],
