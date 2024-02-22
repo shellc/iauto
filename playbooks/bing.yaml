@@ -8,11 +8,11 @@ playbook:
         description: Keywords used for searching the web
         required: true
   actions:
-    #- log: "Bing search: {$keywords}"
+    - log: "Bing search: {$keywords}"
     - browser.open:
         args:
           exec: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
-          headless: false
+          headless: true
           user_data_dir: /tmp/.chrome
         result: $browser
     - browser.goto:

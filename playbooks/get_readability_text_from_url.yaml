@@ -11,8 +11,9 @@ playbook:
     - browser.open:
         args:
           exec: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
-          headless: false
+          headless: true
         result: $browser
+    - log: "Readability: {$url}"
     - browser.goto:
         args:
           browser: $browser
