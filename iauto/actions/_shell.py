@@ -19,17 +19,9 @@ _env = {
 
 _spec = ActionSpec.from_dict({
     "name": "shell.cmd",
-    "description": f"""
-Use this tool to execute Linux, macOS, and DOS commands and output the execution results.
-
-Current OS: {_platform}
-System Environments: {json.dumps(dict(_env), indent=4)}
-
-Examples:
-1. Get weather of beijing: curl -s https://wttr.in/beijing
-2. open document: open {os.environ.get('HOME')}/Documents/Plans.docx
-3. open website: open https://bing.com
-    """,
+    "description": f"""Use this tool to execute Linux, macOS, and DOS commands and output the execution results. \
+Current OS: {_platform}. \
+System Environments: {json.dumps(dict(_env))}""",
     "arguments": [
         {
             "name": "command",
