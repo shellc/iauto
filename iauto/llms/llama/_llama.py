@@ -26,6 +26,7 @@ class LLaMA(LLM):
 
         # kwargs["chat_handler"] = llama_cpp.llama_chat_format.functionary_chat_handler
         self._llm = llama_cpp.Llama(**kwargs)
+        self._model = kwargs.get("model_path", "LLaMA")
 
         self._log = get_logger("LLaMA")
 
@@ -73,3 +74,7 @@ class LLaMA(LLM):
                     )
                 )
         return resp
+
+    @property
+    def modle(self) -> str:
+        return self._model

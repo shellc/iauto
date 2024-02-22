@@ -40,7 +40,7 @@ class Session:
         if message.tool_calls is None or len(message.tool_calls) == 0:
             return message
 
-        functions = dict([(func.spec.name, func) for func in actions])
+        functions = dict([(func.spec.name.replace(".", "_"), func) for func in actions])
 
         func_resps = []
         for tool_call in message.tool_calls:

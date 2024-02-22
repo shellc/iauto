@@ -25,7 +25,7 @@ def create_agent(
         instructions += '\nReply "TERMINATE" in the end when everything is done.'
 
     llm_config = {
-        "model": "IASessionClient",
+        "model": session.llm.model,
         "model_client_cls": "IASessionClient",
         "tools": []
     }
@@ -52,11 +52,18 @@ def create_agent(
 })
 def create_agent_executor(
     *args,
+    session: Session,
     agents: List[ConversableAgent],
-    session: Optional[Session] = None,
+    instructions: Optional[str] = None,
+    max_consecutive_auto_reply: Optional[int] = 10,
     **kwargs
 ):
-    return AgentExecutor(session=session, agents=agents)
+    return AgentExecutor(
+        session=session,
+        agents=agents,
+        instructions=instructions,
+        max_consecutive_auto_reply=max_consecutive_auto_reply
+    )
 
 
 @register_action(name="agents.run", spec={
@@ -66,6 +73,13 @@ def executor_run(
     *args,
     agent_executor: AgentExecutor,
     message: str,
+    clear_history: Optional[bool] = True,
+    silent: Optional[bool] = False,
     **kwargs
 ):
-    return agent_executor.run(message=ChatMessage(role="user", content=message))
+    m = agent_executor.run(
+        message=ChatMessage(role="user", content=message),
+        clear_history=clear_history,
+        silent=silent
+    )
+    return m.get("summary", "")

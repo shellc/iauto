@@ -167,7 +167,7 @@ class ActionSpec(BaseModel):
         return {
             "type": "function",
             "function": {
-                "name": self.name,
+                "name": self.name.replace(".", "_"),
                 "description": self.description,
                 "parameters": {
                     "type": "object",

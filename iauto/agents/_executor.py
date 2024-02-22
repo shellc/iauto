@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import Dict, List, Optional
 
 from autogen import (ConversableAgent, GroupChat, GroupChatManager,
                      UserProxyAgent)
@@ -12,22 +12,26 @@ class AgentExecutor:
         self,
         agents: List[ConversableAgent],
         session: Session,
+        instructions: Optional[str] = None,
+        max_consecutive_auto_reply: Optional[int] = 10
     ) -> None:
         self._session = session
         self._agents = agents
 
         llm_config = {
-            "model": "IASessionClient",
+            "model": session.llm.model,
             "model_client_cls": "IASessionClient"
         }
 
         def termination_func(x): return x.get("content", "").upper().find("TERMINATE") >= 0
         code_execution_config = {"executor": "ipython-embedded"}
-        max_consecutive_auto_reply = 3
+
+        if instructions is None:
+            instructions = 'Reply "TERMINATE" in the end when everything is done.'
 
         self._user_proxy = UserProxyAgent(
             name="UserProxy",
-            system_message='Reply "TERMINATE" in the end when everything is done.',
+            system_message=instructions,
             is_termination_msg=termination_func,
             code_execution_config=code_execution_config,
             human_input_mode="NEVER",
@@ -35,18 +39,34 @@ class AgentExecutor:
             llm_config=llm_config
         )
         self._user_proxy.register_model_client(model_client_cls=IASessionClient, session=session)
+
+        function_map = {}
         if self._session.actions:
-            function_map = {}
             for func in self._session.actions:
-                function_map[func.spec.name] = func
-            self._user_proxy.register_function(function_map)
+                function_map[func.spec.name.replace(".", "_")] = func
+        self._user_proxy.register_function(function_map)
 
         if len(self._agents) == 1:
             self._recipient = self._agents[0]
         elif len(self._agents) > 1:
+            if len(function_map) > 0:
+                tools_proxy = UserProxyAgent(
+                    name="FunctionCaller",
+                    description="An assistant can execute functions.",
+                    system_message=instructions,
+                    is_termination_msg=termination_func,
+                    code_execution_config=code_execution_config,
+                    human_input_mode="NEVER",
+                    max_consecutive_auto_reply=max_consecutive_auto_reply,
+                    llm_config=llm_config
+                )
+                tools_proxy.register_function(function_map=function_map)
+                tools_proxy.register_model_client(model_client_cls=IASessionClient, session=session)
+                agents.append(tools_proxy)
+
             speaker_selection_method = "round_robin" if len(self._agents) == 2 else "auto"
             groupchat = GroupChat(
-                agents=agents + [self._user_proxy],
+                agents=agents,
                 messages=[],
                 speaker_selection_method=speaker_selection_method
             )
@@ -63,9 +83,17 @@ class AgentExecutor:
         else:
             raise ValueError("agents error")
 
-    def run(self, message: ChatMessage, **kwargs) -> Union[ChatMessage, None]:
+    def run(
+        self,
+        message: ChatMessage,
+        clear_history: Optional[bool] = True,
+        silent: Optional[bool] = False,
+        **kwargs
+    ) -> Dict:
         result = self._user_proxy.initiate_chat(
             self._recipient,
+            clear_history=clear_history,
+            silent=silent,
             message=message.content,
             summary_method="reflection_with_llm"
         )
@@ -73,5 +101,9 @@ class AgentExecutor:
         summary = result.summary
         if isinstance(summary, dict):
             summary = summary["content"]
-        m = ChatMessage(role="assistant", content=summary)
-        return m.content
+
+        return {
+            "history": result.chat_history,
+            "summary": summary,
+            "cost": result.cost
+        }

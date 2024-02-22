@@ -4,11 +4,9 @@ from typing import Iterator, List, Optional
 
 import chatglm_cpp
 
-from .._logging import get_logger
+from .._logging import DEBUG, get_logger
 from ..actions import ActionSpec
 from ._llm import LLM, ChatMessage, Function, Message, ToolCall
-
-_log = get_logger("ChatGLM")
 
 
 class ChatGLM(LLM):
@@ -17,6 +15,8 @@ class ChatGLM(LLM):
         if not os.path.isfile(model_path):
             raise ValueError(f"model_path must be a ggml file: {model_path}")
         self._llm = chatglm_cpp.Pipeline(model_path=model_path)
+
+        self._log = get_logger("ChatGLM")
 
     def generate(self, instructions: str, **kwargs) -> Message:
         """"""
@@ -36,7 +36,7 @@ class ChatGLM(LLM):
                     if t.function.name is not None and t.function.name != "":
                         return r
                     else:
-                        _log.warn(f"function_name is null, retry: {i + 1}")
+                        self._log.warn(f"function_name is null, retry: {i + 1}")
         return r
 
     def chat(self, messages: List[ChatMessage] = [], tools: Optional[List[ActionSpec]] = None, **kwargs) -> ChatMessage:
@@ -60,7 +60,8 @@ class ChatGLM(LLM):
             if role == "tool":
                 role = "user"
             chatglm_messages.append(chatglm_cpp.ChatMessage(role=role, content=m.content))
-        _log.debug(chatglm_messages)
+        if self._log.isEnabledFor(DEBUG):
+            self._log.debug(chatglm_messages)
         if use_tools:
             r = self._function_call_retry(messages=chatglm_messages, **kwargs)
         else:
@@ -83,7 +84,7 @@ class ChatGLM(LLM):
                 func_name = tc.function.name
                 if not func_name:
                     continue
-                _log.debug(f"Function to call: {func_name}")
+                self._log.debug(f"Function to call: {func_name}")
 
                 func_args = eval(tc.function.arguments, dict(tool_call=tool_call))
 
@@ -98,3 +99,7 @@ class ChatGLM(LLM):
                     )
                 )
         return resp
+
+    @property
+    def modle(self) -> str:
+        return "ChatGLM"
