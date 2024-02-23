@@ -1,28 +1,6 @@
 playbook:
   actions:
-    - llm.session:
-        args:
-          #provider: openai
-          #provider: chatglm
-          #provider: llama
-          llm_args:
-            #model_path: /Volumes/Workspaces/models/Qwen-1_8B-Chat/ggml-model-q4_0.gguf
-            #chat_format: qwen-fn
-            #model_path: /Volumes/Workspaces/models/chatglm3-6b/chatglm3-6b-ggml.bin
-            #api_key: sk-xxx
-            #base_url: http://100.64.0.8:8888/v1/
-            #model: Qwen-14B-Chat-Int4
-            #model: Qwen1.5-72B-Chat-GPTQ-Int4
-            #model: Qwen-72B-Chat-Int4
-            #base_url: http://172.88.0.21:8888/v1/
-          playbooks:
-            #- ./google_news.yaml
-            #- ./caixin.yaml
-            - ./bing.yaml
-            - ./get_readability_text_from_url.yaml
-          actions:
-            - shell.cmd
-        result: $session
+    - playbook: llm_chat.yaml
     - agents.create:
         args:
           session: $session
@@ -48,17 +26,3 @@ playbook:
             - $journalist
             - $finacial_analyst
         result: $agent_executor
-    - repeat:
-        actions:
-          - shell.prompt:
-              args: "Human: "
-              result: $prompt
-          - agents.run:
-              args:
-                agent_executor: $agent_executor
-                message: $prompt
-              result: $message
-          - shell.print:
-              args:
-                message: "AI: {$message}"
-                color: green

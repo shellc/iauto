@@ -1,0 +1,17 @@
+playbook:
+  actions:
+    - playbook: agents.yaml
+    - repeat:
+        actions:
+          - shell.prompt:
+              args: "Human: "
+              result: $prompt
+          - agents.run:
+              args:
+                agent_executor: $agent_executor
+                message: $prompt
+              result: $message
+          - shell.print:
+              args:
+                message: "AI: {$message}"
+                color: green
