@@ -1,0 +1,9 @@
+[theme]
+primaryColor = "purple"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "whitesmoke"
+textColor = "#262730"
+
+[client]
+toolbarMode = "minimal"
+showErrorDetails = false
