@@ -1,6 +1,6 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
-from autogen import (ConversableAgent, GroupChat, GroupChatManager,
+from autogen import (Agent, ConversableAgent, GroupChat, GroupChatManager,
                      UserProxyAgent)
 
 from ..llms import ChatMessage, Session
@@ -13,10 +13,12 @@ class AgentExecutor:
         agents: List[ConversableAgent],
         session: Session,
         instructions: Optional[str] = None,
+        human_input_mode: Optional[str] = "NEVER",
         max_consecutive_auto_reply: Optional[int] = 10
     ) -> None:
         self._session = session
         self._agents = agents
+        self.human_input_mode = human_input_mode
 
         llm_config = {
             "model": session.llm.model,
@@ -34,7 +36,7 @@ class AgentExecutor:
             system_message=instructions,
             is_termination_msg=termination_func,
             code_execution_config=code_execution_config,
-            human_input_mode="NEVER",
+            human_input_mode=self.human_input_mode,
             max_consecutive_auto_reply=max_consecutive_auto_reply,
             llm_config=llm_config
         )
@@ -62,11 +64,11 @@ class AgentExecutor:
                 )
                 tools_proxy.register_function(function_map=function_map)
                 tools_proxy.register_model_client(model_client_cls=IASessionClient, session=session)
-                agents.append(tools_proxy)
+                self._agents.append(tools_proxy)
 
             speaker_selection_method = "round_robin" if len(self._agents) == 2 else "auto"
             groupchat = GroupChat(
-                agents=agents,
+                agents=self._agents,
                 messages=[],
                 speaker_selection_method=speaker_selection_method
             )
@@ -107,3 +109,39 @@ class AgentExecutor:
             "summary": summary,
             "cost": result.cost
         }
+
+    def reset(self):
+        for agent in self._agents + [self._user_proxy, self._recipient]:
+            agent.reset()
+
+    def set_human_input_mode(self, mode):
+        self.human_input_mode = mode
+        for agent in [self._user_proxy, self._recipient]:
+            agent.human_input_mode = mode
+
+    def register_human_input_func(self, func):
+        for agent in self._agents + [self._user_proxy, self._recipient]:
+            agent.get_human_input = func
+
+    def register_print_received(self, func):
+        for agent in self._agents + [self._user_proxy, self._recipient]:
+            receive_func = ReceiveFunc(agent, func)
+            agent.receive = receive_func
+
+
+class ReceiveFunc:
+    def __init__(self, receiver, print_recieved) -> None:
+        self._receiver = receiver
+        self._receive_func = receiver.receive
+        self._print_recieved = print_recieved
+
+    def __call__(
+        self,
+        message: Union[Dict, str],
+        sender: Agent,
+        request_reply: Optional[bool] = None,
+        silent: Optional[bool] = False
+    ):
+        if not silent:
+            self._print_recieved(message=message, sender=sender, receiver=self._receiver)
+        self._receive_func(message=message, sender=sender, request_reply=request_reply, silent=silent)
