@@ -1,10 +1,12 @@
 from typing import Iterator, List, Optional
 
 import llama_cpp
+from llama_cpp.llama_chat_format import LlamaChatCompletionHandlerRegistry
 
 from ..._logging import get_logger
 from ...actions import ActionSpec
 from .._llm import LLM, ChatMessage, Function, Message, ToolCall
+from ._qwen import qwen_chat_handler
 
 
 class LLaMA(LLM):
@@ -29,6 +31,11 @@ class LLaMA(LLM):
         self._model = kwargs.get("model_path", "LLaMA")
 
         self._log = get_logger("LLaMA")
+
+        if "qwen" in self._model.lower():
+            self.register_qwen_fn()
+
+        print(kwargs)
 
     def generate(self, instructions: str, **kwargs) -> Message:
         """"""
@@ -78,3 +85,10 @@ class LLaMA(LLM):
     @property
     def modle(self) -> str:
         return self._model
+
+    def register_qwen_fn(self):
+        REGISTER_FLAG = "llama_qwen_chat_handler_registered"
+        if REGISTER_FLAG not in globals():
+            registry = LlamaChatCompletionHandlerRegistry()
+            registry.register_chat_completion_handler(name="qwen-fn", chat_handler=qwen_chat_handler, overwrite=True)
+            globals()[REGISTER_FLAG] = True

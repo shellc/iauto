@@ -4,7 +4,6 @@ from typing import Iterator, List, Optional, Union
 
 import llama_cpp as llama
 import llama_cpp.llama_types as llama_types
-from llama_cpp.llama_chat_format import LlamaChatCompletionHandlerRegistry
 
 from ..._logging import get_logger
 
@@ -46,6 +45,11 @@ def qwen_chat_handler(
     grammar: Optional[llama.LlamaGrammar] = None,
     **kwargs,  # type: ignore
 ) -> Union[llama_types.ChatCompletion, Iterator[llama_types.ChatCompletionChunk]]:
+    messages.insert(0, {
+        "role": "system",
+        "content": "You're a useful assistant."
+    })
+
     if tools is not None and len(tools) > 0:
         question = messages[-1]["content"]
         # conversations = "\n".join([f"{m['role']}: {m['content']}" for m in messages])
@@ -108,7 +112,6 @@ Thought: I need to decide if I need to use a tool or function to answer the ques
         total_tokens=0
     )
 
-    _log.debug(f"Choice: {choice}")
     return llama_types.CreateChatCompletionResponse(
         id="chat" + resp["id"],
         object="chat.completion",
@@ -118,12 +121,6 @@ Thought: I need to decide if I need to use a tool or function to answer the ques
         usage=usage,
     )
 
-
-REGISTER_FLAG = "llama_qwen_chat_handler_registered"
-if REGISTER_FLAG not in globals():
-    registry = LlamaChatCompletionHandlerRegistry()
-    registry.register_chat_completion_handler(name="qwen-fn", chat_handler=qwen_chat_handler, overwrite=True)
-    globals()[REGISTER_FLAG] = True
 
 # https://github.com/QwenLM/Qwen/blob/main/openai_api.py
 TOOL_DESC = (
