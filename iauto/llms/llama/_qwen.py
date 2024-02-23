@@ -352,7 +352,7 @@ def parse_response(resp):
     if z >= 0:
         resp = resp[z + len('\nFinal Answer: '):]
 
-    resp = resp.replace("Final", "").replace("Answer:", "")
+    resp = resp.replace("Final", "").replace("Answer:", "").replace("Thought:", "")
     choice = {
         "index": 0,
         "message": {"role": "assistant", "content": resp.strip()},
