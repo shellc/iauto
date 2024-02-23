@@ -27,8 +27,8 @@ class QWen(OpenAI):
         # tools call
         instructions = []
 
-        conversations = self.plain_messages(messages=messages)
-        instructions.append(f"Conversation:\n```\n{conversations}\n```")
+        # conversations = self.plain_messages(messages=messages)
+        # instructions.append(f"Conversation:\n```\n{conversations}\n```")
 
         tools_description = [t.oai_spec() for t in tools]
 
@@ -42,9 +42,8 @@ class QWen(OpenAI):
 
         instructions.append("Thought: I need to decide if I need to use a tool or function to answer the question.")
 
-        m = super().chat([
-            ChatMessage(role="system", content='\n'.join(instructions))
-        ], tools, **kwargs)
+        messages.append(ChatMessage(role="system", content='\n'.join(instructions)))
+        m = super().chat(messages=messages, tools=tools, **kwargs)
 
         choice = _qwen.parse_response(m.content)
 

@@ -4,7 +4,7 @@ from typing import Iterator, List, Optional, Union
 
 import llama_cpp as llama
 import llama_cpp.llama_types as llama_types
-from llama_cpp.llama_chat_format import register_chat_completion_handler
+from llama_cpp.llama_chat_format import LlamaChatCompletionHandlerRegistry
 
 from ..._logging import get_logger
 
@@ -17,7 +17,7 @@ END_OF_TEXT = "<|endoftext|>"
 STOPS = [IM_END, END_OF_TEXT, "\n\n\n"]
 
 
-@register_chat_completion_handler("qwen-fn")
+# @register_chat_completion_handler("qwen-fn")
 def qwen_chat_handler(
     llama: llama.Llama,
     messages: List[llama_types.ChatCompletionRequestMessage],
@@ -48,19 +48,15 @@ def qwen_chat_handler(
 ) -> Union[llama_types.ChatCompletion, Iterator[llama_types.ChatCompletionChunk]]:
     if tools is not None and len(tools) > 0:
         question = messages[-1]["content"]
-        conversations = "\n".join([f"{m['role']}: {m['content']}" for m in messages])
+        # conversations = "\n".join([f"{m['role']}: {m['content']}" for m in messages])
 
         tool_call_instruct = generate_function_instructions(functions=tools)
-        system_message = f"""Conversation:
-```
-{conversations}
-```
-{tool_call_instruct}
+        system_message = f"""{tool_call_instruct}
 Question: {question}
 Thought: I need to decide if I need to use a tool or function to answer the question.
 """
 
-        messages = [{"role": "system", "content": system_message}]
+        messages.append({"role": "system", "content": system_message})
 
     prompt = _format_raw_prompt(messages=messages)
 
@@ -122,6 +118,12 @@ Thought: I need to decide if I need to use a tool or function to answer the ques
         usage=usage,
     )
 
+
+REGISTER_FLAG = "llama_qwen_chat_handler_registered"
+if REGISTER_FLAG not in globals():
+    registry = LlamaChatCompletionHandlerRegistry()
+    registry.register_chat_completion_handler(name="qwen-fn", chat_handler=qwen_chat_handler, overwrite=True)
+    globals()[REGISTER_FLAG] = True
 
 # https://github.com/QwenLM/Qwen/blob/main/openai_api.py
 TOOL_DESC = (
