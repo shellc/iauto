@@ -124,7 +124,11 @@ class AgentExecutor:
             agent.get_human_input = func
 
     def register_print_received(self, func):
-        for agent in self._agents + [self._user_proxy, self._recipient]:
+        agents = [self._user_proxy, self._recipient]
+        if len(self._agents) > 1:
+            agents = self._agents + agents
+
+        for agent in agents:
             receive_func = ReceiveFunc(agent, func)
             agent.receive = receive_func
 
