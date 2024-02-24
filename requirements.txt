@@ -4,6 +4,7 @@ PyYAML
 prompt_toolkit
 
 openai
+autogen
 llama-cpp-python
 
 playwright
@@ -11,3 +12,6 @@ Appium-Python-Client
 
 SQLAlchemy
 pandas
+
+streamlit
+watchdog

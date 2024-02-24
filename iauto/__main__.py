@@ -31,6 +31,16 @@ def print_action_spec(name):
         print(json.dumps(spec.model_dump(), ensure_ascii=False, indent=2))
 
 
+def run_playground(args):
+    from iauto.playground.runner import run as playgroup_runner
+
+    playbook_dir = os.getcwd()
+    if args.playbook_dir:
+        playbook_dir = os.path.abspath(args.playbook_dir)
+    print("playbooks", playbook_dir)
+    playgroup_runner(app=args.playground, playbook_dir=playbook_dir)
+
+
 def run(args, parser):
     if args.log_level:
         os.environ["IA_LOG_LEVEL"] = args.log_level
@@ -49,6 +59,10 @@ def run(args, parser):
 
     if args.spec:
         print_action_spec(args.spec)
+        sys.exit(0)
+
+    if args.playground:
+        run_playground(args)
         sys.exit(0)
 
     playbook = args.playbook
@@ -93,6 +107,9 @@ def parse_args(argv):
     parser.add_argument('--spec', metavar="action", default=None, help="print action spec")
     parser.add_argument('--traceback', action="store_true", help="print error traceback")
     parser.add_argument('--log-level', default=None, help="log level, default INFO")
+
+    parser.add_argument('--playground', default=None, help="start playground")
+    parser.add_argument('--playbook-dir', default=None, help="playbook dir for playground")
 
     parser.set_defaults(func=run)
 

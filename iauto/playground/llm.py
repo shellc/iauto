@@ -6,8 +6,9 @@ from iauto import PlaybookExecutor
 from iauto.agents import AgentExecutor
 from iauto.llms import ChatMessage, Session
 
-here = os.path.dirname(__file__)
-playbooks_dir = os.path.abspath(os.path.join(here, os.path.pardir, "playbooks"))
+# here = os.path.dirname(__file__)
+# playbooks_dir = os.path.abspath(os.path.join(here, os.path.pardir, "playbooks"))
+playbooks_dir = os.environ["IA_PLAYBOOK_DIR"]
 
 st.set_page_config(
     page_title='Agents',
@@ -77,21 +78,30 @@ with st.sidebar:
 
     llm_provider = st.radio(
         "Provider",
-        ["OpenAI", "LLaMA", "ChatGLM"]
+        ["OpenAI", "LLaMA", "ChatGLM"],
+        captions=["OpenAI compatible API", "llama.cpp gguf models", "chatglm.cpp gguf model"]
     )
 
     if llm_provider == "OpenAI":
         playbook_vars["llm_provider"] = "openai"
-        api_key = st.text_input("API Key", value=st.session_state["llm_args"].get("api_key", "sk-"))
+        api_key = st.text_input(
+            "API Key",
+            value=st.session_state["llm_args"].get("api_key", os.environ.get("OPENAI_API_KEY") or "sk-")
+        )
         playbook_vars["llm_args"]["api_key"] = api_key
         st.session_state["llm_args"]["api_key"] = api_key
 
-        base_url = st.text_input("API Base URL", value=st.session_state["llm_args"].get(
-            "base_url", "http://172.88.0.21:8888/v1/"))
+        base_url = st.text_input(
+            "API Base URL",
+            value=st.session_state["llm_args"].get("base_url", os.environ.get("OPENAI_API_BASE") or None)
+        )
         playbook_vars["llm_args"]["base_url"] = base_url
         st.session_state["llm_args"]["base_url"] = base_url
 
-        model = st.text_input("Model", value=st.session_state["llm_args"].get("model", "Qwen1.5-72B-Chat-GPTQ-Int4"))
+        model = st.text_input(
+            "Model",
+            value=st.session_state["llm_args"].get("model",  os.environ.get("OPENAI_MODEL_NAME") or "gpt-3.5-turbo")
+        )
         playbook_vars["llm_args"]["model"] = model
         st.session_state["llm_args"]["model"] = model
     elif llm_provider == "LLaMA":
@@ -127,8 +137,17 @@ with st.sidebar:
     playbook_vars["llm_chat_args"]["temperature"] = temperature
     st.session_state["llm_chat_args"]["temperature"] = temperature
 
-    if st.button("Change LLM", type="primary"):
+    use_tools = st.checkbox("Use tools", value=False)
+
+    label = "Change LLM" if st.session_state.get("llm") else "Create Chat"
+    if st.button(label=label, type="primary"):
         st.session_state.llm = create_llm(llm_mode=llm_mode, playbook_vars=playbook_vars)
+
+if st.session_state.get("llm") and len(st.session_state.messages) == 0:
+    greeting = "Hello! How can I help you today?"
+    st.session_state.messages.append({"role": "assistant", "content": greeting})
+    with st.chat_message("assistant"):
+        st.markdown(greeting)
 
 if st.session_state.get("llm") is not None:
     llm = st.session_state.llm
@@ -146,9 +165,9 @@ if st.session_state.get("llm") is not None:
         if llm_mode == "Chat" or llm_mode == "ReAct":
             llm.add(ChatMessage(role="user", content=prompt))
             if llm_mode == "Chat":
-                resp = llm.run(**playbook_vars["llm_chat_args"])
+                resp = llm.run(**playbook_vars["llm_chat_args"], use_tools=use_tools)
             elif llm_mode == "ReAct":
-                resp = llm.react(**playbook_vars["llm_chat_args"])
+                resp = llm.react(**playbook_vars["llm_chat_args"], use_tools=use_tools)
             resp_message = resp.content
         elif llm_mode == "Multi-Agent":
             resp = llm.run(message=ChatMessage(role="user", content=prompt), clear_history=False)
@@ -160,5 +179,5 @@ if st.session_state.get("llm") is not None:
             st.markdown(resp_message)
             st.session_state.messages.append({"role": "assistant", "content": resp_message})
 
-    if len(st.session_state.messages) > 0:
-        st.button("Reset", type="primary", on_click=lambda: reset(llm))
+    if len(st.session_state.messages) > 1:
+        st.button("Clear", type="secondary", help="Clear history", on_click=lambda: reset(llm))
