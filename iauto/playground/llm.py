@@ -16,19 +16,6 @@ st.set_page_config(
     layout='wide'
 )
 
-# Initialize chat history
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
-# Display chat messages from history on app rerun
-for message in st.session_state.messages:
-    role = message["role"]
-    content = message["content"]
-    with st.chat_message(role, avatar=message.get("avatar")):
-        if message["role"] == "user":
-            content = f"{content}"
-        st.markdown(content)
-
 # Initialize agent
 
 
@@ -79,7 +66,7 @@ with st.sidebar:
     llm_provider = st.radio(
         "Provider",
         ["OpenAI", "LLaMA", "ChatGLM"],
-        captions=["OpenAI compatible API", "llama.cpp gguf models", "chatglm.cpp gguf model"]
+        captions=["OpenAI compatible API", "llama.cpp GGUF models", "chatglm.cpp GGUF model"]
     )
 
     if llm_provider == "OpenAI":
@@ -139,15 +126,30 @@ with st.sidebar:
 
     use_tools = st.checkbox("Use tools", value=False)
 
-    label = "Change LLM" if st.session_state.get("llm") else "Create Chat"
+    label = "Reload" if st.session_state.get("llm") else "Launch"
     if st.button(label=label, type="primary"):
         st.session_state.llm = create_llm(llm_mode=llm_mode, playbook_vars=playbook_vars)
+
+# Main container
+if st.session_state.get("llm"):
+    st.markdown(f"#### {llm_provider} {llm_mode}")
 
 if st.session_state.get("llm") and len(st.session_state.messages) == 0:
     greeting = "Hello! How can I help you today?"
     st.session_state.messages.append({"role": "assistant", "content": greeting})
-    with st.chat_message("assistant"):
-        st.markdown(greeting)
+
+# Initialize chat history
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+# Display chat messages from history on app rerun
+for message in st.session_state.messages:
+    role = message["role"]
+    content = message["content"]
+    with st.chat_message(role, avatar=message.get("avatar")):
+        if message["role"] == "user":
+            content = f"{content}"
+        st.markdown(content)
 
 if st.session_state.get("llm") is not None:
     llm = st.session_state.llm
