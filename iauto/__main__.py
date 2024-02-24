@@ -111,6 +111,8 @@ def parse_args(argv):
     parser.add_argument('--playground', default=None, help="start playground")
     parser.add_argument('--playbook-dir', default=None, help="playbook dir for playground")
 
+    parser.add_argument('--env', default='.env', help="environment configuration file")
+
     parser.set_defaults(func=run)
 
     args = parser.parse_args(argv)
@@ -119,6 +121,9 @@ def parse_args(argv):
 
 def main():
     args, parser = parse_args(sys.argv[1:])
+
+    from dotenv import load_dotenv
+    load_dotenv(args.env)
 
     if hasattr(args, "func"):
         try:
@@ -133,8 +138,6 @@ def main():
 
 
 try:
-    # import asyncio
-    # asyncio.run(main=main())
     main()
 except KeyboardInterrupt:
     print("Bye.\n")

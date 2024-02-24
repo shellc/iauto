@@ -1,6 +1,7 @@
 pydantic
 PyYAML
 
+python-dotenv
 prompt_toolkit
 
 openai
