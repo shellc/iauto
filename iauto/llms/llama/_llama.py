@@ -35,8 +35,6 @@ class LLaMA(LLM):
         if "qwen" in self._model.lower():
             self.register_qwen_fn()
 
-        print(kwargs)
-
     def generate(self, instructions: str, **kwargs) -> Message:
         """"""
         r = self._llm.create_completion(prompt=instructions, **kwargs)

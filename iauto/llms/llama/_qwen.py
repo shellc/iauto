@@ -57,8 +57,8 @@ def qwen_chat_handler(
         tool_call_instruct = generate_function_instructions(functions=tools)
         system_message = f"""{tool_call_instruct}
 Question: {question}
-Thought: I need to decide if I need to use a tool or function to answer the question.
-"""
+Thought: I need to think if I can give the final answer directly, \
+if not I need to call the function to answer the question."""
 
         messages.append({"role": "system", "content": system_message})
 
@@ -304,6 +304,8 @@ def parse_messages(messages, functions):
 
 def parse_response(resp):
     func_name, func_args = '', ''
+    if not resp.startswith("\n"):
+        resp = "\n" + resp
     i = resp.find('\nAction:')
     j = resp.find('\nAction Input:')
     k = resp.find('\nObservation:')

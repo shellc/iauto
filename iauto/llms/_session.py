@@ -129,7 +129,7 @@ class Session:
         self,
         instructions: Optional[str] = None,
         messages: Optional[List[ChatMessage]] = None,
-        history: int = 1,
+        history: int = 5,
         rewrite: bool = False,
         log=False, max_steps=3,
         tools: Optional[List[Action]] = None,
@@ -151,14 +151,15 @@ class Session:
                 tools_spec = [t.spec for t in tools]
             elif self._actions:
                 tools_spec = [t.spec for t in self._actions]
-        m = self._llm.chat(messages=messages, tools=tools_spec, **kwargs)
-        if auto_exec_tools:
-            m = self._execute_tools(message=m, history=messages, actions=tools or self._actions or [], **kwargs)
+        # m = self._llm.chat(messages=messages, tools=tools_spec, **kwargs)
+        # if auto_exec_tools:
+        #    m = self._execute_tools(message=m, history=messages, actions=tools or self._actions or [], **kwargs)
 
         original_question = messages[-1].content
-
+        question = original_question
         if rewrite:
             self.rewrite(history=history, **kwargs)
+            question = messages[-1].content
 
         if instructions is None:
             instructions = ""
@@ -198,9 +199,9 @@ Task: {task}
         ACTION = "Action: "
         OBSERVATION = "Observation: "
 
-        task = self.plain_messages(messages=messages, norole=True, nowrap=True)
+        # task = self.plain_messages(messages=messages, norole=True, nowrap=True)
         if log:
-            self._log.info(f"Task: {task}")
+            self._log.info(f"Task: {question}")
 
         anwser = ChatMessage(role="assistant", content="NOT ENOUGH INFO")
 
@@ -217,9 +218,14 @@ Task: {task}
 
         steps_count = 0
         while not finished and steps_count < max_steps:
-            prompt = primary_prompt.format(task=task, steps="\n".join(
-                steps), datetime=datetime.now(), instructions=instructions)
-            m = self._llm.chat(messages=[ChatMessage(role="user", content=prompt)], **kwargs)
+            prompt = primary_prompt.format(
+                task=question,
+                steps="\n".join(steps),
+                datetime=datetime.now(),
+                instructions=instructions
+            )
+
+            m = self._llm.chat(messages=messages + [ChatMessage(role="user", content=prompt)], **kwargs)
 
             content = m.content
             ss = content.split("\n")
@@ -250,8 +256,12 @@ Task: {task}
                             ], tools=tools_spec)
 
                             if auto_exec_tools:
-                                m = self._execute_tools(message=m, history=messages,
-                                                        actions=tools or self._actions or [], **kwargs)
+                                m = self._execute_tools(
+                                    message=m,
+                                    history=messages,
+                                    actions=tools or self._actions or [],
+                                    **kwargs
+                                )
 
                             o_content = m.content.replace("\n", " ")
                             observation = f"Observation: {o_content}"
@@ -278,16 +288,24 @@ Thought Steps:
 ```
 
 Final question: {question}
-Your Answer:
-        """
+Your Answer:"""
         if not anwser_found:
             prompt = final_anwser_prompt.format(
-                task=task,
+                task=question,
                 steps="\n".join(steps),
                 question=original_question,
                 instructions=instructions
             )
-            anwser = self._llm.chat(messages=[ChatMessage(role="user", content=prompt)], **kwargs)
+            messages.append(ChatMessage(role="user", content=prompt))
+            anwser = self._llm.chat(messages=messages, **kwargs)
+
+        content = anwser.content
+        if content:
+            z = content.rfind('\nFinal Answer: ')
+            if z >= 0:
+                content = content[z + len('\nFinal Answer: '):]
+
+            anwser.content = content.replace("Final", "").replace("Answer:", "").replace("Thought:", "")
         self.add(anwser)
         return anwser
 

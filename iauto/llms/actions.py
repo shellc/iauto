@@ -108,7 +108,7 @@ class ReactAction(Action):
         playbook: Optional[Playbook] = None,
         session: Session,
         prompt,
-        history: int = 1,
+        history: int = 5,
         rewrite: bool = False,
         log: bool = False,
         max_steps: int = 3,
