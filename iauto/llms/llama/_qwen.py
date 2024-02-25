@@ -295,6 +295,11 @@ def parse_messages(messages, functions):
             "role": "assistant",
             "content": f"{query}\nThought: "
         })
+    elif last_role == "system":
+        messages.append({
+            "role": "system",
+            "content": query
+        })
     else:
         raise ValueError(f"Invalid role: {last_role}")
 
