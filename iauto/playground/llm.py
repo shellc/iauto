@@ -64,7 +64,8 @@ def reset_llm():
 playbook_vars = {
     "llm_provider": "openai",
     "llm_args": {},
-    "llm_chat_args": {}
+    "llm_chat_args": {},
+    "react": False
 }
 st.session_state["llm_args"] = {}
 st.session_state["llm_chat_args"] = {}
@@ -76,8 +77,11 @@ with st.sidebar:
         on_change=reset_llm
     )
 
+    if llm_mode == "Multi-Agent":
+        playbook_vars["react"] = st.checkbox("Enable agents ReAct", value=False)
+
     llm_provider = st.radio(
-        "Provider",
+        "LLM",
         ["OpenAI", "LLaMA", "ChatGLM"],
         captions=["OpenAI compatible API", "llama.cpp GGUF models", "chatglm.cpp GGUF model"],
     )

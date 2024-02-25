@@ -14,7 +14,8 @@ class AgentExecutor:
         session: Session,
         instructions: Optional[str] = None,
         human_input_mode: Optional[str] = "NEVER",
-        max_consecutive_auto_reply: Optional[int] = 10
+        max_consecutive_auto_reply: Optional[int] = 10,
+        react: Optional[bool] = False
     ) -> None:
         self._session = session
         self._agents = agents
@@ -40,7 +41,7 @@ class AgentExecutor:
             max_consecutive_auto_reply=max_consecutive_auto_reply,
             llm_config=llm_config
         )
-        self._user_proxy.register_model_client(model_client_cls=IASessionClient, session=session)
+        self._user_proxy.register_model_client(model_client_cls=IASessionClient, session=session, react=react)
 
         function_map = {}
         if self._session.actions:
@@ -63,7 +64,7 @@ class AgentExecutor:
                     llm_config=llm_config
                 )
                 tools_proxy.register_function(function_map=function_map)
-                tools_proxy.register_model_client(model_client_cls=IASessionClient, session=session)
+                tools_proxy.register_model_client(model_client_cls=IASessionClient, session=session, react=react)
                 self._agents.append(tools_proxy)
 
             speaker_selection_method = "round_robin" if len(self._agents) == 2 else "auto"
@@ -80,7 +81,7 @@ class AgentExecutor:
                 code_execution_config=code_execution_config,
                 max_consecutive_auto_reply=max_consecutive_auto_reply,
             )
-            mgr.register_model_client(model_client_cls=IASessionClient, session=session)
+            mgr.register_model_client(model_client_cls=IASessionClient, session=session, react=react)
             self._recipient = mgr
         else:
             raise ValueError("agents error")

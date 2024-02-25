@@ -2,7 +2,7 @@ import json
 from types import SimpleNamespace
 
 from autogen import ModelClient
-from typing_extensions import Dict
+from typing_extensions import Dict, Optional
 
 from iauto.llms import ChatMessage, Session
 
@@ -10,9 +10,10 @@ from .. import _logging
 
 
 class IASessionClient(ModelClient):
-    def __init__(self, config, session: Session, **kwargs) -> None:
+    def __init__(self, config, session: Session, react: Optional[bool] = False, **kwargs) -> None:
         self._model = config.get("model")
         self._session = session
+        self._react = react
 
         self._log = _logging.get_logger("IASessionClient")
 
@@ -36,7 +37,10 @@ class IASessionClient(ModelClient):
         tool_calls = params.get("tools") or []
         use_tools = len(tool_calls) > 0
 
-        m = self._session.run(messages=messages, use_tools=use_tools, auto_exec_tools=False)
+        if self._react:
+            m = self._session.react(messages=messages, use_tools=use_tools, auto_exec_tools=False)
+        else:
+            m = self._session.run(messages=messages, use_tools=use_tools, auto_exec_tools=False)
         if self._log.isEnabledFor(_logging.DEBUG):
             self._log.debug(json.dumps(m.model_dump(), indent=4, ensure_ascii=False))
 

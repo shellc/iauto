@@ -182,32 +182,25 @@ class Session:
         primary_prompt = """{instructions}
 Solve a question answering task with interleaving Thought, Action, Observation steps.
 
-Thought can reason about the current situation, and Action can be three types:
+Thought can reason about the current situation, and Action can be two types:
 (1) Generate[entity], which use tools to generate an obersvation.
-If need current date, it's : {datetime}
 (2) Finish[answer], which returns the answer and finishes the task.
 
-Example:
-```
-Task: Who is Olivia Wilde's boyfriend? What is his current age raised to the 0.23 power?
+Use the following format:
 
-Thought: I need to find out who Olivia Wilde's boyfriend is and then calculate his age raised to the 0.23 power.
-Action: Generate["Olivia Wilde boyfriend"]
-Observation: Olivia Wilde started dating Harry Styles after ending her years-long engagement to Jason Sudeikis \
-— see their relationship timeline.
-Thought: I need to find out Harry Styles' age.
-Action: Generate["Harry Styles age"]
-Observation: 29 years
-Thought: I need to calculate 29 raised to the 0.23 power.
-Action: Generate[29^0.23]
-Observation: 2.169459462491557
-Thought: I now know the final answer.
-Action: Finish["Harry Styles, Olivia Wilde's boyfriend, is 29 years old and his age raised to the 0.23 power is \
-2.169459462491557."]
-```
+Task: the task you must solve
+Thought: you should always think about what to do
+Action: Generate["the action to take"]
+Observation: the result of the action
+... (this Thought/Action/Observation can be repeated zero or more times)
+Thought: I now know the final answer
+Action: Finish["the final answer to the original input question"]
+
+Refer to the conversation hisotry to help you understand the task.
+
+Begin!
 
 Task: {task}
-
 {steps}
         """
         THOUGHT = "Thought: "

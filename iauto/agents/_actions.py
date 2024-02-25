@@ -14,6 +14,7 @@ def create_agent(
     *args,
     type: str = "assistant",
     session: Session,
+    react: Optional[bool] = False,
     name: str = "assistant",
     description: Optional[str] = None,
     instructions: Optional[str] = None,
@@ -41,7 +42,7 @@ def create_agent(
             description=description,
             llm_config=llm_config
         )
-        agent.register_model_client(model_client_cls=IASessionClient, session=session)
+        agent.register_model_client(model_client_cls=IASessionClient, session=session, react=react)
     else:
         raise ValueError(f"Invalid agent type: {type}")
     return agent
@@ -53,6 +54,7 @@ def create_agent(
 def create_agent_executor(
     *args,
     session: Session,
+    react: Optional[bool] = False,
     agents: List[ConversableAgent],
     instructions: Optional[str] = None,
     max_consecutive_auto_reply: Optional[int] = 10,
@@ -60,6 +62,7 @@ def create_agent_executor(
 ):
     return AgentExecutor(
         session=session,
+        react=react,
         agents=agents,
         instructions=instructions,
         max_consecutive_auto_reply=max_consecutive_auto_reply
