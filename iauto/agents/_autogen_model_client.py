@@ -10,10 +10,18 @@ from .. import _logging
 
 
 class IASessionClient(ModelClient):
-    def __init__(self, config, session: Session, react: Optional[bool] = False, **kwargs) -> None:
+    def __init__(
+        self,
+        config,
+        session: Session,
+        react: Optional[bool] = False,
+        llm_args: Optional[Dict] = None,
+        **kwargs
+    ) -> None:
         self._model = config.get("model")
         self._session = session
         self._react = react
+        self._llm_args = llm_args or {}
 
         self._log = _logging.get_logger("IASessionClient")
 
@@ -38,9 +46,9 @@ class IASessionClient(ModelClient):
         use_tools = len(tool_calls) > 0
 
         if self._react:
-            m = self._session.react(messages=messages, use_tools=use_tools, auto_exec_tools=False)
+            m = self._session.react(messages=messages, use_tools=use_tools, auto_exec_tools=False, **self._llm_args)
         else:
-            m = self._session.run(messages=messages, use_tools=use_tools, auto_exec_tools=False)
+            m = self._session.run(messages=messages, use_tools=use_tools, auto_exec_tools=False, **self._llm_args)
         if self._log.isEnabledFor(_logging.DEBUG):
             self._log.debug(json.dumps(m.model_dump(), indent=4, ensure_ascii=False))
 

@@ -1,5 +1,5 @@
 from autogen import AssistantAgent, ConversableAgent
-from typing_extensions import List, Optional
+from typing_extensions import Dict, List, Optional
 
 from ..actions._loader import register_action
 from ..llms import ChatMessage, Session
@@ -14,6 +14,7 @@ def create_agent(
     *args,
     type: str = "assistant",
     session: Session,
+    llm_args: Optional[Dict] = None,
     react: Optional[bool] = False,
     name: str = "assistant",
     description: Optional[str] = None,
@@ -42,7 +43,7 @@ def create_agent(
             description=description,
             llm_config=llm_config
         )
-        agent.register_model_client(model_client_cls=IASessionClient, session=session, react=react)
+        agent.register_model_client(model_client_cls=IASessionClient, session=session, react=react, llm_args=llm_args)
     else:
         raise ValueError(f"Invalid agent type: {type}")
     return agent
@@ -54,6 +55,7 @@ def create_agent(
 def create_agent_executor(
     *args,
     session: Session,
+    llm_args: Optional[Dict] = None,
     react: Optional[bool] = False,
     agents: List[ConversableAgent],
     instructions: Optional[str] = None,
@@ -62,6 +64,7 @@ def create_agent_executor(
 ):
     return AgentExecutor(
         session=session,
+        llm_args=llm_args,
         react=react,
         agents=agents,
         instructions=instructions,
