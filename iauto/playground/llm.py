@@ -20,12 +20,20 @@ st.set_page_config(
 
 
 def print_received(message, sender, receiver):
-    avatar = "🤖"
-    with st.chat_message(sender.name, avatar=avatar):
-        content = message if isinstance(message, str) else message["content"]
-        content = f"**{sender.name}** -> **{receiver.name}**\n\n{content}"
+    with st.chat_message("assistant"):
+        content = ""
+        if isinstance(message, str):
+            content = message
+        else:
+            content = message["content"]
+            if "tool_calls" in message:
+                func_name = message["tool_calls"][0]["function"]["name"]
+                func_args = message["tool_calls"][0]["function"]["arguments"]
+                content = content + f"\n```python\n{func_name}({func_args})\n```"
+
+        content = f"**{sender.name}** (to {receiver.name})\n\n{content}"
         st.markdown(content)
-        st.session_state.messages.append({"role": sender.name, "content": content, "avatar": avatar})
+        st.session_state.messages.append({"role": "assistant", "content": content})
 
 
 def create_llm(llm_mode, playbook_vars):
@@ -48,6 +56,10 @@ def reset(llm):
     st.session_state.messages.clear()
 
 
+def reset_llm():
+    st.session_state.llm = None
+
+
 # Sidebar
 playbook_vars = {
     "llm_provider": "openai",
@@ -60,13 +72,14 @@ st.session_state["llm_chat_args"] = {}
 with st.sidebar:
     llm_mode = st.radio(
         "Mode",
-        ["Chat", "ReAct", "Multi-Agent"]
+        ["Chat", "ReAct", "Multi-Agent"],
+        on_change=reset_llm
     )
 
     llm_provider = st.radio(
         "Provider",
         ["OpenAI", "LLaMA", "ChatGLM"],
-        captions=["OpenAI compatible API", "llama.cpp GGUF models", "chatglm.cpp GGUF model"]
+        captions=["OpenAI compatible API", "llama.cpp GGUF models", "chatglm.cpp GGUF model"],
     )
 
     if llm_provider == "OpenAI":
@@ -146,7 +159,7 @@ if "messages" not in st.session_state:
 for message in st.session_state.messages:
     role = message["role"]
     content = message["content"]
-    with st.chat_message(role, avatar=message.get("avatar")):
+    with st.chat_message(role):
         if message["role"] == "user":
             content = f"{content}"
         st.markdown(content)
@@ -164,15 +177,18 @@ if st.session_state.get("llm") is not None:
 
         # Display assistant response in chat message container
         resp_message = None
+
         if llm_mode == "Chat" or llm_mode == "ReAct":
-            llm.add(ChatMessage(role="user", content=prompt))
-            if llm_mode == "Chat":
-                resp = llm.run(**playbook_vars["llm_chat_args"], use_tools=use_tools)
-            elif llm_mode == "ReAct":
-                resp = llm.react(**playbook_vars["llm_chat_args"], use_tools=use_tools)
+            with st.spinner("Generating..."):
+                llm.add(ChatMessage(role="user", content=prompt))
+                if llm_mode == "Chat":
+                    resp = llm.run(**playbook_vars["llm_chat_args"], use_tools=use_tools)
+                elif llm_mode == "ReAct":
+                    resp = llm.react(**playbook_vars["llm_chat_args"], use_tools=use_tools)
             resp_message = resp.content
         elif llm_mode == "Multi-Agent":
-            resp = llm.run(message=ChatMessage(role="user", content=prompt), clear_history=False)
+            with st.status("Agents Conversation", expanded=True):
+                resp = llm.run(message=ChatMessage(role="user", content=prompt), clear_history=False)
             resp_message = resp["summary"]
         else:
             raise ValueError(f"Invalid llm: {type(llm)}")
