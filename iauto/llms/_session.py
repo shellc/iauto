@@ -1,7 +1,7 @@
 import json
 import re
 from datetime import datetime
-from typing import List, Optional
+from typing import Dict, List, Optional, Union
 
 from .._logging import get_logger
 from ..actions import Action
@@ -104,7 +104,7 @@ class Session:
         use_tools: bool = True,
         auto_exec_tools: bool = True,
         **kwargs
-    ) -> ChatMessage:
+    ) -> Union[ChatMessage, Dict]:
         if rewrite:
             self.rewrite(history=history, **kwargs)
 
@@ -123,8 +123,8 @@ class Session:
         if auto_exec_tools:
             m = self._execute_tools(message=m, history=messages, actions=tools or self._actions or [], **kwargs)
 
+        json_obj = None
         if expect_json > 0:
-            json_obj = None
             for i in range(expect_json):
                 try:
                     json_obj = json.loads(m.content)
@@ -138,7 +138,11 @@ class Session:
                 m.content = "{}"
 
         self.add(m)
-        return m
+
+        if json_obj:
+            return json_obj
+        else:
+            return m
 
     def react(
         self,
