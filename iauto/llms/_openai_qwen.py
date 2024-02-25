@@ -25,26 +25,12 @@ class QWen(OpenAI):
             return super().chat(messages, **kwargs)
 
         # tools call
-        instructions = []
-
-        # conversations = self.plain_messages(messages=messages)
-        # instructions.append(f"Conversation:\n```\n{conversations}\n```")
-
         tools_description = [t.oai_spec() for t in tools]
+        qe_messages = [m.model_dump() for m in messages]
+        qe_messages = _qwen.parse_messages(messages=qe_messages, functions=tools_description)
+        messages = [ChatMessage.from_dict(m) for m in qe_messages]
 
-        instructions.append(_qwen.generate_function_instructions(functions=tools_description))
-
-        if len(messages) == 0:
-            raise ValueError("Message is empty.")
-
-        last_message = messages[-1].content
-        instructions.append(f"Question: {last_message}")
-
-        instructions.append("Thought: I need to decide if I need to use a tool or function to answer the question.")
-
-        messages.append(ChatMessage(role="system", content='\n'.join(instructions)))
         m = super().chat(messages=messages, tools=tools, **kwargs)
-
         choice = _qwen.parse_response(m.content)
 
         if choice["finish_reason"] == "tool_calls":

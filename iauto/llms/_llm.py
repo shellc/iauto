@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel
 
@@ -26,6 +26,29 @@ class ChatMessage(Message):
     tool_calls: Optional[List[ToolCall]] = None
     tool_call_id: Optional[str] = None
     name: Optional[str] = None
+
+    @staticmethod
+    def from_dict(d: Dict) -> "ChatMessage":
+        m = ChatMessage(role="", content="")
+        m.role = d.get("role") or ""
+        m.content = d.get("content") or ""
+        m.tool_call_id = d.get("tool_call_id")
+        m.name = d.get("name")
+
+        m.tool_calls = []
+        tool_calls = d.get("tool_calls") or []
+        for tool_call in tool_calls:
+            m.tool_calls.append(
+                ToolCall(
+                    id=tool_call["id"],
+                    type=tool_call["type"],
+                    function=Function(
+                        name=tool_call["function"]["name"],
+                        arguments=tool_call["function"]["arguments"]
+                    )
+                )
+            )
+        return m
 
 
 class LLM(ABC):

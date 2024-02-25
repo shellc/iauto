@@ -43,10 +43,13 @@ class Session:
         functions = dict([(func.spec.name.replace(".", "_"), func) for func in actions])
 
         func_resps = []
+        tool_call_id = None
+        tool_call_func_name = None
         for tool_call in message.tool_calls:
             if not tool_call.function:
                 continue
 
+            call_id = tool_call.id
             func_name = tool_call.function.name
             func_args = tool_call.function.arguments or '{}'
 
@@ -71,12 +74,24 @@ class Session:
 
             if func_resp:
                 func_resps.append(func_resp)
+                tool_call_id = call_id
+                tool_call_func_name = func_name
 
-        message.role = "assistant"
+                break  # call only one function
+
         if len(func_resps) > 0:
-            message.content = '\n'.join(func_resps)
+            self.add(message=message)
 
-        return message
+            m = ChatMessage(
+                role="tool",
+                content='\n'.join(func_resps),
+                tool_call_id=tool_call_id,
+                name=tool_call_func_name,
+                tool_calls=message.tool_calls
+            )
+            return m
+        else:
+            return message
 
     def run(
         self,

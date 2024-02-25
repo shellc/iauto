@@ -5,7 +5,7 @@ from typing import Iterator, List, Optional, Union
 import llama_cpp as llama
 import llama_cpp.llama_types as llama_types
 
-from ..._logging import get_logger
+from ..._logging import DEBUG, get_logger
 
 _log = get_logger(__name__)
 
@@ -45,28 +45,21 @@ def qwen_chat_handler(
     grammar: Optional[llama.LlamaGrammar] = None,
     **kwargs,  # type: ignore
 ) -> Union[llama_types.ChatCompletion, Iterator[llama_types.ChatCompletionChunk]]:
-    messages.insert(0, {
-        "role": "system",
-        "content": "You're a useful assistant."
-    })
+    if _log.isEnabledFor(DEBUG):
+        _log.debug(f"Original Messages: {messages}")
 
-    if tools is not None and len(tools) > 0:
-        question = messages[-1]["content"]
-        # conversations = "\n".join([f"{m['role']}: {m['content']}" for m in messages])
+    messages = parse_messages(messages=messages, functions=tools)
 
-        tool_call_instruct = generate_function_instructions(functions=tools)
-        system_message = f"""{tool_call_instruct}
-Question: {question}
-Thought: I need to think if I can give the final answer directly, \
-if not I need to call the function to answer the question."""
-
-        messages.append({"role": "system", "content": system_message})
+    if _log.isEnabledFor(DEBUG):
+        _log.debug(f"Parsed Messages: {messages}")
 
     prompt = _format_raw_prompt(messages=messages)
 
-    # if len(messages) > 0 and messages[-1]["role"] != "user":  # Completion
-    #    prompt = prompt[:-len(f"{IM_END}\n{IM_START}assistant\n")]
-    _log.debug(f"Raw prompt: {prompt}")
+    if len(messages) > 0 and messages[-1]["role"] == "assistant":  # Completion
+        prompt = prompt[:-len(f"{IM_END}\n{IM_START}assistant\n")]
+
+    if _log.isEnabledFor(DEBUG):
+        _log.debug(f"Raw prompt: {prompt}")
 
     stop = STOPS[::]
     if tools:
@@ -92,7 +85,6 @@ if not I need to call the function to answer the question."""
         model=model,
         logits_processor=logits_processor,
     )
-    _log.debug(f"Resp: {resp}")
 
     if isinstance(resp, Iterator):
         raise ValueError(f"Invalid resp: {resp}")
@@ -111,6 +103,9 @@ if not I need to call the function to answer the question."""
         completion_tokens=0,
         total_tokens=0
     )
+
+    if _log.isEnabledFor(DEBUG):
+        _log.debug(f"Resp: {resp}")
 
     return llama_types.CreateChatCompletionResponse(
         id="chat" + resp["id"],
@@ -155,24 +150,6 @@ def _format_raw_prompt(messages):
         prompt.append(f"{IM_START}{role}\n{content}{IM_END}")
     prompt.append(f"{IM_START}assistant\n")
 
-    """
-    system_messages = []
-    for m in messages:
-        role = m['role']
-        content = m["content"]
-        if role in ["user", "assistant"]:
-            prompt.append(f"{IM_START}{role}\n{content}{IM_END}")
-        elif role == "system":
-            system_messages.append(content)
-    prompt.append(f"{IM_START}assistant\n")
-
-    system = "You are a helpful assistant."
-    if len(system_messages) > 0:
-        system = "\n".join(system_messages).strip()
-    system = f"{IM_START}system\n{system}{IM_END}"
-
-    prompt.insert(0, system)
-    """
     return "\n".join(prompt)
 
 
@@ -213,92 +190,118 @@ def generate_function_instructions(functions):
 
 
 def parse_messages(messages, functions):
-    if all(m["role"] != 'user' for m in messages):
-        raise ValueError('Invalid request: Expecting at least one user message.')
+    if messages is None or len(messages) == 0:
+        raise ValueError("Messages is empty.")
 
-    messages = copy.deepcopy(messages)
+    if functions is None or len(functions) == 0:
+        if all(m["role"] != "system" for m in messages):
+            system = "You're a useful assistant."
+            messages.insert(0, {"role": "system", "content": system})
+        return messages
 
-    instruction = ''
-    if functions:
-        instruction = generate_function_instructions(functions=functions)
+    # Function call
+    instruction = generate_function_instructions(functions=functions)
 
-    messages_with_fncall = messages
+    messages_with_fncall = copy.deepcopy(messages)
     messages = []
     for m_idx, m in enumerate(messages_with_fncall):
-        role, content, func_call = m["role"], m["content"], m.get("function_call")
+        role, content, tool_calls = m["role"], m["content"], m.get("tool_calls")
         content = content or ''
         content = content.lstrip('\n').rstrip()
-        if role == 'function':
-            if (len(messages) == 0) or (messages[-1]["role"] != 'assistant'):
-                raise ValueError(
-                    'Invalid request: Expecting role assistant before role function.'
-                )
-            messages[-1]["content"] += f'\nObservation: {content}'
-            if m_idx == len(messages_with_fncall) - 1:
-                # add a prefix for text completion
-                messages[-1]["content"] += '\nThought:'
+        if role == 'tool':
+            messages.append({
+                "role": "tool",
+                "content": f'\nObservation: {content}'
+            })
         elif role == 'assistant':
-            if len(messages) == 0:
-                raise ValueError(
-                    'Invalid request: Expecting role user before role assistant.'
-                )
-            if func_call is None:
+            if tool_calls is None or len(tool_calls) == 0:
                 if functions:
                     content = f'Thought: I now know the final answer.\nFinal Answer: {content}'
             else:
-                f_name, f_args = func_call['name'], func_call['arguments']
+                f_name, f_args = tool_calls[0]["function"]['name'], tool_calls[0]["function"]['arguments']
                 if not content.startswith('Thought:'):
                     content = f'Thought: {content}'
                 content = f'{content}\nAction: {f_name}\nAction Input: {f_args}'
-            if messages[-1]["role"] == 'user':
+            if len(messages) > 0:
+                if messages[-1]["role"] == 'user':
+                    messages.append({
+                        "role": "assistant",
+                        "content": content.lstrip('\n').rstrip()
+                    })
+                elif messages[-1]["role"] == 'assistant':
+                    messages[-1]["content"] += '\n' + content
+            else:
                 messages.append({
                     "role": "assistant",
                     "content": content.lstrip('\n').rstrip()
                 })
-            else:
-                messages[-1]["content"] += '\n' + content
         elif role == "user":
             messages.append({
                 "role": "user",
-                "content": content.lstrip('\n').rstrip()
+                "content": f"Question: {content}"
             })
         elif role == "system":
-            instruction = content.lstrip('\n').rstrip() + instruction
+            messages.append({"role": "system", "content": content})
         else:
             raise ValueError(f'Invalid request: Incorrect role {role}.')
 
-    query = None
-    if messages[-1]["role"] == "user":
-        query = messages[-1]["content"]
-        messages = messages[:-1]
+    last = messages[-1]
+    last_role = last["role"]
+    query = last["content"].lstrip('\n').rstrip()
+    messages = messages[:-1]
 
-    if len(messages) % 2 != 0:
-        raise ValueError('Invalid request')
+    # last_tool = messages[-1] if len(messages) > 0 and messages[-1]["role"] == "tool" else None
+    last_user = None
 
-    history = []  # [(Q1, A1), (Q2, A2), ..., (Q_last_turn, A_last_turn)]
-    for i in range(0, len(messages), 2):
-        if messages[i]["role"] == 'user' and messages[i + 1]["role"] == 'assistant':
-            usr_msg = messages[i]["content"].lstrip('\n').rstrip()
-            bot_msg = messages[i + 1]["content"].lstrip('\n').rstrip()
-            if instruction and (i == len(messages) - 2):
-                usr_msg = f'{instruction}\n\nQuestion: {usr_msg}'
-                instruction = ''
-            history.append([usr_msg, bot_msg])
+    for m in messages[::-1]:
+        role = m["role"]
+        if last_user is None and role == "user":
+            last_user = m
+        if last_user:
+            break
+
+    if last_role == "tool":
+        messages.append({
+            "role": "user",
+            "content": query
+        })
+    elif last_role == "user":
+        messages.append({
+            "role": "user",
+            "content": f"{query}\nThought: "
+        })
+        """
+        is_final_anwser = False
+        if len(messages) > 0 and messages[-1]["role"] == "assistant" and "Final Answer" in messages[-1]["content"]:
+            is_final_anwser = True
+
+        if (last_tool and last_user) or (not is_final_anwser and last_user):
+            user_content = last_user["content"].lstrip('\n').rstrip()
+            last_user["content"] = f"{instruction}\n\nQuestion: {user_content}"
+
+            content = f"Question: {query}\nThought: "
+            messages.append({
+                "role": "user",
+                "content": content
+            })
         else:
-            raise ValueError(
-                'Invalid request: Expecting exactly one user (or function) role before every assistant role.',
-            )
+            messages.append({
+                "role": "user",
+                "content": f"{instruction}\n\nQuestion: {query}"
+            })
+            """
+    elif last_role == "assistant":
+        messages.append({
+            "role": "assistant",
+            "content": f"{query}\nThought: "
+        })
+    else:
+        raise ValueError(f"Invalid role: {last_role}")
 
-    if instruction:
-        assert query is not None
-        query = f"{instruction}\n\nQuestion: {query}"
-
-    messages = []
-    for h in history:
-        messages.append({"role": "user", "content": h[0]})
-        messages.append({"role": "assistant", "content": h[1]})
-    if query:
-        messages.append({"role": "user", "content": query})
+    messages.insert(0, {
+        "role": "system",
+        "content": f"{instruction}\n\n{query}"
+    })
     return messages
 
 
