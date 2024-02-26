@@ -1,16 +1,20 @@
+<img src="website/static/img/icon.svg" title="iauto" height="128">
+
 # iauto
 
-`iauto` is a Python library for intelligent automation.
+`iauto` is an intelligent automation tool that integrates LLM and RPA.
 
 ## Key Features
 
-* **Workflow Orchestration**: Defining workflow using YAML, for collaboration and version control
-* **Playwright Integration**: Automate web workflows with Playwright
-* **Appium Integration**: Automate web, iOS, Android, Windows, and macOS workflows with Appium
-* **LLMs Integration**: Integrate AI into automated workflows, support OpenAI API and self-hosting LLMs
-    * [OpenAI Chat completion API](https://platform.openai.com/docs/api-reference)
-    * [llama.cpp](https://github.com/ggerganov/llama.cpp) with more than 20 modles
-    * ChatGLM by chatglm.cpp
+* **Low-Code**: Define workflows using YAML, for collaboration and version control.
+* **Automation**: Integrated multiple automation frameworks such as [Appium](https://github.com/appium/appium) and [Playwright](https://playwright.dev/python/).
+* **Extensible**: Friendly extensible interface that allows customization of any complex Action.
+* **AI native**: Create workflows containing LLM using low-code, as well as more complex automation agents based on ***ReAct*** or ***Multi-Agent***.
+
+## News
+
+* Integrate [autoge](https://github.com/microsoft/autogen), define your automation Multi-Agent using YAML.
+* Support for running most open source LLM locally is provided through [llama.cpp](https://github.com/ggerganov/llama.cpp).
 
 ## Quick Start
 
@@ -24,6 +28,8 @@ Python version requirement: >=3.8
 pip install -U iauto
 ```
 
+If you need to run LLM locally, you can enable hardware acceleration in the following ways.
+
 To enable cuBLAS acceleration on NVIDIA GPU:
 
 ```bash
@@ -36,13 +42,15 @@ To enable Metal on Apple silicon devices:
 CMAKE_ARGS="-DGGML_METAL=ON" pip install -U iauto
 ```
 
-### Playbook
+### Examples
 
-Automate your workflow by writing a playbook.
+Playbook is a YAML formatted file used to describe your workflow. In most cases, all you need to do is write a YAML file.
 
 **Example: Web automation**
 
-`browser.yaml`
+This example will open the local browser, then visit https://bing.com, execute JavaScript in the browser, and obtain the result.
+
+`browser.yaml` :
 
 ```yaml
 playbook:
@@ -76,7 +84,9 @@ python -m iauto ./browser.yaml
 
 **Example: Chatbot**
 
-`chatbot.yaml`:
+This example will start an interactive chatbot in the terminal. You can set the OPENAI_API_KEY in the environment variable, which will give you an application similar to ChatGPT.
+
+`chatbot.yaml` :
 
 ```yaml
 playbook:
@@ -109,16 +119,21 @@ Run the playbook:
 python -m iauto ./chatbot.yaml
 ```
 
-* [Control Flow](./playbooks/control_flow.yaml)
-* [Appium Webdriver](./playbooks/webdriver.yaml)
-* [Playwright Browser](./playbooks/browser.yaml)
-* [OpenAI REPL Chatbot](./playbooks/openai_repl.yaml)
-* [Self-hosting LLM Chatbot](./playbooks/llama_repl.yaml)
-* [LLM ReAct reasoning](./playbooks/llm_react_repl.yaml)
-* [Bing search](./playbooks/bing.yaml)
-* [Google News](./playbooks/google_news.yaml)
-
 **[More example playbooks](./playbooks)**
+
+## Playground
+
+iauto provides a web-based playground program to facilitate the execution of some workflows. For example, the LLM playground is a workspace for LLM Chat, ReAct reasoning, and Multi-Agent tasks.
+
+Run LLM playground:
+
+```bash
+python -m iauto --playground=llm --playbook-dir=./playbooks
+```
+
+**LLM playground screenshot:**
+
+![LLM playground screenshot](./website/static/img/screenshot_playground_llm.png)
 
 ## Contribution
 
@@ -150,3 +165,5 @@ pre-commit install
 ## License
 
 [MIT](./LICENSE)
+
+<img src="website/static/img/icon.svg" title="iauto" height="16"> icon license: https://openmoji.org/library/emoji-1F9BE
