@@ -13,7 +13,7 @@
 
 ## News
 
-* Integrate [autoge](https://github.com/microsoft/autogen), define your automation Multi-Agent using YAML.
+* Integrate [autogen](https://github.com/microsoft/autogen), define your automation Multi-Agent using YAML.
 * Support for running most open source LLM locally is provided through [llama.cpp](https://github.com/ggerganov/llama.cpp).
 
 ## Quick Start
