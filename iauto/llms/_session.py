@@ -140,7 +140,8 @@ class Session:
         messages: Optional[List[ChatMessage]] = None,
         history: int = 5,
         rewrite: bool = False,
-        log=False, max_steps=3,
+        log=False,
+        max_steps=3,
         tools: Optional[List[Action]] = None,
         use_tools: bool = True,
         auto_exec_tools: bool = True,
@@ -160,9 +161,6 @@ class Session:
                 tools_spec = [t.spec for t in tools]
             elif self._actions:
                 tools_spec = [t.spec for t in self._actions]
-        # m = self._llm.chat(messages=messages, tools=tools_spec, **kwargs)
-        # if auto_exec_tools:
-        #    m = self._execute_tools(message=m, history=messages, actions=tools or self._actions or [], **kwargs)
 
         original_question = messages[-1].content
         question = original_question
@@ -201,7 +199,6 @@ Task: {task}
         ACTION = "Action: "
         OBSERVATION = "Observation: "
 
-        # task = self.plain_messages(messages=messages, norole=True, nowrap=True)
         if log:
             self._log.info(f"Task: {question}")
 
@@ -223,7 +220,6 @@ Task: {task}
             prompt = primary_prompt.format(
                 task=question,
                 steps="\n".join(steps),
-                datetime=datetime.now(),
                 instructions=instructions
             )
 
