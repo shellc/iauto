@@ -42,19 +42,17 @@ class Session:
 
         functions = dict([(func.spec.name.replace(".", "_"), func) for func in actions])
 
-        func_resps = []
-        tool_call_id = None
-        tool_call_func_name = None
-        for tool_call in message.tool_calls:
+        if message.tool_calls and len(message.tool_calls) > 0:
+            tool_call = message.tool_calls[0]
             if not tool_call.function:
-                continue
+                raise ValueError(f"Invalid function: {tool_call.function}")
 
             call_id = tool_call.id
             func_name = tool_call.function.name
             func_args = tool_call.function.arguments or '{}'
 
             if func_name not in functions:
-                continue
+                raise ValueError(f"Function not found: {func_name}")
 
             func_to_call = functions[func_name]
 
@@ -72,22 +70,14 @@ class Session:
                 except TypeError:
                     self._log.warn("Function return values cannot be JSONized")
 
-            if func_resp:
-                func_resps.append(func_resp)
-                tool_call_id = call_id
-                tool_call_func_name = func_name
-
-                break  # call only one function
-
-        if len(func_resps) > 0:
             self.add(message=message)
-
+            if call_id is None:
+                raise ValueError("tool_call_id required.")
             m = ChatMessage(
                 role="tool",
-                content='\n'.join(func_resps),
-                tool_call_id=tool_call_id,
-                name=tool_call_func_name,
-                tool_calls=message.tool_calls
+                content='\n'.join(func_resp or f"{func_name} return nothing."),
+                tool_call_id=call_id,
+                name=func_name,
             )
             return m
         else:
