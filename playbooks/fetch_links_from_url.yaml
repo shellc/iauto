@@ -1,0 +1,40 @@
+playbook:
+  spec:
+    name: fetch_links_from_url
+    description: Fetch titles and links from a URL.
+    arguments:
+      - name: url
+        type: string
+        description: HTTP URL
+        required: true
+  actions:
+    - browser.open:
+        args:
+          exec: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
+          headless: true
+          user_data_dir: /tmp/.chrom
+        result: $browser
+    - log: "Fetch Link: {$url}"
+    - browser.goto:
+        args:
+          browser: $browser
+          url: $url
+        result: $page
+    - time.wait: 3
+    - browser.scroll:
+        args:
+          page: $page
+          y: 150000
+    - time.wait: 3
+    - browser.eval:
+        args:
+          page: $page
+          javascript: |
+            [...document.querySelectorAll("a")].map(v => {{
+                title = v.innerText?.trim()
+                link = v.href
+                return {{title, link}}
+            }}).filter(v => v.title && v.title.length > 5)
+        result: $links
+    - browser.close: $browser
+    - echo: $links

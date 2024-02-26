@@ -12,6 +12,7 @@ playbook:
         args:
           exec: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
           headless: true
+          user_data_dir: /tmp/.chrom
         result: $browser
     - log: "Readability: {$url}"
     - browser.goto:
@@ -19,6 +20,11 @@ playbook:
           browser: $browser
           url: $url
         result: $page
+    #- browser.scroll:
+    #    args:
+    #      page: $page
+    #      y: 150000
+    #- time.wait: 3
     - browser.content:
         args:
           page: $page

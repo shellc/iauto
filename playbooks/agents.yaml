@@ -4,25 +4,29 @@ playbook:
     - agents.create:
         args:
           session: $session
+          react: $react
           name: GeneralAssistant
         result: $general_assistant
     - agents.create:
         args:
           session: $session
+          react: $react
           name: Journalist
           description: A journalist who is skilled in digging up, analyzing, and writing news.
         result: $journalist
     - agents.create:
         args:
           session: $session
+          react: $react
           name: FinacialAnalyst
           description: A financial analyst specializing in analyzing financial markets and investment opportunities.
         result: $finacial_analyst
     - agents.executor:
         args:
           session: $session
+          #react: $react
           agents:
             - $general_assistant
-            - $journalist
-            - $finacial_analyst
+            #- $journalist
+            #- $finacial_analyst
         result: $agent_executor
