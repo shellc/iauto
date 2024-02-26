@@ -137,7 +137,8 @@ def main():
         parser.print_help()
 
 
-try:
-    main()
-except KeyboardInterrupt:
-    print("Bye.\n")
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("Bye.\n")
