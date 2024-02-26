@@ -26,7 +26,6 @@ class LLaMA(LLM):
         if "n_gpu_layers" not in kwargs:
             kwargs["n_gpu_layers"] = -1
 
-        # kwargs["chat_handler"] = llama_cpp.llama_chat_format.functionary_chat_handler
         self._llm = llama_cpp.Llama(**kwargs)
         self._model = kwargs.get("model_path", "LLaMA")
 

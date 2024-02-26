@@ -111,24 +111,34 @@ with st.sidebar:
     elif llm_provider == "LLaMA":
         playbook_vars["llm_provider"] = "llama"
 
-        model = st.text_input("Model path", value=st.session_state["llm_args"].get(
-            "llama_model_path", "/Volumes/Workspaces/models/Qwen-1_8B-Chat/ggml-model-q4_0.gguf"))
+        model = st.text_input(
+            "Model path",
+            value=st.session_state["llm_args"].get(
+                "llama_model_path", os.environ.get("LLAMA_MODEL_PATH") or "<LLAMA_MODEL_PATH>")
+        )
         playbook_vars["llm_args"]["model_path"] = model
         st.session_state["llm_args"]["llama_model_path"] = model
 
-        chat_format = st.text_input("Chat format", value=st.session_state["llm_args"].get("chat_format", "qwen-fn"))
+        chat_format = st.text_input(
+            "Chat format",
+            placeholder="auto",
+            value=st.session_state["llm_args"].get("chat_format", None)
+        )
         playbook_vars["llm_args"]["chat_format"] = chat_format
         st.session_state["llm_args"]["chat_format"] = chat_format
 
         repeat_penalty = st.number_input(
-            "repeat_penalty", value=st.session_state["llm_chat_args"].get("repeat_penalty", 1.2))
+            "repeat_penalty", value=st.session_state["llm_chat_args"].get("repeat_penalty", None))
         playbook_vars["llm_chat_args"]["repeat_penalty"] = repeat_penalty
         st.session_state["llm_chat_args"]["repeat_penalty"] = repeat_penalty
     elif llm_provider == "ChatGLM":
         playbook_vars["llm_provider"] = "chatglm"
 
-        model = st.text_input("Model path", value=st.session_state["llm_args"].get(
-            "chatglm_model_path", "/Volumes/Workspaces/models/chatglm3-6b/chatglm3-6b-ggml.bin"))
+        model = st.text_input(
+            "Model path",
+            value=st.session_state["llm_args"].get("chatglm_model_path", os.environ.get(
+                "CHATGLM_MODEL_PATH") or "<CHATGLM_MODEL_PATH>")
+        )
         playbook_vars["llm_args"]["model_path"] = model
         st.session_state["llm_args"]["chatglm_model_path"] = model
 
