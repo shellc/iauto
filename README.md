@@ -2,7 +2,7 @@
 
 # iauto
 
-`iauto` is an intelligent automation tool that integrates LLM and RPA.
+`iauto` is a Low-Code intelligent automation tool that integrates LLM and RPA..
 
 ## Key Features
 
