@@ -5,7 +5,7 @@ python-dotenv
 prompt_toolkit
 
 openai
-autogen
+pyautogen
 llama-cpp-python
 
 playwright
