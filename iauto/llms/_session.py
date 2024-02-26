@@ -123,10 +123,14 @@ class Session:
                     json_obj = json.loads(m.content)
                     break
                 except json.JSONDecodeError:
-                    m = self._llm.chat(messages=messages, functions=tools_spec, **kwargs)
+                    m = self._llm.chat(messages=messages, tools=tools_spec, **kwargs)
                     if auto_exec_tools:
-                        m = self._execute_tools(message=m, history=messages,
-                                                actions=tools or self._actions or [], **kwargs)
+                        m = self._execute_tools(
+                            message=m,
+                            history=messages,
+                            actions=tools or self._actions or [],
+                            **kwargs
+                        )
             if json_obj is None:
                 m.content = "{}"
 
