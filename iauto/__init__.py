@@ -2,7 +2,7 @@ from .actions import Playbook, PlaybookExecutor
 from .agents import _actions
 from .llms.actions import register_actions as register_llm_actions
 
-VERSION = "0.1.4"
+VERSION = "0.1.5"
 
 
 # Register actions
