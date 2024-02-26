@@ -35,6 +35,7 @@ class Session:
         message: ChatMessage,
         history: List[ChatMessage],
         actions: List[Action],
+        save_message: bool = True,
         **kwargs
     ) -> ChatMessage:
         if message.tool_calls is None or len(message.tool_calls) == 0:
@@ -70,7 +71,9 @@ class Session:
                 except TypeError:
                     self._log.warn("Function return values cannot be JSONized")
 
-            self.add(message=message)
+            if save_message:
+                self.add(message=message)
+
             if call_id is None:
                 raise ValueError("tool_call_id required.")
             m = ChatMessage(
@@ -258,6 +261,7 @@ Task: {task}
                                     message=m,
                                     history=messages,
                                     actions=tools or self._actions or [],
+                                    save_message=False,
                                     **kwargs
                                 )
 
