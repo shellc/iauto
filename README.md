@@ -129,14 +129,10 @@ In this example, two agents work together to solve user tasks collaboratively.
 playbook:
   actions:
     - llm.session:
-      args:
-        playbooks:
-          - ./bing.yaml
-          - ./fetch_links_from_url.yaml
-          - ./get_readability_text_from_url.yaml
-        actions:
-          - shell.cmd
-      result: $session
+        args:
+          actions:
+            - shell.cmd
+        result: $session
     - agents.create:
         args:
           session: $session
@@ -160,9 +156,9 @@ playbook:
           - shell.prompt:
               args: "Human: "
               result: $prompt
-          - agent.run:
+          - agents.run:
               args:
-                agenet_executor: $agent_executor
+                agent_executor: $agent_executor
                 message: $prompt
               result: $message
           - shell.print:
