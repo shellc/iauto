@@ -40,13 +40,17 @@ class OpenBrowserAction(Action):
                 timeout=30000,
                 entry=None,
                 user_data_dir=None,
+                devtools=False,
                 **kwargs
                 ) -> Union[Browser, BrowserContext]:
         async def _func():
             b_args = [
                 "--mute-audio",
-                "--disable-features=AudioServiceOutOfProcess,VideoCapture"
+                "--disable-features=AudioServiceOutOfProcess,VideoCapture",
+                "--disable-notifications",
+                '--disable-infobars',
             ]
+            kwds = {}
 
             if headless:
                 b_args.append("--disable-gpu")
@@ -64,14 +68,18 @@ class OpenBrowserAction(Action):
                     executable_path=exec,
                     headless=headless,
                     timeout=timeout,
-                    args=b_args
+                    args=b_args,
+                    devtools=devtools,
+                    **kwds
                 )
             else:
                 browser = await _playwright.chromium.launch(
                     executable_path=exec,
                     headless=headless,
                     timeout=timeout,
-                    args=b_args
+                    args=b_args,
+                    devtools=devtools,
+                    **kwds
                 )
             return browser
         return _event_loop.run_until_complete(_func())
@@ -84,32 +92,10 @@ class CloseBrowserAction(Action):
             "description": "Close the browser.",
         })
 
-    def perform(self, browser: Union[Browser, BrowserContext], *args, **kwargs) -> Any:
+    def perform(self, browser: Browser, *args, **kwargs) -> Any:
         async def _func():
             return await browser.close()
         return _event_loop.run_until_complete(_func())
-
-
-class NewPageAction(Action):
-    def __init__(self) -> None:
-        super().__init__()
-        self.spec = ActionSpec.from_dict({
-            "description": "Open a new tab in the browser.",
-        })
-
-    def perform(self, *args, browser: Union[Browser, BrowserContext], **kwargs) -> Page:
-        async def _func(browser):
-            if not isinstance(browser, BrowserContext):
-                if len(browser.contexts) == 0:
-                    await browser.new_context()
-                context = browser.contexts[0]
-            else:
-                context = browser
-
-            page = await context.new_page()
-            return page
-
-        return _event_loop.run_until_complete(_func(browser=browser))
 
 
 class GotoAction(Action):
@@ -122,22 +108,26 @@ class GotoAction(Action):
     def perform(
         self,
         *args,
-        browser: Union[Browser, BrowserContext, None] = None,
-        page: Optional[Page] = None,
+        browser: Union[Browser, Page],
+        new_context: Optional[bool] = False,
         url: str,
         timeout=30000,
         **kwargs
     ) -> Page:
-        async def _func(browser, page):
-            if page is None and browser is None:
+        async def _func(browser):
+            if browser is None:
                 raise ValueError("got action must specify browser or page.")
 
-            if not isinstance(browser, BrowserContext):
+            if isinstance(browser, Browser):
                 if len(browser.contexts) == 0:
                     await browser.new_context()
                 context = browser.contexts[0]
             else:
                 context = browser
+
+            page = None
+            if not new_context and len(context.pages) > 0:
+                page = context.pages[-1]
 
             if page is None:
                 page = await context.new_page()
@@ -145,7 +135,7 @@ class GotoAction(Action):
             await page.goto(url=url, timeout=timeout)
             await page.wait_for_load_state(state="domcontentloaded", timeout=timeout)
             return page
-        return _event_loop.run_until_complete(_func(browser=browser, page=page))
+        return _event_loop.run_until_complete(_func(browser=browser))
 
 
 class LocatorAction(Action):

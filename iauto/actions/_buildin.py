@@ -31,7 +31,6 @@ def get_buildin_actions():
 
     actions["browser.open"] = _browser.OpenBrowserAction()
     actions["browser.close"] = _browser.CloseBrowserAction()
-    actions["browser.new"] = _browser.NewPageAction()
     actions["browser.goto"] = _browser.GotoAction()
     actions["browser.locator"] = _browser.LocatorAction()
     actions["browser.click"] = _browser.ClickAction()
