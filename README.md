@@ -8,7 +8,7 @@
 
 * **Low-Code**: Define workflows using YAML, for collaboration and version control.
 * **Automation**: Integrated multiple automation frameworks such as [Appium](https://github.com/appium/appium) and [Playwright](https://playwright.dev/python/).
-* **Extensible**: Friendly extensible interface that allows customization of any complex Action.
+* **Extensible**: User-friendly extensible interface for customizing any complex Action.
 * **AI native**: Create workflows containing LLM using low-code, as well as more complex automation agents based on ***ReAct*** or ***Multi-Agent***.
 
 ## News
@@ -28,7 +28,7 @@ Python version requirement: >=3.8
 pip install -U iauto
 ```
 
-If you need to run LLM locally, you can enable hardware acceleration in the following ways.
+If you want to run LLM locally, you can enable hardware acceleration in the following ways.
 
 To enable cuBLAS acceleration on NVIDIA GPU:
 
@@ -44,7 +44,7 @@ CMAKE_ARGS="-DGGML_METAL=ON" pip install -U iauto
 
 ### Examples
 
-Playbook is a YAML formatted file used to describe your workflow. In most cases, all you need to do is write a YAML file.
+A Playbook is a YAML-formatted file that describes your workflow. In most cases, all you need to do is write a YAML file.
 
 **Example: Web automation**
 
@@ -84,7 +84,7 @@ python -m iauto ./browser.yaml
 
 **Example: Chatbot**
 
-This example will start an interactive chatbot in the terminal. You can set the OPENAI_API_KEY in the environment variable, which will give you an application similar to ChatGPT.
+This example launches an interactive chatbot in the terminal. You can configure the OPENAI_API_KEY in the environment variable to access an application similar to ChatGPT.
 
 `chatbot.yaml` :
 
@@ -119,11 +119,70 @@ Run the playbook:
 python -m iauto ./chatbot.yaml
 ```
 
-**[More example playbooks](./playbooks)**
+**Example: Multi-Agent**
+
+In this example, two agents work together to solve user tasks collaboratively.
+
+`multi-agent.yaml` :
+
+```yaml
+playbook:
+  actions:
+    - llm.session:
+      args:
+        playbooks:
+          - ./bing.yaml
+          - ./fetch_links_from_url.yaml
+          - ./get_readability_text_from_url.yaml
+        actions:
+          - shell.cmd
+      result: $session
+    - agents.create:
+        args:
+          session: $session
+          name: GeneralAssistant
+        result: $general_assistant
+    - agents.create:
+        args:
+          session: $session
+          name: FinacialAnalyst
+          description: A financial analyst specializing in analyzing financial markets and investment opportunities.
+        result: $finacial_analyst
+    - agents.executor:
+        args:
+          session: $session
+          agents:
+            - $general_assistant
+            - $finacial_analyst
+        result: $agent_executor
+    - repeat:
+        actions:
+          - shell.prompt:
+              args: "Human: "
+              result: $prompt
+          - agent.run:
+              args:
+                agenet_executor: $agent_executor
+                message: $prompt
+              result: $message
+          - shell.print:
+              args:
+                message: "AI: {$message}"
+                color: green
+```
+
+Run the playbook:
+
+```bash
+python -m iauto ./multi-agent.yaml
+```
+
+**[More examples](./playbooks)**
+
 
 ## Playground
 
-iauto provides a web-based playground program to facilitate the execution of some workflows. For example, the LLM playground is a workspace for LLM Chat, ReAct reasoning, and Multi-Agent tasks.
+iauto offers a web-based playground program for executing workflows. The LLM playground provides a workspace for LLM Chat, ReAct reasoning, and Multi-Agent tasks.
 
 Run LLM playground:
 
