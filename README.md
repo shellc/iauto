@@ -46,7 +46,7 @@ CMAKE_ARGS="-DGGML_METAL=ON" pip install -U iauto
 
 A Playbook is a YAML-formatted file that describes your workflow. In most cases, all you need to do is write a YAML file.
 
-**Example: Web automation**
+**Example 1: Web automation**
 
 This example will open the local browser, then visit https://bing.com, execute JavaScript in the browser, and obtain the result.
 
@@ -82,7 +82,7 @@ Run the playbook:
 python -m iauto ./browser.yaml
 ```
 
-**Example: Chatbot**
+**Example 2: Chatbot**
 
 This example launches an interactive chatbot in the terminal. You can configure the OPENAI_API_KEY in the environment variable to access an application similar to ChatGPT.
 
@@ -119,7 +119,7 @@ Run the playbook:
 python -m iauto ./chatbot.yaml
 ```
 
-**Example: Multi-Agent**
+**Example 3: Multi-Agent**
 
 In this example, two agents work together to solve user tasks collaboratively.
 
@@ -142,7 +142,9 @@ playbook:
         args:
           session: $session
           name: FinacialAnalyst
-          description: A financial analyst specializing in analyzing financial markets and investment opportunities.
+          description: |
+            A financial analyst specializing in analyzing financial markets
+            and investment opportunities.
         result: $finacial_analyst
     - agents.executor:
         args:
