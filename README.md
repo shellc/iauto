@@ -1,4 +1,4 @@
-<img src="website/static/img/icon.svg" title="iauto" height="128">
+<img src="./docs/assets/img/icon.svg" title="iauto" height="128">
 
 # iauto
 
@@ -190,7 +190,7 @@ python -m iauto --playground=llm --playbook-dir=./playbooks
 
 **LLM playground screenshot:**
 
-![LLM playground screenshot](./website/static/img/screenshot_playground_llm.png)
+![LLM playground screenshot](./docs/assets/img/screenshot_playground_llm.png)
 
 ## Contribution
 
@@ -223,4 +223,4 @@ pre-commit install
 
 [MIT](./LICENSE)
 
-<img src="website/static/img/icon.svg" title="iauto" height="16"> icon license: https://openmoji.org/library/emoji-1F9BE
+<img src="./docs/assets/img/icon.svg" title="iauto" height="16"> icon license: https://openmoji.org/library/emoji-1F9BE

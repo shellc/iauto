@@ -1,3 +1,4 @@
+import os
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Dict, List, Tuple, Union
 
@@ -126,6 +127,16 @@ class PlaybookExecutor(Executor):
                 if isinstance(k, str) and k.strip().startswith("$"):
                     k = k.strip()
                     self._variables[k] = data.get(v)
+
+    def resolve_path(self, path: str) -> str:
+        if os.path.isabs(path):
+            return path
+        else:
+            root = os.path.dirname(self.variables.get("__file__") or ".")
+            if root is not None:
+                return os.path.join(root, path)
+            else:
+                return path
 
     @staticmethod
     def execute(playbook_file, variables={}) -> Any:

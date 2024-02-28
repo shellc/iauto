@@ -1,0 +1,15 @@
+[book]
+title = "iauto"
+description = "iauto is a Low-Code intelligent automation tool that integrates LLM and RPA."
+authors = ["shellc"]
+language = "en"
+multilingual = false
+src = "src"
+
+[build]
+build-dir = "build"
+
+[output.html]
+no-section-label = true
+git-repository-url = "https://github.com/shellc/iauto"
+edit-url-template = "https://github.com/shellc/iauto/edit/main/docs/{path}"

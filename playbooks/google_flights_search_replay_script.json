@@ -1,0 +1,215 @@
+{
+  "title": "Recording 2/28/2024 at 1:05:30 PM",
+  "steps": [
+    {
+      "type": "setViewport",
+      "width": 1369,
+      "height": 1213,
+      "deviceScaleFactor": 1,
+      "isMobile": false,
+      "hasTouch": false,
+      "isLandscape": false
+    },
+    {
+      "type": "navigate",
+      "url": "https://www.google.com/travel/flights",
+      "assertedEvents": [
+        {
+          "type": "navigation",
+          "url": "https://www.google.com/travel/flights",
+          "title": "Google Flights - Find Cheap Flight Options & Track Prices"
+        }
+      ]
+    },
+    {
+      "type": "click",
+      "target": "main",
+      "selectors": [
+        [
+          "aria/Change ticket type. ​Round trip"
+        ],
+        [
+          "div.RLVa8 div.VfPpkd-TkwUic"
+        ],
+        [
+          "xpath///*[@id=\"yDmH0d\"]/c-wiz[2]/div/div[2]/c-wiz/div[1]/c-wiz/div[2]/div[1]/div[1]/div[1]/div/div[1]/div[1]/div/div/div/div[1]"
+        ],
+        [
+          "pierce/div.RLVa8 div.VfPpkd-TkwUic"
+        ]
+      ],
+      "offsetY": 21,
+      "offsetX": 56.5
+    },
+    {
+      "type": "click",
+      "target": "main",
+      "selectors": [
+        [
+          "aria/One way"
+        ],
+        [
+          "div.RLVa8 li:nth-of-type(2)"
+        ],
+        [
+          "xpath///*[@id=\"yDmH0d\"]/c-wiz[2]/div/div[2]/c-wiz/div[1]/c-wiz/div[2]/div[1]/div[1]/div[1]/div/div[1]/div[1]/div/div/div/div[2]/ul/li[2]"
+        ],
+        [
+          "pierce/div.RLVa8 li:nth-of-type(2)"
+        ]
+      ],
+      "offsetY": 40,
+      "offsetX": 75.5
+    },
+    {
+      "type": "click",
+      "target": "main",
+      "selectors": [
+        [
+          "aria/Where from?"
+        ],
+        [
+          "div.BGeFcf div.cQnuXe input"
+        ],
+        [
+          "xpath///*[@id=\"i21\"]/div[1]/div/div/div[1]/div/div/input"
+        ],
+        [
+          "pierce/div.BGeFcf div.cQnuXe input"
+        ]
+      ],
+      "offsetY": 20,
+      "offsetX": 70.5
+    },
+    {
+      "type": "change",
+      "value": "{$from}",
+      "selectors": [
+        [
+          "aria/Where else?"
+        ],
+        [
+          "#i21 > div.ZGEB9c input"
+        ],
+        [
+          "xpath///*[@id=\"i21\"]/div[6]/div[2]/div[2]/div[1]/div/input"
+        ],
+        [
+          "pierce/#i21 > div.ZGEB9c input"
+        ]
+      ],
+      "target": "main"
+    },
+    {
+      "type": "keyDown",
+      "target": "main",
+      "key": "Enter"
+    },
+    {
+      "type": "keyUp",
+      "key": "Enter",
+      "target": "main"
+    },
+    {
+      "type": "keyDown",
+      "target": "main",
+      "key": "Tab"
+    },
+    {
+      "type": "keyUp",
+      "key": "Tab",
+      "target": "main"
+    },
+    {
+      "type": "change",
+      "value": "{$to}",
+      "selectors": [
+        [
+          "aria/Where to? "
+        ],
+        [
+          "div.vxNK6d div.cQnuXe input"
+        ],
+        [
+          "xpath///*[@id=\"i21\"]/div[4]/div/div/div[1]/div/div/input"
+        ],
+        [
+          "pierce/div.vxNK6d div.cQnuXe input"
+        ]
+      ],
+      "target": "main"
+    },
+    {
+      "type": "keyDown",
+      "target": "main",
+      "key": "Enter"
+    },
+    {
+      "type": "keyUp",
+      "key": "Enter",
+      "target": "main"
+    },
+    {
+      "type": "keyDown",
+      "target": "main",
+      "key": "Tab"
+    },
+    {
+      "type": "keyUp",
+      "key": "Tab",
+      "target": "main"
+    },
+    {
+      "type": "change",
+      "target": "main",
+      "selectors": [
+        "div.ZGEB9c div.kStSsc input",
+        "xpath///*[@id=\"ow83\"]/div[2]/div/div[2]/div[1]/div[1]/div[1]/div/input",
+        "pierce/div.ZGEB9c div.kStSsc input"
+      ],
+      "value": "{$date}"
+    },
+    {
+      "type": "keyDown",
+      "target": "main",
+      "key": "Enter"
+    },
+    {
+      "type": "keyUp",
+      "key": "Enter",
+      "target": "main"
+    },
+    {
+      "type": "waitForElement",
+      "selectors": [
+        "pierce/div.akjk5c span"
+      ]
+    },
+    {
+      "type": "click",
+      "timeout": 10000,
+      "target": "main",
+      "selectors": [
+        "div.akjk5c span",
+        "xpath///*[@id=\"ow83\"]/div[2]/div/div[3]/div[3]/div/button/span",
+        "pierce/div.akjk5c span"
+      ],
+      "offsetX": 9.484375,
+      "offsetY": 8,
+      "duration": 3000
+    },
+    {
+      "type": "click",
+      "target": "main",
+      "selectors": [
+        "div.MXvFbd span.VfPpkd-vQzf8d",
+        "xpath///*[@id=\"yDmH0d\"]/c-wiz[2]/div/div[2]/c-wiz/div[1]/c-wiz/div[2]/div[1]/div[1]/div[2]/div/button/span[2]",
+        "pierce/div.MXvFbd span.VfPpkd-vQzf8d",
+        "text/Search"
+      ],
+      "offsetX": 21.453125,
+      "offsetY": 11,
+      "duration": 1000
+    }
+  ]
+}

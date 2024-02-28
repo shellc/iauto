@@ -99,6 +99,8 @@ with st.sidebar:
             "API Base URL",
             value=st.session_state["llm_args"].get("base_url", os.environ.get("OPENAI_API_BASE") or None)
         )
+        if base_url == "":
+            base_url = None
         playbook_vars["llm_args"]["base_url"] = base_url
         st.session_state["llm_args"]["base_url"] = base_url
 
