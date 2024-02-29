@@ -13,6 +13,9 @@ def list_actions():
         desc = a.spec.description or ""
         desc = [x for x in desc.split('\n') if x != ""]
         desc = desc[0] if len(desc) > 0 else ""
+        z = desc.find(".")
+        if z > -1:
+            desc = desc[:z+1]
 
         actions.append(f"{a.spec.name} : {desc}")
 
@@ -92,26 +95,26 @@ class ParseDict(argparse.Action):
 
 def parse_args(argv):
     parser = argparse.ArgumentParser(
-        prog='iauto',
-        usage="iauto playbook.yaml"
+        prog='ia',
+        usage="ia playbook.yaml"
     )
 
     parser.add_argument(
-        "playbook", nargs="?", default=None, help="playbook file, like: playbook.yaml"
+        "playbook", nargs="?", default=None, help="playbook file path"
     )
 
-    parser.add_argument('--kwargs', nargs="*", metavar="arg", action=ParseDict, help="specify playbook kwargs")
-    parser.add_argument('-l', '--load', nargs="+", default=[], metavar="module",
+    parser.add_argument('--kwargs', nargs="*", metavar="name=value", action=ParseDict, help="set playbook variables")
+    parser.add_argument('--load', nargs="+", default=[], metavar="module",
                         help="load modules, like: --load module1 module2")
     parser.add_argument('--list-actions', action="store_true", help="list actions")
     parser.add_argument('--spec', metavar="action", default=None, help="print action spec")
     parser.add_argument('--traceback', action="store_true", help="print error traceback")
     parser.add_argument('--log-level', default=None, help="log level, default INFO")
 
-    parser.add_argument('--playground', default=None, help="start playground")
+    parser.add_argument('--playground', metavar="PLAYGROUND_NAME", default=None, help="start playground")
     parser.add_argument('--playbook-dir', default=None, help="playbook dir for playground")
 
-    parser.add_argument('--env', default='.env', help="environment configuration file")
+    parser.add_argument('--env', default='.env', metavar="ENV_FILE", help="environment configuration file")
 
     parser.set_defaults(func=run)
 

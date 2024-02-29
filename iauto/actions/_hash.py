@@ -23,7 +23,7 @@ def sha1(s: str, *args, **kwargs):
 
 
 @register_action(name="sha256", spec={
-    "description": "SHA1"
+    "description": "SHA256"
 })
 def sha256(s: str, *args, **kwargs):
     m = hashlib.sha256()

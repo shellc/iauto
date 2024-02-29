@@ -18,7 +18,7 @@ class OpenBrowserAction(Action):
         super().__init__()
         self.spec = ActionSpec.from_dict({
             "name": "browser.open",
-            "description": "Use Playwright to open a browser.",
+            "description": "Open a browser.",
             "arguments": [
                 {
                     "name": "exec",
@@ -192,7 +192,7 @@ class ClickAction(Action):
     def __init__(self) -> None:
         super().__init__()
         self.spec = ActionSpec.from_dict({
-            "description": "Click a element.",
+            "description": "Click the element.",
         })
 
     def perform(
@@ -388,4 +388,6 @@ def replay(*args, browser: Browser, script: str, executor, **kwargs):
     return result
 
 
-register_action(name="browser.replay", spec={})(replay)
+register_action(name="browser.replay", spec={
+    "description": "Replay the browser recording."
+})(replay)

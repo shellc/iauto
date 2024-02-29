@@ -50,7 +50,7 @@ def create_agent(
 
 
 @register_action(name="agents.executor", spec={
-    "description": "Create a agent executor."
+    "description": "Create an agent executor."
 })
 def create_agent_executor(
     *args,
