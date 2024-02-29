@@ -5,6 +5,8 @@ import os
 import sys
 import traceback
 
+from dotenv import dotenv_values, load_dotenv
+
 
 def list_actions():
     from iauto.actions import loader
@@ -79,7 +81,13 @@ def run(args, parser):
         sys.exit(-1)
 
     from iauto.actions import PlaybookExecutor
-    result = PlaybookExecutor.execute(playbook_file=p, variables=args.kwargs)
+    variables = {}
+    if args.kwargs:
+        variables.update(args.kwargs)
+    if args.env:
+        env = dotenv_values(args.env)
+        variables.update(env)
+    result = PlaybookExecutor.execute(playbook_file=p, variables=variables)
     if result is not None:
         print(result)
 
@@ -125,7 +133,6 @@ def parse_args(argv):
 def main():
     args, parser = parse_args(sys.argv[1:])
 
-    from dotenv import load_dotenv
     load_dotenv(args.env)
 
     if hasattr(args, "func"):

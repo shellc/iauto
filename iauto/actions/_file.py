@@ -1,7 +1,9 @@
 import json
-from typing import Any, Dict, List
+import os
+from typing import Any, Dict, List, Optional
 
 from ._action import Action, ActionSpec
+from ._loader import register_action
 
 
 class FileWriteAction(Action):
@@ -17,3 +19,12 @@ class FileWriteAction(Action):
                 content = json.dumps(content, ensure_ascii=False)
 
             f.write(content)
+
+
+@register_action(name="file.exists", spec={"description": "Test if file exists."})
+def file_exists(file: Optional[str] = None, *args, **kwargs) -> bool:
+    if file is None and len(args) == 1:
+        file = args[0]
+    if file is None:
+        raise ValueError(f"invalid args: {args}")
+    return os.path.exists(file) and os.path.isfile(file)

@@ -37,4 +37,5 @@ def register_action(name: str, spec: Dict):
         action = create_action(func=func, spec=spec)
         action.spec.name = name
         loader.register({name: action})
+        return action
     return decrator

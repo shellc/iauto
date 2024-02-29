@@ -2,7 +2,7 @@ from typing import Any, Dict, Optional
 
 from ._action import Action, ActionSpec, Executor, Playbook
 
-_operators = set(["all", "any", "lt", 'le', 'eq', 'ne', 'ge', 'gt'])
+_operators = set(["not", "all", "any", "lt", 'le', 'eq', 'ne', 'ge', 'gt'])
 
 
 def is_operator(d):
@@ -14,6 +14,7 @@ def is_operator(d):
 
 def eval_operator(operator, vars={}) -> bool:
     """
+    not: not true
     all: all true
     any: any is true
     lt: less than
@@ -34,7 +35,7 @@ def eval_operator(operator, vars={}) -> bool:
     values = operator.get(o) or []
     values = values[::]
 
-    if not (o == "all" or o == "any") and len(values) != 2:
+    if not (o == "not" or o == "all" or o == "any") and len(values) != 2:
         raise ValueError(f"operator reqiures 2 args: {operator}")
 
     for i in range(len(values)):
@@ -42,7 +43,11 @@ def eval_operator(operator, vars={}) -> bool:
         if v is not None and isinstance(v, str) and v.startswith("$"):
             values[i] = vars.get(v)
 
-    if o == "all" or o == "any":
+    if o == "not":
+        if len(values) > 1:
+            raise ValueError(f"operator not reqiure 1 args: {values}")
+        return not values[0]
+    elif o == "all" or o == "any":
         results = []
         for v in values:
             if is_operator(v):

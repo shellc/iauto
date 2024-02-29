@@ -124,15 +124,16 @@ with st.sidebar:
         chat_format = st.text_input(
             "Chat format",
             placeholder="auto",
-            value=st.session_state["llm_args"].get("chat_format", None)
+            value=st.session_state["llm_args"].get("chat_format", os.environ.get("LLAMA_CHAT_FORMAT"))
         )
         playbook_vars["llm_args"]["chat_format"] = chat_format
         st.session_state["llm_args"]["chat_format"] = chat_format
 
         repeat_penalty = st.number_input(
             "repeat_penalty", value=st.session_state["llm_chat_args"].get("repeat_penalty", None))
-        playbook_vars["llm_chat_args"]["repeat_penalty"] = repeat_penalty
-        st.session_state["llm_chat_args"]["repeat_penalty"] = repeat_penalty
+        if repeat_penalty:
+            playbook_vars["llm_chat_args"]["repeat_penalty"] = repeat_penalty
+            st.session_state["llm_chat_args"]["repeat_penalty"] = repeat_penalty
     elif llm_provider == "ChatGLM":
         playbook_vars["llm_provider"] = "chatglm"
 

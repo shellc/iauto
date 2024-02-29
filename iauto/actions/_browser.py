@@ -1,7 +1,7 @@
 import asyncio
 import json
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any, List, Optional, Union
+from typing import Any, List, Literal, Optional, Union
 
 from playwright.async_api import (Browser, BrowserContext, Locator, Page,
                                   async_playwright)
@@ -38,7 +38,7 @@ class OpenBrowserAction(Action):
     def perform(self,
                 *args,
                 exec=None,
-                headless=False,
+                headless: Union[bool, str] = False,
                 timeout=30000,
                 entry=None,
                 user_data_dir=None,
@@ -47,6 +47,10 @@ class OpenBrowserAction(Action):
                 executor,
                 **kwargs
                 ) -> Union[Browser, BrowserContext]:
+
+        if isinstance(headless, str):
+            headless = headless.lower() == "true"
+
         async def _func():
             b_args = [
                 "--mute-audio",
@@ -154,6 +158,7 @@ class LocatorAction(Action):
         page: Page,
         selector: Union[str, List[str]],
         wait: bool = False,
+        not_found: Literal["fail", "ignore"] = "fail",
         **kwargs
     ) -> Union[Locator, None]:
         async def _func():
@@ -169,6 +174,7 @@ class LocatorAction(Action):
             else:
                 raise ValueError(f"invalid selector: {selector}")
 
+            locator = None
             for sel in selectors:
                 ignores = ["aria", "pierce", "xpath", "text"]
                 ignore = False
@@ -180,11 +186,22 @@ class LocatorAction(Action):
                     continue
                 loc = page.locator(selector=sel)
                 if wait:
-                    await loc.wait_for()
+                    try:
+                        await loc.wait_for()
+                    except Exception as e:
+                        if not_found == "fail":
+                            raise e
+                        else:
+                            return None
+                    return loc
                 else:
                     count = await loc.count()
                     if loc is not None and count > 0:
-                        return loc
+                        locator = loc
+                        break
+            if locator is None and not_found == "fail":
+                raise RuntimeError(f"elements not found: {selector}")
+            return locator
         return _event_loop.run_until_complete(_func())
 
 
@@ -201,20 +218,25 @@ class ClickAction(Action):
         locator: Optional[Locator] = None,
         page: Optional[Page] = None,
         selector: Optional[List[str]] = None,
+        on_fail: Literal["ignore", "fail"] = "fail",
         **kwargs
     ):
-        if locator is not None:
-            return _event_loop.run_until_complete(locator.click())
-        elif selector:
-            if page is None:
-                raise ValueError("arument `page` required")
+        try:
+            if locator is not None:
+                return _event_loop.run_until_complete(locator.click())
+            elif selector:
+                if page is None:
+                    raise ValueError("arument `page` required")
 
-            loc_action = LocatorAction()
-            loc = loc_action.perform(page=page, selector=selector)
-            if loc is not None:
-                return _event_loop.run_until_complete(loc.click())
-        else:
-            ...
+                loc_action = LocatorAction()
+                loc = loc_action.perform(page=page, selector=selector)
+                if loc is not None:
+                    return _event_loop.run_until_complete(loc.click())
+            else:
+                ...
+        except Exception as e:
+            if on_fail == "fail":
+                raise e
 
 
 class ScrollAction(Action):
