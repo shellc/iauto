@@ -159,6 +159,7 @@ class LocatorAction(Action):
         selector: Union[str, List[str]],
         wait: bool = False,
         not_found: Literal["fail", "ignore"] = "fail",
+        timeout: int = 3000,
         **kwargs
     ) -> Union[Locator, None]:
         async def _func():
@@ -187,7 +188,7 @@ class LocatorAction(Action):
                 loc = page.locator(selector=sel)
                 if wait:
                     try:
-                        await loc.wait_for()
+                        await loc.wait_for(timeout=timeout)
                     except Exception as e:
                         if not_found == "fail":
                             raise e
