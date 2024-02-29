@@ -19,12 +19,46 @@ class SafeDict(dict):
 
 
 class PlaybookExecutor(Executor):
+    """
+    Executes playbooks containing a sequence of actions.
+
+    This executor handles the running of actions defined in a playbook, managing
+    the necessary thread execution for asynchronous actions and the extraction
+    and evaluation of variables from the results.
+    """
+
     def __init__(self) -> None:
+        """
+        Initializes the PlaybookExecutor instance.
+
+        Sets up an action loader to load actions and creates a thread executor for
+        managing asynchronous action execution.
+        """
+
         super().__init__()
         self._action_loader = ActionLoader()
         self._thread_executor = ThreadPoolExecutor()
 
     def perform(self, playbook: Playbook) -> Any:
+        """
+        Executes the given playbook.
+
+        This method takes a Playbook object, retrieves the corresponding action,
+        evaluates the arguments, and then performs the action. If the action's result
+        is an asyncio coroutine, it is run in a separate thread. After the action is
+        performed, any variables specified in the playbook's 'result' section are
+        extracted and stored.
+
+        Parameters:
+        - playbook (Playbook): The playbook object containing the action to be executed.
+
+        Returns:
+        - Any: The result of executing the action in the playbook.
+
+        Raises:
+        - ValueError: If the action is not found or the playbook is invalid.
+        """
+
         action = self.get_action(playbook=playbook)
         if not action:
             raise ValueError(f"Action not found: {playbook.name}")
@@ -74,6 +108,26 @@ class PlaybookExecutor(Executor):
         return o
 
     def eval_vars(self, vars):
+        """
+        Evaluate the variables in the context of the current executor's state.
+
+        This method takes a variable or a structure containing variables and
+        evaluates them using the current state of variables stored within the
+        executor. It supports strings, lists, and dictionaries. If a string
+        variable starts with '$', it is treated as a reference to a variable
+        which is then resolved. If the variable is not found, the string is
+        returned as is. For lists and dictionaries, each element or key-value
+        pair is recursively processed.
+
+        Parameters:
+        - vars (Union[str, List, Dict, None]): The variable or structure containing
+            variables to be evaluated.
+
+        Returns:
+        - The evaluated variable, or the original structure with all contained
+            variables evaluated.
+        """
+
         if vars is None:
             return None
         elif isinstance(vars, str):
@@ -96,6 +150,22 @@ class PlaybookExecutor(Executor):
             return vars
 
     def eval_args(self, args: Union[str, List, Dict, None] = None) -> Tuple[List, Dict]:
+        """
+        Evaluates and separates arguments into positional and keyword arguments.
+
+        This method processes the input arguments, evaluating any variables within
+        them using the current state of the executor. It then separates the evaluated
+        arguments into positional (list) and keyword (dictionary) arguments.
+
+        Parameters:
+        - args (Union[str, List, Dict, None], optional): The arguments to evaluate and
+            separate. Can be a string, list, dictionary, or None.
+
+        Returns:
+        - Tuple[List, Dict]: A tuple containing a list of positional arguments and a
+            dictionary of keyword arguments.
+        """
+
         args_ = []
         kwargs = {}
 
@@ -112,6 +182,30 @@ class PlaybookExecutor(Executor):
         return args_, kwargs
 
     def extract_vars(self, data, vars):
+        """
+        Extracts variables from the result data and stores them in the executor's state.
+
+        This method takes the result data and the variables defined in the playbook's 'result'
+        section, then stores these variables in the executor's state for later use. The method
+        supports extracting variables from strings, lists, and dictionaries.
+
+        Parameters:
+        - data (Any): The result data from which variables will be extracted.
+        - vars (Union[str, List, Dict, None]): The structure defining which variables to extract
+            from the result data. It can be a string, a list, a dictionary, or None.
+
+        If `vars` is a string that starts with '$', it is assumed to be a variable name, and the
+        entire `data` is stored with that variable name. If `vars` is a list, each element in
+        `vars` that starts with '$' is treated as a variable name, and the corresponding element
+        in `data` is stored with that variable name, provided `data` is also a list and the indices
+        match. If `vars` is a dictionary, each key that starts with '$' is treated as a variable
+        name, and the value from `data` corresponding to the dictionary's value is stored with the
+        variable name, provided `data` is also a dictionary and contains the keys.
+
+        No action is taken if `vars` is None or if the data types of `vars` and `data` do not
+        correspond as expected.
+        """
+
         if vars is None:
             pass
         elif isinstance(vars, str) and vars.strip().startswith("$"):
@@ -129,6 +223,21 @@ class PlaybookExecutor(Executor):
                     self._variables[k] = data.get(v)
 
     def resolve_path(self, path: str) -> str:
+        """
+        Resolves a given file path to an absolute path.
+
+        If the given path is already an absolute path, it is returned unchanged.
+        Otherwise, the path is resolved relative to the directory of the current
+        playbook file, which is stored in the executor's variables under the key
+        "__file__".
+
+        Args:
+            path (str): The file path to resolve.
+
+        Returns:
+            str: The resolved absolute file path.
+
+        """
         if os.path.isabs(path):
             return path
         else:
@@ -140,6 +249,24 @@ class PlaybookExecutor(Executor):
 
     @staticmethod
     def execute(playbook_file, variables={}) -> Any:
+        """
+        Executes a playbook from a given file with optional initial variables.
+
+        This static method loads a playbook from the specified file, creates a new
+        PlaybookExecutor instance, sets any initial variables, and then performs the
+        playbook.
+
+        Args:
+            playbook_file (str): The path to the playbook file to be executed.
+            variables (dict, optional): A dictionary of initial variables to set in
+                the executor's context before executing the playbook. Defaults to an
+                empty dictionary.
+
+        Returns:
+            Any: The result of executing the playbook, which could be of any type
+            depending on the actions performed within the playbook.
+        """
+
         playbook = Playbook.load(playbook_file)
 
         executor = PlaybookExecutor()
