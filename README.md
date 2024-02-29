@@ -1,5 +1,7 @@
 <img src="./docs/assets/img/icon.svg" title="iauto" height="128">
 
+[Documentation](https://shellc.github.io/iauto)
+
 # iauto
 
 `iauto` is a Low-Code intelligent automation tool that integrates LLM and RPA.

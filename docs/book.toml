@@ -1,5 +1,5 @@
 [book]
-title = "iauto"
+title = "iauto Documentation"
 description = "iauto is a Low-Code intelligent automation tool that integrates LLM and RPA."
 authors = ["shellc"]
 language = "en"
