@@ -3,6 +3,26 @@ from ._openai import OpenAI
 
 
 def create_llm(provider: str = "openai", **kwargs) -> LLM:
+    """
+    Create a language model instance based on the specified provider.
+
+    This factory function supports creating instances of different language
+    models by specifying a provider. Currently supported providers are 'openai',
+    'llama', and 'chatglm'. Depending on the provider, additional keyword
+    arguments may be required or optional.
+
+    Parameters:
+    - provider (str): The name of the provider for the LLM. Defaults to 'openai'.
+    - **kwargs: Additional keyword arguments specific to the chosen LLM provider.
+
+    Returns:
+    - LLM: An instance of the specified language model.
+
+    Raises:
+    - ImportError: If the required module for the specified provider is not installed.
+    - ValueError: If an invalid provider name is given.
+    """
+
     if provider is None:
         provider = ''
 
