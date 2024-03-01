@@ -5,7 +5,7 @@ It acts as an intermediary layer between the agent's instructions and the actual
 Classes:
 * AgentExecutor
 """
-from ._executor import AgentExecutor
+from .executor import AgentExecutor
 
 __all__ = [
     "AgentExecutor"
