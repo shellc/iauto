@@ -6,8 +6,8 @@ from typing import Any, List, Literal, Optional, Union
 from playwright.async_api import (Browser, BrowserContext, Locator, Page,
                                   async_playwright)
 
-from ._action import Action, ActionSpec
-from ._loader import register_action
+from ..action import Action, ActionSpec
+from ..loader import register_action
 
 _event_loop = asyncio.new_event_loop()
 _thread_executor = ThreadPoolExecutor()

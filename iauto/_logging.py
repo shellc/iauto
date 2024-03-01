@@ -8,6 +8,15 @@ FATAL = logging.FATAL
 
 
 def get_level(name: str):
+    """Get the log level from string.
+
+    Args:
+        name (str): Log level string.
+
+    Returns:
+        int: The corresponding log level.
+    """
+
     if name is None:
         return logging.INFO
 
@@ -27,6 +36,15 @@ def get_level(name: str):
 
 
 def get_logger(name, level=None):
+    """Get a logger with the given name and level.
+
+    Args:
+        name (str): The name of the logger.
+        level (int, optional): The logging level. Defaults to None.
+
+    Returns:
+        logging.Logger: A logger with the specified name and level.
+    """
     level = level or os.environ.get("IA_LOG_LEVEL") or "INFO"
     log_level = get_level(level) or logging.INFO
     logger = logging.getLogger(name=name)
@@ -41,3 +59,4 @@ def get_logger(name, level=None):
 
 
 logger = get_logger("ia", level=os.environ.get("IA_LOG_LEVEL") or "INFO")
+"""Default logger."""

@@ -1,7 +1,9 @@
 import os
 from typing import Any, Optional
 
-from ._action import Action, ActionSpec, Executor, Playbook
+from ..action import Action, ActionSpec
+from ..executor import Executor
+from ..playbook import Playbook
 
 
 class PlaybookAction(Action):

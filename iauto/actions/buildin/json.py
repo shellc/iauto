@@ -1,7 +1,7 @@
 import json
 from typing import Any
 
-from ._loader import register_action
+from ..loader import register_action
 
 
 @register_action(name="json.loads", spec={

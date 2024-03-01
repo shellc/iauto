@@ -1,14 +1,14 @@
 import os
+from abc import ABC, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Dict, List, Tuple, Union
 
-from ._action import Action, Executor, Playbook
-from ._loader import ActionLoader, loader
-
-KEY_ARGS = "args"
-KEY_ACTIONS = "actions"
-KEY_RESULT = "result"
-KEY_DESCRIPTION = "description"
+from .action import Action
+from .loader import ActionLoader
+from .loader import loader as action_loader
+from .playbook import (KEY_ACTIONS, KEY_ARGS, KEY_DESCRIPTION, KEY_RESULT,
+                       Playbook)
+from .playbook import load as playbook_load
 
 VALID_KEYS = [KEY_ARGS, KEY_ACTIONS, KEY_RESULT, KEY_DESCRIPTION]
 
@@ -16,6 +16,85 @@ VALID_KEYS = [KEY_ARGS, KEY_ACTIONS, KEY_RESULT, KEY_DESCRIPTION]
 class SafeDict(dict):
     def __missing__(self, key):
         return '{' + key + '}'
+
+
+class Executor(ABC):
+    """
+    Abstract base class for an executor that can run playbooks.
+    """
+
+    def __init__(self) -> None:
+        """
+        Initializes the Executor.
+        """
+        super().__init__()
+        self._variables = {}
+
+    @abstractmethod
+    def perform(self, playbook: Playbook) -> Any:
+        """
+        Execute the given playbook.
+
+        Args:
+            playbook (Playbook): The playbook to execute.
+
+        Returns:
+            Any: The result of the playbook execution.
+        """
+
+    @abstractmethod
+    def get_action(self, playbook: Playbook) -> Union['Action', None]:
+        """
+        Retrieve the action associated with the given playbook.
+
+        Args:
+            playbook (Playbook): The playbook containing the action to retrieve.
+
+        Returns:
+            Union[Action, None]: The action to perform, or None if not found.
+        """
+
+    @abstractmethod
+    def eval_args(self, args: Union[str, List, Dict, None] = None) -> Tuple[List, Dict]:
+        """
+        Evaluate the arguments passed to the playbook or action.
+
+        Args:
+            args (Union[str, List, Dict, None], optional): The arguments to evaluate.
+
+        Returns:
+            Tuple[List, Dict]: A tuple containing the evaluated arguments as a list or a dictionary.
+        """
+
+    @abstractmethod
+    def extract_vars(self, data, vars):
+        """
+        Extract variables from the given data based on the vars specification.
+
+        Args:
+            data: The data from which to extract variables.
+            vars: The specification of variables to extract from the data.
+        """
+
+    def set_variable(self, name: str, value: Any):
+        """
+        Set a variable in the executor's context.
+
+        Args:
+            name (str): The name of the variable to set.
+            value (Any): The value to assign to the variable.
+        """
+        self._variables[name] = value
+
+    @property
+    def variables(self) -> Dict:
+        """
+        Get the current variables in the executor's context.
+
+        Returns:
+            Dict: A dictionary of the current variables.
+        """
+        return self._variables
 
 
 class PlaybookExecutor(Executor):
@@ -90,7 +169,7 @@ class PlaybookExecutor(Executor):
 
         action = self._action_loader.get(name=playbook.name)
         if action is None:
-            action = loader.get(name=playbook.name)
+            action = action_loader.get(name=playbook.name)
 
         return action
 
@@ -247,33 +326,33 @@ class PlaybookExecutor(Executor):
             else:
                 return path
 
-    @staticmethod
-    def execute(playbook_file, variables={}) -> Any:
-        """
-        Executes a playbook from a given file with optional initial variables.
 
-        This static method loads a playbook from the specified file, creates a new
-        PlaybookExecutor instance, sets any initial variables, and then performs the
-        playbook.
+def execute(playbook_file, variables={}) -> Any:
+    """
+    Executes a playbook from a given file with optional initial variables.
 
-        Args:
-            playbook_file (str): The path to the playbook file to be executed.
-            variables (dict, optional): A dictionary of initial variables to set in
-                the executor's context before executing the playbook. Defaults to an
-                empty dictionary.
+    This static method loads a playbook from the specified file, creates a new
+    PlaybookExecutor instance, sets any initial variables, and then performs the
+    playbook.
 
-        Returns:
-            Any: The result of executing the playbook, which could be of any type
-            depending on the actions performed within the playbook.
-        """
+    Args:
+        playbook_file (str): The path to the playbook file to be executed.
+        variables (dict, optional): A dictionary of initial variables to set in
+            the executor's context before executing the playbook. Defaults to an
+            empty dictionary.
 
-        playbook = Playbook.load(playbook_file)
+    Returns:
+        Any: The result of executing the playbook, which could be of any type
+        depending on the actions performed within the playbook.
+    """
 
-        executor = PlaybookExecutor()
-        executor.set_variable("__file__", playbook_file)
+    playbook = playbook_load(playbook_file)
 
-        if variables is not None:
-            for k, v in variables.items():
-                executor.set_variable(f"${k}", v)
+    executor = PlaybookExecutor()
+    executor.set_variable("__file__", playbook_file)
 
-        return executor.perform(playbook=playbook)
+    if variables is not None:
+        for k, v in variables.items():
+            executor.set_variable(f"${k}", v)
+
+    return executor.perform(playbook=playbook)

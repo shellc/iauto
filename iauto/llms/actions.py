@@ -1,8 +1,9 @@
 import os
 from typing import Any, List, Optional, Union
 
-from ..actions import (Action, ActionSpec, Executor, Playbook,
-                       PlaybookRunAction, loader)
+from ..actions import Action, ActionSpec, Executor, Playbook, loader
+from ..actions.buildin.playbook import PlaybookRunAction
+from ..actions.playbook import load as playbook_load
 from ._llm import ChatMessage
 from ._llm_factory import create_llm
 from ._session import Session
@@ -47,7 +48,7 @@ class CreateSessionAction(Action):
             for pb_name in playbooks:
                 if not os.path.isabs(pb_name) and root_path is not None:
                     pb_name = os.path.join(root_path, pb_name)
-                    pb = Playbook.load(pb_name)
+                    pb = playbook_load(pb_name)
 
                     # def _action_func(*args, **kwargs):
                     #    for k, v in kwargs.items():
@@ -86,7 +87,7 @@ class ChatAction(Action):
     ) -> Union[str, Any]:
         session.add(ChatMessage(role="user", content=prompt))
         m = session.run(history=history, rewrite=rewrite, expect_json=expect_json, **kwargs)
-        if expect_json > 0:
+        if isinstance(m, dict) or isinstance(m, list):
             return m
         else:
             return m.content if m is not None else None

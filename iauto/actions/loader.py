@@ -1,7 +1,7 @@
 import importlib
 from typing import Dict, Union
 
-from ._action import Action, create_action
+from .action import Action, create_action
 
 
 class ActionLoader:

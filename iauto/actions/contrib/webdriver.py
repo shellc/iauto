@@ -9,8 +9,8 @@ from appium.webdriver.webelement import WebElement
 from selenium.common.exceptions import (ElementNotInteractableException,
                                         NoSuchElementException)
 
-from .._logging import get_logger
-from ._action import Action, create_action
+from ..._logging import get_logger
+from ..action import Action, create_action
 
 _log = get_logger("webdriver")
 

@@ -1,7 +1,7 @@
 import hashlib
 import uuid as _uuid
 
-from ._loader import register_action
+from ..loader import register_action
 
 namespace = _uuid.uuid1()
 

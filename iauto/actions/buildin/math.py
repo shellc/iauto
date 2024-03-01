@@ -1,4 +1,4 @@
-from ._action import Action, ActionSpec
+from ..action import Action, ActionSpec
 
 
 class ModAction(Action):

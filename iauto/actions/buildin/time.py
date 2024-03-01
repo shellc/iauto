@@ -2,7 +2,7 @@ import time
 from datetime import datetime
 from typing import Optional, Union
 
-from ._action import Action, ActionSpec, Executor, Playbook
+from ..action import Action, ActionSpec
 
 
 class WaitAction(Action):
@@ -16,8 +16,6 @@ class WaitAction(Action):
     def perform(
         self,
         *args,
-        executor: Optional[Executor] = None,
-        playbook: Optional[Playbook] = None,
         **kwargs
     ) -> None:
         if len(args) > 0:

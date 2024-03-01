@@ -22,9 +22,8 @@ Functions:
 The module also handles the registration and discovery of built-in actions.
 """
 
-from . import _buildin
-from ._action import (Action, ActionArg, ActionSpec, Executor, Playbook,
-                      create_action)
-from ._executor import PlaybookExecutor
-from ._loader import loader, register_action
-from ._playbook import PlaybookRunAction
+from . import buildin, contrib
+from .action import Action, ActionArg, ActionSpec, create_action
+from .executor import Executor, PlaybookExecutor
+from .loader import loader, register_action
+from .playbook import Playbook

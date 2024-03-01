@@ -80,14 +80,14 @@ def run(args, parser):
         print(f"Invalid playbook file: {p}")
         sys.exit(-1)
 
-    from iauto.actions import PlaybookExecutor
+    from iauto.actions import executor
     variables = {}
     if args.kwargs:
         variables.update(args.kwargs)
     if args.env:
         env = dotenv_values(args.env)
         variables.update(env)
-    result = PlaybookExecutor.execute(playbook_file=p, variables=variables)
+    result = executor.execute(playbook_file=p, variables=variables)
     if result is not None:
         print(result)
 

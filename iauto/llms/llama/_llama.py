@@ -80,7 +80,7 @@ class LLaMA(LLM):
         return resp
 
     @property
-    def modle(self) -> str:
+    def model(self) -> str:
         return self._model
 
     def register_qwen_fn(self):

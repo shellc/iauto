@@ -2,8 +2,8 @@ import json
 import os
 from typing import Any, Dict, List, Optional
 
-from ._action import Action, ActionSpec
-from ._loader import register_action
+from ..action import Action, ActionSpec
+from ..loader import register_action
 
 
 class FileWriteAction(Action):

@@ -3,7 +3,7 @@ from typing import Any, Dict, Optional
 import pandas as pd
 import sqlalchemy
 
-from ._loader import register_action
+from ..loader import register_action
 
 
 @register_action(name="db.create_engine", spec={

@@ -1,7 +1,7 @@
 from autogen import AssistantAgent, ConversableAgent
 from typing_extensions import Dict, List, Optional
 
-from ..actions._loader import register_action
+from ..actions.loader import register_action
 from ..llms import ChatMessage, Session
 from ._autogen_model_client import IASessionClient
 from ._executor import AgentExecutor

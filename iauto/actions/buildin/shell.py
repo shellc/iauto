@@ -7,7 +7,7 @@ from prompt_toolkit import prompt
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.history import InMemoryHistory
 
-from ._action import Action, ActionSpec
+from ..action import Action, ActionSpec
 
 _platform = sys.platform
 _env = {
