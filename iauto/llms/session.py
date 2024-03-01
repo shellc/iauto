@@ -129,10 +129,11 @@ class Session:
                 raise ValueError("tool_call_id required.")
             m = ChatMessage(
                 role="tool",
-                content='\n'.join(func_resp or f"{func_name} return nothing."),
+                content=func_resp or f"{func_name} return nothing.",
                 tool_call_id=call_id,
                 name=func_name,
             )
+
             return m
         else:
             return message
@@ -148,7 +149,7 @@ class Session:
         use_tools: bool = True,
         auto_exec_tools: bool = True,
         **kwargs
-    ) -> Union[ChatMessage, Dict]:
+    ) -> Union[ChatMessage, Dict, List]:
         """
         Run a conversation flow based on provided instructions and messages, with the option to rewrite the input,
         expect a JSON response, and execute tools.

@@ -4,7 +4,7 @@ from typing_extensions import Dict, List, Optional
 from ..actions.loader import register_action
 from ..llms import ChatMessage, Session
 from ._autogen_model_client import IASessionClient
-from ._executor import AgentExecutor
+from .executor import AgentExecutor
 
 
 @register_action(name="agents.create", spec={
