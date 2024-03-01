@@ -5,7 +5,7 @@ import openai
 
 from .. import _logging
 from ..actions import ActionSpec
-from ._llm import LLM, ChatMessage, Function, Message, ToolCall
+from .llm import LLM, ChatMessage, Function, Message, ToolCall
 
 
 class OpenAI(LLM):

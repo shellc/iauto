@@ -6,7 +6,7 @@ import chatglm_cpp
 
 from .._logging import DEBUG, get_logger
 from ..actions import ActionSpec
-from ._llm import LLM, ChatMessage, Function, Message, ToolCall
+from .llm import LLM, ChatMessage, Function, Message, ToolCall
 
 
 class ChatGLM(LLM):

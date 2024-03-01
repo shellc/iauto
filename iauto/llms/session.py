@@ -5,7 +5,7 @@ from typing import Dict, List, Optional, Union
 
 from .._logging import get_logger
 from ..actions import Action
-from ._llm import LLM, ChatMessage
+from .llm import LLM, ChatMessage
 
 
 class Session:

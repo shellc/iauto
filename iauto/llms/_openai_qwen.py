@@ -2,9 +2,9 @@ import json
 from typing import List, Optional
 
 from ..actions import ActionSpec
-from ._llm import ChatMessage, Function, ToolCall
-from ._openai import OpenAI
-from .llama import _qwen
+from . import _qwen
+from .llm import ChatMessage, Function, ToolCall
+from .openai import OpenAI
 
 
 class QWen(OpenAI):
