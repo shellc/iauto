@@ -42,7 +42,7 @@ def create_llm(provider: str = "openai", **kwargs) -> LLM:
             ) from e
     elif provider.lower() == "chatglm":
         try:
-            from ._chatglm import ChatGLM
+            from .chatglm import ChatGLM
             return ChatGLM(**kwargs)
         except ImportError as e:
             raise ImportError(

@@ -2,14 +2,11 @@ playbook:
   description: Chat to OpenAI
   actions:
     - llm.session:
-        args:
+        #args:
         #  llm_args:
         #    api_key: sk-xxx
         #    base_url: https://<YOUR_API_HOST>/v1
         #    model: gpt-4
-          playbooks:
-          - ./google_news.yaml
-          - ./get_readability_text_from_url.yaml
         result: $session
     - repeat:
         actions:

@@ -8,15 +8,15 @@
 
 ## Key Features
 
-* **Low-Code**: Define workflows using YAML, for collaboration and version control.
-* **Automation**: Integrated multiple automation frameworks such as [Appium](https://github.com/appium/appium) and [Playwright](https://playwright.dev/python/).
-* **Extensible**: User-friendly extensible interface for customizing any complex Action.
-* **AI native**: Create workflows containing LLM using low-code, as well as more complex automation agents based on ***ReAct*** or ***Multi-Agent***.
+- **Low-Code**: Define workflows using YAML, for collaboration and version control.
+- **Automation**: Integrated multiple automation frameworks such as [Appium](https://github.com/appium/appium) and [Playwright](https://playwright.dev/python/).
+- **Extensible**: User-friendly extensible interface for customizing any complex Action.
+- **AI native**: Create workflows containing LLM using low-code, as well as more complex automation agents based on **_ReAct_** or **_Multi-Agent_**.
 
 ## News
 
-* Integrate [autogen](https://github.com/microsoft/autogen), define your automation Multi-Agent using YAML.
-* Support for running most open source LLM locally is provided through [llama.cpp](https://github.com/ggerganov/llama.cpp).
+- Integrate [autogen](https://github.com/microsoft/autogen), define your automation Multi-Agent using YAML.
+- Support for running most open source LLM locally is provided through [llama.cpp](https://github.com/ggerganov/llama.cpp).
 
 ## Quick Start
 
@@ -132,7 +132,7 @@ playbook:
   actions:
     - llm.session:
         args:
-          actions:
+          tools:
             - shell.cmd
         result: $session
     - agents.create:
@@ -179,7 +179,6 @@ python -m iauto ./multi-agent.yaml
 
 **[More examples](./playbooks)**
 
-
 ## Playground
 
 iauto offers a web-based playground program for executing workflows. The LLM playground provides a workspace for LLM Chat, ReAct reasoning, and Multi-Agent tasks.
@@ -200,8 +199,8 @@ We are extremely open to contributions, whether it be in the form of a new featu
 
 ### Development setup
 
-* Code Style: [PEP-8](https://peps.python.org/pep-0008/)
-* Docstring Style: [Google Style](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html)
+- Code Style: [PEP-8](https://peps.python.org/pep-0008/)
+- Docstring Style: [Google Style](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html)
 
 ```bash
 # Create python venv
@@ -215,6 +214,7 @@ pip install -r requirements-dev.txt
 # Apply autopep8, isort and flake8 as pre commit hooks
 pre-commit install
 ```
+
 ### Build
 
 ```bash

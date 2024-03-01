@@ -25,7 +25,7 @@ We will create a function for Google flight search that can be utilized by AI.
 5. In the browser, choose one-way, enter the departure and arrival locations and date, then click search.
 6. Click `End recording` to end recording.
 7. Click on `Replay` to check if the recorded process functions correctly.
-8 Click `Export` or `Show code` to export the recorded operations as a JSON file.
+   8 Click `Export` or `Show code` to export the recorded operations as a JSON file.
 
 ![](../assets/img/google_flights_search_recording.png)
 
@@ -61,18 +61,12 @@ We will replace some input data recorded during the recording process with varia
       "type": "click",
       "target": "main",
       "selectors": [
-        [
-          "aria/Change ticket type. ​Round trip"
-        ],
-        [
-          "div.RLVa8 div.VfPpkd-TkwUic"
-        ],
+        ["aria/Change ticket type. ​Round trip"],
+        ["div.RLVa8 div.VfPpkd-TkwUic"],
         [
           "xpath///*[@id=\"yDmH0d\"]/c-wiz[2]/div/div[2]/c-wiz/div[1]/c-wiz/div[2]/div[1]/div[1]/div[1]/div/div[1]/div[1]/div/div/div/div[1]"
         ],
-        [
-          "pierce/div.RLVa8 div.VfPpkd-TkwUic"
-        ]
+        ["pierce/div.RLVa8 div.VfPpkd-TkwUic"]
       ],
       "offsetY": 21,
       "offsetX": 56.5
@@ -81,18 +75,12 @@ We will replace some input data recorded during the recording process with varia
       "type": "click",
       "target": "main",
       "selectors": [
-        [
-          "aria/One way"
-        ],
-        [
-          "div.RLVa8 li:nth-of-type(2)"
-        ],
+        ["aria/One way"],
+        ["div.RLVa8 li:nth-of-type(2)"],
         [
           "xpath///*[@id=\"yDmH0d\"]/c-wiz[2]/div/div[2]/c-wiz/div[1]/c-wiz/div[2]/div[1]/div[1]/div[1]/div/div[1]/div[1]/div/div/div/div[2]/ul/li[2]"
         ],
-        [
-          "pierce/div.RLVa8 li:nth-of-type(2)"
-        ]
+        ["pierce/div.RLVa8 li:nth-of-type(2)"]
       ],
       "offsetY": 40,
       "offsetX": 75.5
@@ -101,18 +89,10 @@ We will replace some input data recorded during the recording process with varia
       "type": "click",
       "target": "main",
       "selectors": [
-        [
-          "aria/Where from?"
-        ],
-        [
-          "div.BGeFcf div.cQnuXe input"
-        ],
-        [
-          "xpath///*[@id=\"i21\"]/div[1]/div/div/div[1]/div/div/input"
-        ],
-        [
-          "pierce/div.BGeFcf div.cQnuXe input"
-        ]
+        ["aria/Where from?"],
+        ["div.BGeFcf div.cQnuXe input"],
+        ["xpath///*[@id=\"i21\"]/div[1]/div/div/div[1]/div/div/input"],
+        ["pierce/div.BGeFcf div.cQnuXe input"]
       ],
       "offsetY": 20,
       "offsetX": 70.5
@@ -121,18 +101,10 @@ We will replace some input data recorded during the recording process with varia
       "type": "change",
       "value": "{$from}",
       "selectors": [
-        [
-          "aria/Where else?"
-        ],
-        [
-          "#i21 > div.ZGEB9c input"
-        ],
-        [
-          "xpath///*[@id=\"i21\"]/div[6]/div[2]/div[2]/div[1]/div/input"
-        ],
-        [
-          "pierce/#i21 > div.ZGEB9c input"
-        ]
+        ["aria/Where else?"],
+        ["#i21 > div.ZGEB9c input"],
+        ["xpath///*[@id=\"i21\"]/div[6]/div[2]/div[2]/div[1]/div/input"],
+        ["pierce/#i21 > div.ZGEB9c input"]
       ],
       "target": "main"
     },
@@ -160,18 +132,10 @@ We will replace some input data recorded during the recording process with varia
       "type": "change",
       "value": "{$to}",
       "selectors": [
-        [
-          "aria/Where to? "
-        ],
-        [
-          "div.vxNK6d div.cQnuXe input"
-        ],
-        [
-          "xpath///*[@id=\"i21\"]/div[4]/div/div/div[1]/div/div/input"
-        ],
-        [
-          "pierce/div.vxNK6d div.cQnuXe input"
-        ]
+        ["aria/Where to? "],
+        ["div.vxNK6d div.cQnuXe input"],
+        ["xpath///*[@id=\"i21\"]/div[4]/div/div/div[1]/div/div/input"],
+        ["pierce/div.vxNK6d div.cQnuXe input"]
       ],
       "target": "main"
     },
@@ -217,9 +181,7 @@ We will replace some input data recorded during the recording process with varia
     },
     {
       "type": "waitForElement",
-      "selectors": [
-        "pierce/div.akjk5c span"
-      ]
+      "selectors": ["pierce/div.akjk5c span"]
     },
     {
       "type": "click",
@@ -249,7 +211,6 @@ We will replace some input data recorded during the recording process with varia
     }
   ]
 }
-
 ```
 
 ## Prepare playbook for AI
@@ -261,7 +222,6 @@ The spec section is used to define the name, description, and arguments details 
 The `browser.replay` is used to replay the process we just recorded.
 
 Use `browser.content` to retrieve search results.
-
 
 `google_flights_search.yaml`:
 
@@ -317,13 +277,15 @@ playbook:
         args:
           provider: $llm_provider
           llm_args: $llm_args
-          playbooks:
-            - ./google_flights_search.yaml
-            - ./bing.yaml
-            - ./fetch_links_from_url.yaml
-            - ./get_readability_text_from_url.yaml
-          actions:
+          tools:
             - shell.cmd
+        actions:
+          - playbook:
+            args:
+              - ./google_flights_search.yaml
+              - ./bing.yaml
+              - ./fetch_links_from_url.yaml
+              - ./get_readability_text_from_url.yaml
         result: $session
 ```
 
@@ -336,7 +298,5 @@ We've requested AI to search for flights from San Francisco to Beijing on May 2n
 It works perfectly!
 
 ![AI Agent Google Flight Search](../assets/img/google_flights_search.png)
-
-
 
 By leveraging browser recording and iauto's replay capabilities, we can easily integrate web automation with LLM and Agent, enabling us to instruct AI to perform more complex tasks through conversations. This approach enhances work efficiency and automation levels.

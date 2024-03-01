@@ -4,11 +4,12 @@ playbook:
         args:
           provider: $llm_provider
           llm_args: $llm_args
-          playbooks:
-            - ./google_flights_search.yaml
-            - ./bing.yaml
-            - ./fetch_links_from_url.yaml
-            - ./get_readability_text_from_url.yaml
-          actions:
+          tools:
             - shell.cmd
+        actions:
+          - playbook:
+              args:
+                - ./bing.yaml
+                - ./fetch_links_from_url.yaml
+                - ./get_readability_text_from_url.yaml
         result: $session

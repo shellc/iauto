@@ -5,11 +5,13 @@ playbook:
         args:
           provider: chatglm
           llm_args:
-            model_path: /Users/shellc/Workspaces/chatglm.cpp/chatglm-ggml.bin
-          playbooks:
-           - ./bing.yaml
-           - ./google_news.yaml
-           - ./get_readability_text_from_url.yaml
+            model_path: /Volumes/Workspaces/models/chatglm3-6b/chatglm3-6b-ggml.bin
+        actions:
+          - playbook:
+              args:
+                - ./bing.yaml
+                - ./google_news.yaml
+                - ./get_readability_text_from_url.yaml
         result: $session
     - repeat:
         actions:

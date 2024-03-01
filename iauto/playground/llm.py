@@ -2,7 +2,7 @@ import os
 
 import streamlit as st
 
-from iauto import PlaybookExecutor
+import iauto
 from iauto.agents import AgentExecutor
 from iauto.llms import ChatMessage, Session
 
@@ -38,9 +38,9 @@ def print_received(message, sender, receiver):
 
 def create_llm(llm_mode, playbook_vars):
     if llm_mode == "Chat" or llm_mode == "ReAct":
-        return PlaybookExecutor.execute(os.path.join(playbooks_dir, "llm_chat.yaml"), variables=playbook_vars)
+        return iauto.execute(os.path.join(playbooks_dir, "llm_chat.yaml"), variables=playbook_vars)
     elif llm_mode == "Multi-Agent":
-        agent = PlaybookExecutor.execute(os.path.join(playbooks_dir, "agents.yaml"), variables=playbook_vars)
+        agent = iauto.execute(os.path.join(playbooks_dir, "agents.yaml"), variables=playbook_vars)
 
         agent.register_print_received(print_received)
         agent.set_human_input_mode("NEVER")

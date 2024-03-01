@@ -4,6 +4,7 @@ from typing import Any, Optional
 from ..action import Action, ActionSpec
 from ..executor import Executor
 from ..playbook import Playbook
+from ..playbook import load as playbook_load
 
 
 class PlaybookAction(Action):
@@ -24,8 +25,9 @@ class PlaybookAction(Action):
     def perform(
         self,
         *args,
-        executor: Optional[Executor] = None,
-        playbook: Optional[Playbook] = None,
+        execute: Optional[bool] = True,
+        executor: Executor,
+        playbook: Playbook,
         **kwargs
     ) -> Any:
         """
@@ -39,6 +41,7 @@ class PlaybookAction(Action):
 
         Args:
             *args: Variable length argument list containing playbook paths as strings.
+            exuecute (Optional[bool]) : Return actions if execute is False
             executor (Optional[Executor]): The executor to perform the actions. Must not be None.
             playbook (Optional[Playbook]): The playbook containing actions to be executed. Must not be None.
             **kwargs: Arbitrary keyword arguments which are set as variables in the executor.
@@ -63,25 +66,31 @@ class PlaybookAction(Action):
             fpath = None
             fname = executor.variables.get("__file__")
             if fname is not None:
-                if fname is not None:
-                    fpath = os.path.dirname(fname)
-
+                fpath = os.path.dirname(fname)
             for p in args:
                 if not isinstance(p, str):
                     raise ValueError(f"Invalid playbook path: {p}")
                 if not os.path.isabs(p) and fpath is not None:
                     p = os.path.join(fpath, p)
 
-                pb = Playbook.load(p)
+                pb = playbook_load(p)
                 actions.append(pb)
 
         actions.extend(playbook.actions or [])
 
-        result = None
-        for action in actions:
-            result = executor.perform(playbook=action)
+        if execute:
+            result = None
+            for action in actions:
+                result = executor.perform(playbook=action)
 
-        return result
+            return result
+        else:
+            pb_run_actions = []
+            for action in actions:
+                pb_run = PlaybookRunAction(executor=executor, playbook=action)
+                pb_run_actions.append(pb_run)
+
+            return pb_run_actions
 
 
 class PlaybookRunAction(Action):

@@ -7,9 +7,11 @@ playbook:
             api_key: sk-xxx
             base_url: http://100.64.0.8:8888/v1/
             model: Qwen-14B-Chat-Int4
-          playbooks:
-          - ./google_news.yaml
-          - ./get_readability_text_from_url.yaml
+        actions:
+          - playbook:
+              args:
+                - ./google_news.yaml
+                - ./get_readability_text_from_url.yaml
         result: $session
     - repeat:
         actions:

@@ -11,7 +11,7 @@ renderer:
 processors:
   # #https://github.com/NiklasRosenstein/pydoc-markdown/blob/develop/src/pydoc_markdown/contrib/processors/filter.py
   - type: filter
-    expression: not name.startswith('_') and default()
+    expression: not name.startswith('_') and '.buildin.' not in name and '.distrib.' not in name and default()
     documented_only: true
     exclude_private: true
     do_not_filter_modules: false

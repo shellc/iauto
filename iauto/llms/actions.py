@@ -1,9 +1,6 @@
-import os
 from typing import Any, List, Optional, Union
 
 from ..actions import Action, ActionSpec, Executor, Playbook, loader
-from ..actions.buildin.playbook import PlaybookRunAction
-from ..actions.playbook import load as playbook_load
 from .llm import ChatMessage
 from .llm_factory import create_llm
 from .session import Session
@@ -21,46 +18,41 @@ class CreateSessionAction(Action):
     def perform(
         self,
         *args,
-        executor: Optional[Executor] = None,
-        playbook: Optional[Playbook] = None,
         provider="openai",
         llm_args={},
-        actions: Optional[List[str]] = None,
-        playbooks: Optional[List[str]] = None,
+        tools: Optional[List[str]] = None,
+        executor: Executor,
+        playbook: Playbook,
         **kwargs
     ) -> Session:
+        if executor is None or playbook is None:
+            raise ValueError("executor and playbook required.")
+
         llm = create_llm(provider=provider, **llm_args)
-        functions = []
-        if actions is not None:
-            for name in actions:
+
+        actions = []
+
+        if tools is not None:
+            for name in tools:
                 action = loader.get(name)
                 if action is None:
                     raise ValueError(f"Action not found: {name}")
-                functions.append(action)
+                actions.append(action)
 
-        if playbooks is not None:
-            if executor is None:
-                raise ValueError("executor is required.")
+        if playbook.actions is not None:
+            for action_pb in playbook.actions:
+                action = executor.get_action(playbook=action_pb)
+                if action is None:
+                    raise ValueError(f"Action not found: {action_pb.name}")
+                if action_pb.name == "playbook":
+                    args_, kwargs_ = executor.eval_args(args=action_pb.args)
+                    pb_run_actions = action.perform(
+                        *args_, execute=False, executor=executor, playbook=action_pb, **kwargs_)
+                    actions.extend(pb_run_actions)
+                else:
+                    raise ValueError(f"Actions must be playbook, invalid action: {action_pb.name}")
 
-            root_path = executor.variables.get("__file__")
-            if root_path:
-                root_path = os.path.dirname(root_path)
-            for pb_name in playbooks:
-                if not os.path.isabs(pb_name) and root_path is not None:
-                    pb_name = os.path.join(root_path, pb_name)
-                    pb = playbook_load(pb_name)
-
-                    # def _action_func(*args, **kwargs):
-                    #    for k, v in kwargs.items():
-                    #        executor.set_variable(f"${k}", v)
-                    #    return executor.perform(playbook=pb)
-                    if pb.spec is None:
-                        raise ValueError("As the function of an LLM, playbook must have spec.")
-                    # action = create_action(func=_action_func, spec=pb.spec.model_dump())
-                    action = PlaybookRunAction(executor=executor, playbook=pb)
-                    functions.append(action)
-
-        session = Session(llm=llm, actions=functions)
+        session = Session(llm=llm, actions=actions)
         return session
 
 

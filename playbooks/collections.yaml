@@ -3,6 +3,6 @@ playbook:
     - list.append: [$list, 0]
     - list.append: [$list, 1]
     - log: $list
-    - dict.put: [$dict, k1, v1]
-    - dict.put: [$dict, k2, v2]
+    - dict.set: [$dict, k1, v1]
+    - dict.set: [$dict, k2, v2]
     - log: $dict

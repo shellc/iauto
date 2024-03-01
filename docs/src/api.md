@@ -2,43 +2,46 @@
 
 * [iauto](#iauto)
   * [VERSION](#iauto.VERSION)
+* [iauto.log](#iauto.log)
+  * [get\_level](#iauto.log.get_level)
+  * [get\_logger](#iauto.log.get_logger)
+  * [logger](#iauto.log.logger)
 * [iauto.agents](#iauto.agents)
-* [iauto.agents.\_executor](#iauto.agents._executor)
-  * [AgentExecutor](#iauto.agents._executor.AgentExecutor)
-* [iauto.actions.\_playbook](#iauto.actions._playbook)
-  * [PlaybookAction](#iauto.actions._playbook.PlaybookAction)
-  * [PlaybookRunAction](#iauto.actions._playbook.PlaybookRunAction)
-* [iauto.actions.\_loader](#iauto.actions._loader)
-  * [ActionLoader](#iauto.actions._loader.ActionLoader)
-  * [register\_action](#iauto.actions._loader.register_action)
+* [iauto.agents.executor](#iauto.agents.executor)
+  * [AgentExecutor](#iauto.agents.executor.AgentExecutor)
+* [iauto.actions.playbook](#iauto.actions.playbook)
+  * [Playbook](#iauto.actions.playbook.Playbook)
+  * [from\_dict](#iauto.actions.playbook.from_dict)
+  * [load](#iauto.actions.playbook.load)
 * [iauto.actions](#iauto.actions)
-* [iauto.actions.\_action](#iauto.actions._action)
-  * [Playbook](#iauto.actions._action.Playbook)
-  * [Executor](#iauto.actions._action.Executor)
-  * [ActionArg](#iauto.actions._action.ActionArg)
-  * [ActionSpec](#iauto.actions._action.ActionSpec)
-  * [Action](#iauto.actions._action.Action)
-  * [FunctionAction](#iauto.actions._action.FunctionAction)
-  * [create\_action](#iauto.actions._action.create_action)
-* [iauto.actions.\_flow](#iauto.actions._flow)
-  * [eval\_operator](#iauto.actions._flow.eval_operator)
-* [iauto.actions.\_executor](#iauto.actions._executor)
-  * [PlaybookExecutor](#iauto.actions._executor.PlaybookExecutor)
-* [iauto.llms.\_chatglm](#iauto.llms._chatglm)
-  * [ChatGLM](#iauto.llms._chatglm.ChatGLM)
-* [iauto.llms.\_openai](#iauto.llms._openai)
-  * [OpenAI](#iauto.llms._openai.OpenAI)
-* [iauto.llms.\_session](#iauto.llms._session)
-  * [Session](#iauto.llms._session.Session)
-* [iauto.llms.\_llm](#iauto.llms._llm)
-  * [Function](#iauto.llms._llm.Function)
-  * [ToolCall](#iauto.llms._llm.ToolCall)
-  * [ChatMessage](#iauto.llms._llm.ChatMessage)
-  * [LLM](#iauto.llms._llm.LLM)
-* [iauto.llms.llama.\_llama](#iauto.llms.llama._llama)
-  * [LLaMA](#iauto.llms.llama._llama.LLaMA)
-* [iauto.llms.\_llm\_factory](#iauto.llms._llm_factory)
-  * [create\_llm](#iauto.llms._llm_factory.create_llm)
+* [iauto.actions.action](#iauto.actions.action)
+  * [ActionArg](#iauto.actions.action.ActionArg)
+  * [ActionSpec](#iauto.actions.action.ActionSpec)
+  * [Action](#iauto.actions.action.Action)
+  * [FunctionAction](#iauto.actions.action.FunctionAction)
+  * [create\_action](#iauto.actions.action.create_action)
+* [iauto.actions.loader](#iauto.actions.loader)
+  * [ActionLoader](#iauto.actions.loader.ActionLoader)
+  * [register\_action](#iauto.actions.loader.register_action)
+* [iauto.actions.executor](#iauto.actions.executor)
+  * [Executor](#iauto.actions.executor.Executor)
+  * [PlaybookExecutor](#iauto.actions.executor.PlaybookExecutor)
+  * [execute](#iauto.actions.executor.execute)
+* [iauto.llms.chatglm](#iauto.llms.chatglm)
+  * [ChatGLM](#iauto.llms.chatglm.ChatGLM)
+* [iauto.llms.session](#iauto.llms.session)
+  * [Session](#iauto.llms.session.Session)
+* [iauto.llms.llm](#iauto.llms.llm)
+  * [Function](#iauto.llms.llm.Function)
+  * [ToolCall](#iauto.llms.llm.ToolCall)
+  * [ChatMessage](#iauto.llms.llm.ChatMessage)
+  * [LLM](#iauto.llms.llm.LLM)
+* [iauto.llms.llama](#iauto.llms.llama)
+  * [LLaMA](#iauto.llms.llama.LLaMA)
+* [iauto.llms.openai](#iauto.llms.openai)
+  * [OpenAI](#iauto.llms.openai.OpenAI)
+* [iauto.llms.llm\_factory](#iauto.llms.llm_factory)
+  * [create\_llm](#iauto.llms.llm_factory.create_llm)
 
 <a id="iauto"></a>
 
@@ -56,6 +59,55 @@ Classes:
 
 The current version.
 
+<a id="iauto.log"></a>
+
+# iauto.log
+
+<a id="iauto.log.get_level"></a>
+
+#### get\_level
+
+```python
+def get_level(name: str)
+```
+
+Get the log level from string.
+
+**Arguments**:
+
+- `name` _str_ - Log level string.
+  
+
+**Returns**:
+
+- `int` - The corresponding log level.
+
+<a id="iauto.log.get_logger"></a>
+
+#### get\_logger
+
+```python
+def get_logger(name, level=None)
+```
+
+Get a logger with the given name and level.
+
+**Arguments**:
+
+- `name` _str_ - The name of the logger.
+- `level` _int, optional_ - The logging level. Defaults to None.
+  
+
+**Returns**:
+
+- `logging.Logger` - A logger with the specified name and level.
+
+<a id="iauto.log.logger"></a>
+
+#### logger
+
+Default logger.
+
 <a id="iauto.agents"></a>
 
 # iauto.agents
@@ -66,11 +118,11 @@ It acts as an intermediary layer between the agent's instructions and the actual
 Classes:
 * AgentExecutor
 
-<a id="iauto.agents._executor"></a>
+<a id="iauto.agents.executor"></a>
 
-# iauto.agents.\_executor
+# iauto.agents.executor
 
-<a id="iauto.agents._executor.AgentExecutor"></a>
+<a id="iauto.agents.executor.AgentExecutor"></a>
 
 ## AgentExecutor Objects
 
@@ -78,7 +130,7 @@ Classes:
 class AgentExecutor()
 ```
 
-<a id="iauto.agents._executor.AgentExecutor.run"></a>
+<a id="iauto.agents.executor.AgentExecutor.run"></a>
 
 #### run
 
@@ -108,7 +160,7 @@ of the conversation.
 
 - `Dict` - A dictionary containing the chat history, summary of the conversation, and the cost of the session.
 
-<a id="iauto.agents._executor.AgentExecutor.reset"></a>
+<a id="iauto.agents.executor.AgentExecutor.reset"></a>
 
 #### reset
 
@@ -120,7 +172,7 @@ Resets the state of all agents and the UserProxyAgent.
 
 This method clears any stored state or history in the agents to prepare for a new task.
 
-<a id="iauto.agents._executor.AgentExecutor.set_human_input_mode"></a>
+<a id="iauto.agents.executor.AgentExecutor.set_human_input_mode"></a>
 
 #### set\_human\_input\_mode
 
@@ -134,7 +186,7 @@ Sets the human input mode for the UserProxyAgent and the recipient.
 
 - `mode` _str_ - The mode of human input to set. Can be 'NEVER', 'TERMINATE', or 'ALWAYS'.
 
-<a id="iauto.agents._executor.AgentExecutor.register_human_input_func"></a>
+<a id="iauto.agents.executor.AgentExecutor.register_human_input_func"></a>
 
 #### register\_human\_input\_func
 
@@ -148,7 +200,7 @@ Registers a function to handle human input across all agents.
 
 - `func` _Callable_ - The function to be called when human input is needed.
 
-<a id="iauto.agents._executor.AgentExecutor.register_print_received"></a>
+<a id="iauto.agents.executor.AgentExecutor.register_print_received"></a>
 
 #### register\_print\_received
 
@@ -166,98 +218,310 @@ flag is set to True.
 - `func` _Callable_ - The function to be called with the message, sender, and receiver
   information when a message is received.
 
-<a id="iauto.actions._playbook"></a>
+<a id="iauto.actions.playbook"></a>
 
-# iauto.actions.\_playbook
+# iauto.actions.playbook
 
-<a id="iauto.actions._playbook.PlaybookAction"></a>
+<a id="iauto.actions.playbook.Playbook"></a>
 
-## PlaybookAction Objects
-
-```python
-class PlaybookAction(Action)
-```
-
-<a id="iauto.actions._playbook.PlaybookAction.perform"></a>
-
-#### perform
+## Playbook Objects
 
 ```python
-def perform(*args,
-            executor: Optional[Executor] = None,
-            playbook: Optional[Playbook] = None,
-            **kwargs) -> Any
+class Playbook(BaseModel)
 ```
 
-Performs the action of executing a series of other actions defined within a playbook.
+A class representing a playbook which includes a series of actions to be executed.
 
-This method takes a variable number of arguments and keyword arguments. It requires
-an executor and a playbook to be provided to perform the actions. The method sets
-variables in the executor from the provided keyword arguments and then loads and
-executes actions either from the provided playbook or from playbook paths specified
-in the args.
+**Attributes**:
+
+- `name` _Optional[str]_ - The name of the playbook.
+- `description` _Optional[str]_ - A brief description of what the playbook does.
+- `args` _Union[str, List, Dict, None]_ - Arguments that can be passed to the actions in the playbook.
+- `actions` _Optional[List['Playbook']]_ - A list of actions (playbooks) to be executed.
+- `result` _Union[str, List, Dict, None]_ - The result of the playbook execution.
+
+<a id="iauto.actions.playbook.from_dict"></a>
+
+#### from\_dict
+
+```python
+def from_dict(d: Dict) -> Playbook
+```
+
+Generate a Playbook object from the input dictionary.
+
+**Attributes**:
+
+- `d` _Dict_ - The dictionary to convert into a Playbook object.
+  
+
+**Returns**:
+
+- `playbook` _Playbook_ - The converted Playbook object.
+
+<a id="iauto.actions.playbook.load"></a>
+
+#### load
+
+```python
+def load(fname: str) -> Playbook
+```
+
+Load a playbook from file.
+
+**Attributes**:
+
+- `fname` _str_ - Path to the YAML file containing the playbook.
+  
+
+**Returns**:
+
+- `playbook` _Playbook_ - The loaded playbook.
+
+<a id="iauto.actions"></a>
+
+# iauto.actions
+
+This module defines the core components of the action system.
+
+It provides the necessary classes and functions to create, manage, and execute actions
+within the context of the playbook execution environment. It includes
+definitions for actions, action arguments, action specifications, executors, and playbooks.
+
+Classes:
+* Action: Represents a single action to be executed.
+* ActionArg: Defines an argument that can be passed to an action.
+* ActionSpec: Contains the specification details of an action.
+* Executor: The base class for action executors.
+* Playbook: Represents a sequence of actions to be executed as a unit.
+* PlaybookExecutor: Responsible for executing the actions defined in a playbook.
+* PlaybookRunAction: A special action that represents the execution of a playbook.
+
+Functions:
+* create_action: A factory function to create instances of actions.
+* loader: A function to load actions and their specifications.
+* register_action: A function to register new actions into the system.
+
+The module also handles the registration and discovery of built-in actions.
+
+<a id="iauto.actions.action"></a>
+
+# iauto.actions.action
+
+<a id="iauto.actions.action.ActionArg"></a>
+
+## ActionArg Objects
+
+```python
+class ActionArg(BaseModel)
+```
+
+A class representing an argument for an action.
+
+**Attributes**:
+
+- `name` _str_ - The name of the argument.
+- `type` _str_ - The type of the argument, default is "string".
+- `description` _str_ - A description of what the argument is for.
+- `required` _bool_ - Whether the argument is required or optional, default is False.
+
+<a id="iauto.actions.action.ActionSpec"></a>
+
+## ActionSpec Objects
+
+```python
+class ActionSpec(BaseModel)
+```
+
+A class representing the specification of an action.
+
+**Attributes**:
+
+- `name` _str_ - The name of the action.
+- `description` _str_ - A brief description of what the action does.
+- `arguments` _Optional[List[ActionArg]]_ - A list of arguments that the action accepts.
+
+<a id="iauto.actions.action.ActionSpec.from_dict"></a>
+
+#### from\_dict
+
+```python
+@staticmethod
+def from_dict(d: Dict = {}) -> 'ActionSpec'
+```
+
+Create an ActionSpec instance from a dictionary representation.
 
 **Arguments**:
 
-- `*args` - Variable length argument list containing playbook paths as strings.
-- `executor` _Optional[Executor]_ - The executor to perform the actions. Must not be None.
-- `playbook` _Optional[Playbook]_ - The playbook containing actions to be executed. Must not be None.
-- `**kwargs` - Arbitrary keyword arguments which are set as variables in the executor.
+- `d` _Dict, optional_ - The dictionary containing action specification data.
+  
+
+**Returns**:
+
+- `ActionSpec` - An instance of ActionSpec created from the provided dictionary.
   
 
 **Raises**:
 
-- `ValueError` - If either executor or playbook is None, or if any of the args are not
-  valid playbook paths as strings.
+- `ValueError` - If the dictionary contains invalid data for creating an ActionSpec.
+
+<a id="iauto.actions.action.ActionSpec.from_oai_dict"></a>
+
+#### from\_oai\_dict
+
+```python
+@staticmethod
+def from_oai_dict(d: Dict = {}) -> 'ActionSpec'
+```
+
+Create an ActionSpec instance from a dictionary following the OpenAPI Specification.
+
+**Arguments**:
+
+- `d` _Dict, optional_ - The dictionary containing OpenAPI Specification data.
   
 
 **Returns**:
 
-- `Any` - The result of the last action performed by the executor.
+- `ActionSpec` - An instance of ActionSpec created from the provided OpenAPI dictionary.
+  
 
-<a id="iauto.actions._playbook.PlaybookRunAction"></a>
+**Raises**:
 
-## PlaybookRunAction Objects
+- `ValueError` - If the dictionary does not conform to the expected OpenAPI Specification format.
+
+<a id="iauto.actions.action.ActionSpec.oai_spec"></a>
+
+#### oai\_spec
 
 ```python
-class PlaybookRunAction(Action)
+def oai_spec() -> Dict
 ```
 
-<a id="iauto.actions._playbook.PlaybookRunAction.perform"></a>
+Generate an OpenAPI Specification dictionary for this action.
+
+**Returns**:
+
+- `Dict` - A dictionary representing the action in OpenAPI Specification format.
+
+<a id="iauto.actions.action.Action"></a>
+
+## Action Objects
+
+```python
+class Action(ABC)
+```
+
+Abstract base class for an action.
+
+An action defines a single operation that can be performed. Actions are typically
+executed by an Executor within the context of a Playbook.
+
+**Attributes**:
+
+- `spec` _ActionSpec_ - The specification of the action.
+
+<a id="iauto.actions.action.Action.perform"></a>
 
 #### perform
 
 ```python
-def perform(*args,
-            executor: Optional[Executor] = None,
-            playbook: Optional[Playbook] = None,
-            **kwargs) -> Any
+@abstractmethod
+def perform(*args, **kwargs) -> Any
 ```
 
-Perform the actions defined in the playbook using the executor.
-
-This method sets any provided keyword arguments as variables in the executor and then
-performs the actions in the playbook.
+Execute the action with the given arguments.
 
 **Arguments**:
 
-- `*args` - Variable length argument list, unused in this method.
-- `executor` _Optional[Executor]_ - Unused in this method, as the executor is set during
-  initialization.
-- `playbook` _Optional[Playbook]_ - Unused in this method, as the playbook is set during
-  initialization.
-- `**kwargs` - Arbitrary keyword arguments which are set as variables in the executor.
+- `*args` - Positional arguments for the action.
+- `**kwargs` - Keyword arguments for the action.
   
 
 **Returns**:
 
-- `Any` - The result of the last action performed by the executor.
+- `Any` - The result of the action execution.
+  
 
-<a id="iauto.actions._loader"></a>
+**Raises**:
 
-# iauto.actions.\_loader
+- `NotImplementedError` - If the method is not implemented by the subclass.
 
-<a id="iauto.actions._loader.ActionLoader"></a>
+<a id="iauto.actions.action.Action.copy"></a>
+
+#### copy
+
+```python
+def copy()
+```
+
+Create a copy of the Action instance.
+
+**Returns**:
+
+- `Action` - A new instance of the Action with the same specification.
+
+<a id="iauto.actions.action.FunctionAction"></a>
+
+## FunctionAction Objects
+
+```python
+class FunctionAction(Action)
+```
+
+A concrete implementation of Action that wraps a Python callable.
+
+**Attributes**:
+
+- `_func` _Callable_ - The Python callable to wrap.
+- `spec` _ActionSpec_ - The specification of the action.
+
+<a id="iauto.actions.action.FunctionAction.perform"></a>
+
+#### perform
+
+```python
+def perform(*args, **kwargs) -> Any
+```
+
+Execute the wrapped Python callable with the given arguments.
+
+**Arguments**:
+
+- `*args` - Positional arguments for the callable.
+- `**kwargs` - Keyword arguments for the callable.
+  
+
+**Returns**:
+
+- `Any` - The result of the callable execution.
+
+<a id="iauto.actions.action.create_action"></a>
+
+#### create\_action
+
+```python
+def create_action(func, spec: Dict) -> Action
+```
+
+Factory function to create a FunctionAction.
+
+**Arguments**:
+
+- `func` _Callable_ - The Python callable that the action will execute.
+- `spec` _Dict_ - A dictionary representing the action's specification.
+  
+
+**Returns**:
+
+- `Action` - A FunctionAction instance with the given callable and specification.
+
+<a id="iauto.actions.loader"></a>
+
+# iauto.actions.loader
+
+<a id="iauto.actions.loader.ActionLoader"></a>
 
 ## ActionLoader Objects
 
@@ -270,7 +534,7 @@ Manages the registration and retrieval of action instances.
 This class provides a mechanism to register actions by name and retrieve them.
 It keeps an internal dictionary that maps action names to action instances.
 
-<a id="iauto.actions._loader.ActionLoader.register"></a>
+<a id="iauto.actions.loader.ActionLoader.register"></a>
 
 #### register
 
@@ -285,7 +549,7 @@ Registers a set of actions.
 - `actions` _Dict[str, Action]_ - A dictionary with action names as keys and
   Action instances as values to be registered.
 
-<a id="iauto.actions._loader.ActionLoader.get"></a>
+<a id="iauto.actions.loader.ActionLoader.get"></a>
 
 #### get
 
@@ -304,7 +568,7 @@ Retrieves an action instance by its name.
 
   Action or None: The action instance if found, otherwise None.
 
-<a id="iauto.actions._loader.ActionLoader.actions"></a>
+<a id="iauto.actions.loader.ActionLoader.actions"></a>
 
 #### actions
 
@@ -319,7 +583,7 @@ Gets a list of all registered action instances.
 
 - `list` - A list of Action instances.
 
-<a id="iauto.actions._loader.ActionLoader.load"></a>
+<a id="iauto.actions.loader.ActionLoader.load"></a>
 
 #### load
 
@@ -348,7 +612,7 @@ is the full path to the module containing the class 'ClassName' that is the acti
 
   None
 
-<a id="iauto.actions._loader.register_action"></a>
+<a id="iauto.actions.loader.register_action"></a>
 
 #### register\_action
 
@@ -376,56 +640,11 @@ Registers a new action with the provided name and specification.
 
 - `ValueError` - If an action with the given name already exists.
 
-<a id="iauto.actions"></a>
+<a id="iauto.actions.executor"></a>
 
-# iauto.actions
+# iauto.actions.executor
 
-This module defines the core components of the action system.
-
-It provides the necessary classes and functions to create, manage, and execute actions
-within the context of the playbook execution environment. It includes
-definitions for actions, action arguments, action specifications, executors, and playbooks.
-
-Classes:
-* Action: Represents a single action to be executed.
-* ActionArg: Defines an argument that can be passed to an action.
-* ActionSpec: Contains the specification details of an action.
-* Executor: The base class for action executors.
-* Playbook: Represents a sequence of actions to be executed as a unit.
-* PlaybookExecutor: Responsible for executing the actions defined in a playbook.
-* PlaybookRunAction: A special action that represents the execution of a playbook.
-
-Functions:
-* create_action: A factory function to create instances of actions.
-* loader: A function to load actions and their specifications.
-* register_action: A function to register new actions into the system.
-
-The module also handles the registration and discovery of built-in actions.
-
-<a id="iauto.actions._action"></a>
-
-# iauto.actions.\_action
-
-<a id="iauto.actions._action.Playbook"></a>
-
-## Playbook Objects
-
-```python
-class Playbook(BaseModel)
-```
-
-A class representing a playbook which includes a series of actions to be executed.
-
-**Attributes**:
-
-- `name` _Optional[str]_ - The name of the playbook.
-- `description` _Optional[str]_ - A brief description of what the playbook does.
-- `args` _Union[str, List, Dict, None]_ - Arguments that can be passed to the actions in the playbook.
-- `actions` _Optional[List['Playbook']]_ - A list of actions (playbooks) to be executed.
-- `result` _Union[str, List, Dict, None]_ - The result of the playbook execution.
-- `spec` _Optional['ActionSpec']_ - The specification of the action that this playbook represents.
-
-<a id="iauto.actions._action.Executor"></a>
+<a id="iauto.actions.executor.Executor"></a>
 
 ## Executor Objects
 
@@ -435,11 +654,7 @@ class Executor(ABC)
 
 Abstract base class for an executor that can run playbooks.
 
-**Attributes**:
-
-- `variables` _Dict_ - A dictionary to hold variables that can be used in the execution context.
-
-<a id="iauto.actions._action.Executor.perform"></a>
+<a id="iauto.actions.executor.Executor.perform"></a>
 
 #### perform
 
@@ -459,7 +674,7 @@ Execute the given playbook.
 
 - `Any` - The result of the playbook execution.
 
-<a id="iauto.actions._action.Executor.get_action"></a>
+<a id="iauto.actions.executor.Executor.get_action"></a>
 
 #### get\_action
 
@@ -479,7 +694,7 @@ Retrieve the action associated with the given playbook.
 
   Union[Action, None]: The action to perform, or None if not found.
 
-<a id="iauto.actions._action.Executor.eval_args"></a>
+<a id="iauto.actions.executor.Executor.eval_args"></a>
 
 #### eval\_args
 
@@ -499,7 +714,7 @@ Evaluate the arguments passed to the playbook or action.
 
   Tuple[List, Dict]: A tuple containing the evaluated arguments as a list or a dictionary.
 
-<a id="iauto.actions._action.Executor.extract_vars"></a>
+<a id="iauto.actions.executor.Executor.extract_vars"></a>
 
 #### extract\_vars
 
@@ -515,7 +730,7 @@ Extract variables from the given data based on the vars specification.
 - `data` - The data from which to extract variables.
 - `vars` - The specification of variables to extract from the data.
 
-<a id="iauto.actions._action.Executor.set_variable"></a>
+<a id="iauto.actions.executor.Executor.set_variable"></a>
 
 #### set\_variable
 
@@ -530,7 +745,7 @@ Set a variable in the executor's context.
 - `name` _str_ - The name of the variable to set.
 - `value` _Any_ - The value to assign to the variable.
 
-<a id="iauto.actions._action.Executor.variables"></a>
+<a id="iauto.actions.executor.Executor.variables"></a>
 
 #### variables
 
@@ -545,252 +760,7 @@ Get the current variables in the executor's context.
 
 - `Dict` - A dictionary of the current variables.
 
-<a id="iauto.actions._action.ActionArg"></a>
-
-## ActionArg Objects
-
-```python
-class ActionArg(BaseModel)
-```
-
-A class representing an argument for an action.
-
-**Attributes**:
-
-- `name` _str_ - The name of the argument.
-- `type` _str_ - The type of the argument, default is "string".
-- `description` _str_ - A description of what the argument is for.
-- `required` _bool_ - Whether the argument is required or optional, default is False.
-
-<a id="iauto.actions._action.ActionSpec"></a>
-
-## ActionSpec Objects
-
-```python
-class ActionSpec(BaseModel)
-```
-
-A class representing the specification of an action.
-
-**Attributes**:
-
-- `name` _str_ - The name of the action.
-- `description` _str_ - A brief description of what the action does.
-- `arguments` _Optional[List[ActionArg]]_ - A list of arguments that the action accepts.
-
-<a id="iauto.actions._action.ActionSpec.from_dict"></a>
-
-#### from\_dict
-
-```python
-@staticmethod
-def from_dict(d: Dict = {}) -> 'ActionSpec'
-```
-
-Create an ActionSpec instance from a dictionary representation.
-
-**Arguments**:
-
-- `d` _Dict, optional_ - The dictionary containing action specification data.
-  
-
-**Returns**:
-
-- `ActionSpec` - An instance of ActionSpec created from the provided dictionary.
-  
-
-**Raises**:
-
-- `ValueError` - If the dictionary contains invalid data for creating an ActionSpec.
-
-<a id="iauto.actions._action.ActionSpec.from_oai_dict"></a>
-
-#### from\_oai\_dict
-
-```python
-@staticmethod
-def from_oai_dict(d: Dict = {}) -> 'ActionSpec'
-```
-
-Create an ActionSpec instance from a dictionary following the OpenAPI Specification.
-
-**Arguments**:
-
-- `d` _Dict, optional_ - The dictionary containing OpenAPI Specification data.
-  
-
-**Returns**:
-
-- `ActionSpec` - An instance of ActionSpec created from the provided OpenAPI dictionary.
-  
-
-**Raises**:
-
-- `ValueError` - If the dictionary does not conform to the expected OpenAPI Specification format.
-
-<a id="iauto.actions._action.ActionSpec.oai_spec"></a>
-
-#### oai\_spec
-
-```python
-def oai_spec() -> Dict
-```
-
-Generate an OpenAPI Specification dictionary for this action.
-
-**Returns**:
-
-- `Dict` - A dictionary representing the action in OpenAPI Specification format.
-
-<a id="iauto.actions._action.Action"></a>
-
-## Action Objects
-
-```python
-class Action(ABC)
-```
-
-Abstract base class for an action.
-
-An action defines a single operation that can be performed. Actions are typically
-executed by an Executor within the context of a Playbook.
-
-**Attributes**:
-
-- `spec` _ActionSpec_ - The specification of the action.
-
-<a id="iauto.actions._action.Action.perform"></a>
-
-#### perform
-
-```python
-@abstractmethod
-def perform(*args,
-            executor: Optional[Executor] = None,
-            playbook: Optional[Playbook] = None,
-            **kwargs) -> Any
-```
-
-Execute the action with the given arguments.
-
-**Arguments**:
-
-- `*args` - Positional arguments for the action.
-- `executor` _Optional[Executor]_ - The executor running this action.
-- `playbook` _Optional[Playbook]_ - The playbook that this action is part of.
-- `**kwargs` - Keyword arguments for the action.
-  
-
-**Returns**:
-
-- `Any` - The result of the action execution.
-  
-
-**Raises**:
-
-- `NotImplementedError` - If the method is not implemented by the subclass.
-
-<a id="iauto.actions._action.Action.copy"></a>
-
-#### copy
-
-```python
-def copy()
-```
-
-Create a copy of the Action instance.
-
-**Returns**:
-
-- `Action` - A new instance of the Action with the same specification.
-
-<a id="iauto.actions._action.FunctionAction"></a>
-
-## FunctionAction Objects
-
-```python
-class FunctionAction(Action)
-```
-
-A concrete implementation of Action that wraps a Python callable.
-
-**Attributes**:
-
-- `_func` _Callable_ - The Python callable to wrap.
-- `spec` _ActionSpec_ - The specification of the action.
-
-<a id="iauto.actions._action.FunctionAction.perform"></a>
-
-#### perform
-
-```python
-def perform(*args,
-            executor: Optional[Executor] = None,
-            playbook: Optional[Playbook] = None,
-            **kwargs) -> Any
-```
-
-Execute the wrapped Python callable with the given arguments.
-
-**Arguments**:
-
-- `*args` - Positional arguments for the callable.
-- `executor` _Optional[Executor]_ - The executor running this action.
-- `playbook` _Optional[Playbook]_ - The playbook that this action is part of.
-- `**kwargs` - Keyword arguments for the callable.
-  
-
-**Returns**:
-
-- `Any` - The result of the callable execution.
-
-<a id="iauto.actions._action.create_action"></a>
-
-#### create\_action
-
-```python
-def create_action(func, spec: Dict) -> Action
-```
-
-Factory function to create a FunctionAction.
-
-**Arguments**:
-
-- `func` _Callable_ - The Python callable that the action will execute.
-- `spec` _Dict_ - A dictionary representing the action's specification.
-  
-
-**Returns**:
-
-- `Action` - A FunctionAction instance with the given callable and specification.
-
-<a id="iauto.actions._flow"></a>
-
-# iauto.actions.\_flow
-
-<a id="iauto.actions._flow.eval_operator"></a>
-
-#### eval\_operator
-
-```python
-def eval_operator(operator, vars={}) -> bool
-```
-
-not: not true
-all: all true
-any: any is true
-lt: less than
-le: less than or equal to
-eq: equal to
-ne: not equal to
-ge: greater than or equal to
-gt: greater than
-
-<a id="iauto.actions._executor"></a>
-
-# iauto.actions.\_executor
-
-<a id="iauto.actions._executor.PlaybookExecutor"></a>
+<a id="iauto.actions.executor.PlaybookExecutor"></a>
 
 ## PlaybookExecutor Objects
 
@@ -804,7 +774,7 @@ This executor handles the running of actions defined in a playbook, managing
 the necessary thread execution for asynchronous actions and the extraction
 and evaluation of variables from the results.
 
-<a id="iauto.actions._executor.PlaybookExecutor.perform"></a>
+<a id="iauto.actions.executor.PlaybookExecutor.perform"></a>
 
 #### perform
 
@@ -834,7 +804,7 @@ extracted and stored.
 
   - ValueError: If the action is not found or the playbook is invalid.
 
-<a id="iauto.actions._executor.PlaybookExecutor.eval_vars"></a>
+<a id="iauto.actions.executor.PlaybookExecutor.eval_vars"></a>
 
 #### eval\_vars
 
@@ -863,7 +833,7 @@ pair is recursively processed.
   - The evaluated variable, or the original structure with all contained
   variables evaluated.
 
-<a id="iauto.actions._executor.PlaybookExecutor.eval_args"></a>
+<a id="iauto.actions.executor.PlaybookExecutor.eval_args"></a>
 
 #### eval\_args
 
@@ -888,7 +858,7 @@ arguments into positional (list) and keyword (dictionary) arguments.
   - Tuple[List, Dict]: A tuple containing a list of positional arguments and a
   dictionary of keyword arguments.
 
-<a id="iauto.actions._executor.PlaybookExecutor.extract_vars"></a>
+<a id="iauto.actions.executor.PlaybookExecutor.extract_vars"></a>
 
 #### extract\_vars
 
@@ -919,7 +889,7 @@ supports extracting variables from strings, lists, and dictionaries.
   No action is taken if `vars` is None or if the data types of `vars` and `data` do not
   correspond as expected.
 
-<a id="iauto.actions._executor.PlaybookExecutor.resolve_path"></a>
+<a id="iauto.actions.executor.PlaybookExecutor.resolve_path"></a>
 
 #### resolve\_path
 
@@ -943,12 +913,11 @@ playbook file, which is stored in the executor's variables under the key
 
 - `str` - The resolved absolute file path.
 
-<a id="iauto.actions._executor.PlaybookExecutor.execute"></a>
+<a id="iauto.actions.executor.execute"></a>
 
 #### execute
 
 ```python
-@staticmethod
 def execute(playbook_file, variables={}) -> Any
 ```
 
@@ -971,11 +940,11 @@ playbook.
 - `Any` - The result of executing the playbook, which could be of any type
   depending on the actions performed within the playbook.
 
-<a id="iauto.llms._chatglm"></a>
+<a id="iauto.llms.chatglm"></a>
 
-# iauto.llms.\_chatglm
+# iauto.llms.chatglm
 
-<a id="iauto.llms._chatglm.ChatGLM"></a>
+<a id="iauto.llms.chatglm.ChatGLM"></a>
 
 ## ChatGLM Objects
 
@@ -983,7 +952,7 @@ playbook.
 class ChatGLM(LLM)
 ```
 
-<a id="iauto.llms._chatglm.ChatGLM.generate"></a>
+<a id="iauto.llms.chatglm.ChatGLM.generate"></a>
 
 #### generate
 
@@ -993,25 +962,11 @@ def generate(instructions: str, **kwargs) -> Message
 
 
 
-<a id="iauto.llms._openai"></a>
+<a id="iauto.llms.session"></a>
 
-# iauto.llms.\_openai
+# iauto.llms.session
 
-<a id="iauto.llms._openai.OpenAI"></a>
-
-## OpenAI Objects
-
-```python
-class OpenAI(LLM)
-```
-
-
-
-<a id="iauto.llms._session"></a>
-
-# iauto.llms.\_session
-
-<a id="iauto.llms._session.Session"></a>
+<a id="iauto.llms.session.Session"></a>
 
 ## Session Objects
 
@@ -1026,7 +981,7 @@ that can be performed based on those messages.
 The Session class provides high-level methods to interact with a language model, allowing for
 complex conversation flows, tool integration, and message management.
 
-<a id="iauto.llms._session.Session.add"></a>
+<a id="iauto.llms.session.Session.add"></a>
 
 #### add
 
@@ -1045,7 +1000,7 @@ Add a new ChatMessage to the session's message history.
 
   None
 
-<a id="iauto.llms._session.Session.llm"></a>
+<a id="iauto.llms.session.Session.llm"></a>
 
 #### llm
 
@@ -1060,7 +1015,7 @@ Get the language model (LLM) instance associated with the session.
 
 - `LLM` - The language model instance used for processing messages.
 
-<a id="iauto.llms._session.Session.messages"></a>
+<a id="iauto.llms.session.Session.messages"></a>
 
 #### messages
 
@@ -1075,7 +1030,7 @@ Get the list of ChatMessage instances that represent the message history of the 
 
 - `List[ChatMessage]` - The list of messages exchanged during the session.
 
-<a id="iauto.llms._session.Session.actions"></a>
+<a id="iauto.llms.session.Session.actions"></a>
 
 #### actions
 
@@ -1090,7 +1045,7 @@ Get the list of Action instances that can be performed within the session.
 
 - `Optional[List[Action]]` - The list of actions available in the session, or an empty list if none are set.
 
-<a id="iauto.llms._session.Session.run"></a>
+<a id="iauto.llms.session.Session.run"></a>
 
 #### run
 
@@ -1103,7 +1058,7 @@ def run(instructions: Optional[str] = None,
         tools: Optional[List[Action]] = None,
         use_tools: bool = True,
         auto_exec_tools: bool = True,
-        **kwargs) -> Union[ChatMessage, Dict]
+        **kwargs) -> Union[ChatMessage, Dict, List]
 ```
 
 Run a conversation flow based on provided instructions and messages, with the option to rewrite the input,
@@ -1131,7 +1086,7 @@ expect a JSON response, and execute tools.
 
 - `json.JSONDecodeError` - If 'expect_json' is greater than 0 and the LLM's response cannot be parsed as JSON.
 
-<a id="iauto.llms._session.Session.react"></a>
+<a id="iauto.llms.session.Session.react"></a>
 
 #### react
 
@@ -1176,7 +1131,7 @@ Action (using tools to generate an observation or concluding the task), and Obse
 
 - `ValueError` - If the provided messages list is empty or the last message is not from the user.
 
-<a id="iauto.llms._session.Session.rewrite"></a>
+<a id="iauto.llms.session.Session.rewrite"></a>
 
 #### rewrite
 
@@ -1202,7 +1157,7 @@ This method utilizes the language model to reformulate the user's question, cons
 
 - `ValueError` - If there are no messages or the last message is not from the user.
 
-<a id="iauto.llms._session.Session.plain_messages"></a>
+<a id="iauto.llms.session.Session.plain_messages"></a>
 
 #### plain\_messages
 
@@ -1225,11 +1180,11 @@ Convert a list of ChatMessage instances into a plain string representation.
 
 - `str` - A string representation of the messages, each message on a new line.
 
-<a id="iauto.llms._llm"></a>
+<a id="iauto.llms.llm"></a>
 
-# iauto.llms.\_llm
+# iauto.llms.llm
 
-<a id="iauto.llms._llm.Function"></a>
+<a id="iauto.llms.llm.Function"></a>
 
 ## Function Objects
 
@@ -1244,7 +1199,7 @@ Represents a function call with optional arguments.
 - `name` _str_ - The name of the function being called.
 - `arguments` _Optional[str]_ - The arguments to be passed to the function, if any.
 
-<a id="iauto.llms._llm.ToolCall"></a>
+<a id="iauto.llms.llm.ToolCall"></a>
 
 ## ToolCall Objects
 
@@ -1260,7 +1215,7 @@ Represents a call to a specific tool with an optional function call.
 - `type` _str_ - The type of the tool.
 - `function` _Optional[Function]_ - An optional Function instance representing the function call associated with         the tool, if any.
 
-<a id="iauto.llms._llm.ChatMessage"></a>
+<a id="iauto.llms.llm.ChatMessage"></a>
 
 ## ChatMessage Objects
 
@@ -1277,7 +1232,7 @@ Represents a chat message with additional metadata and optional tool call inform
 - `tool_call_id` _Optional[str]_ - The identifier of the tool call associated with this message, if any.
 - `name` _Optional[str]_ - The name of the tool or function called.
 
-<a id="iauto.llms._llm.ChatMessage.from_dict"></a>
+<a id="iauto.llms.llm.ChatMessage.from_dict"></a>
 
 #### from\_dict
 
@@ -1301,7 +1256,7 @@ it creates a list of ToolCall instances from the sub-dictionaries.
 
 - `ChatMessage` - An instance of ChatMessage with properties populated from the dictionary.
 
-<a id="iauto.llms._llm.LLM"></a>
+<a id="iauto.llms.llm.LLM"></a>
 
 ## LLM Objects
 
@@ -1311,7 +1266,7 @@ class LLM(ABC)
 
 Abstract base class for a Language Model (LLM) that defines the interface for generating messages and handling     chat interactions.
 
-<a id="iauto.llms._llm.LLM.generate"></a>
+<a id="iauto.llms.llm.LLM.generate"></a>
 
 #### generate
 
@@ -1332,7 +1287,7 @@ Generate a message based on the given instructions.
 
 - `Message` - The generated message as a Message instance.
 
-<a id="iauto.llms._llm.LLM.chat"></a>
+<a id="iauto.llms.llm.LLM.chat"></a>
 
 #### chat
 
@@ -1356,7 +1311,7 @@ Conduct a chat interaction by processing a list of ChatMessage instances and opt
 
 - `ChatMessage` - The response as a ChatMessage instance after processing the interaction.
 
-<a id="iauto.llms._llm.LLM.model"></a>
+<a id="iauto.llms.llm.LLM.model"></a>
 
 #### model
 
@@ -1372,11 +1327,11 @@ Abstract property that should return the model identifier for the LLM instance.
 
 - `str` - The model identifier.
 
-<a id="iauto.llms.llama._llama"></a>
+<a id="iauto.llms.llama"></a>
 
-# iauto.llms.llama.\_llama
+# iauto.llms.llama
 
-<a id="iauto.llms.llama._llama.LLaMA"></a>
+<a id="iauto.llms.llama.LLaMA"></a>
 
 ## LLaMA Objects
 
@@ -1387,7 +1342,7 @@ class LLaMA(LLM)
 llamap.cpp: https://github.com/ggerganov/llama.cpp
 llama-cpp-python: https://github.com/abetlen/llama-cpp-python
 
-<a id="iauto.llms.llama._llama.LLaMA.generate"></a>
+<a id="iauto.llms.llama.LLaMA.generate"></a>
 
 #### generate
 
@@ -1397,11 +1352,25 @@ def generate(instructions: str, **kwargs) -> Message
 
 
 
-<a id="iauto.llms._llm_factory"></a>
+<a id="iauto.llms.openai"></a>
 
-# iauto.llms.\_llm\_factory
+# iauto.llms.openai
 
-<a id="iauto.llms._llm_factory.create_llm"></a>
+<a id="iauto.llms.openai.OpenAI"></a>
+
+## OpenAI Objects
+
+```python
+class OpenAI(LLM)
+```
+
+
+
+<a id="iauto.llms.llm_factory"></a>
+
+# iauto.llms.llm\_factory
+
+<a id="iauto.llms.llm_factory.create_llm"></a>
 
 #### create\_llm
 

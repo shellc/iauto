@@ -101,5 +101,5 @@ class ChatGLM(LLM):
         return resp
 
     @property
-    def modle(self) -> str:
+    def model(self) -> str:
         return "ChatGLM"

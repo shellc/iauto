@@ -8,9 +8,11 @@ playbook:
             model_path: /Volumes/Workspaces/models/chatglm3-6b/chatglm3-6b-ggml.bin
             #model_path: /Volumes/Workspaces/models/Qwen-1_8B-Chat/ggml-model-q4_0.gguf
             #chat_format: qwen-fn
-          playbooks:
-            - ./bing.yaml
-            - ./get_readability_text_from_url.yaml
+          actions:
+            - playbook:
+                args:
+                  - ./bing.yaml
+                  - ./get_readability_text_from_url.yaml
         result: $session
     - repeat:
         actions:

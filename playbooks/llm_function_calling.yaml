@@ -3,17 +3,12 @@ playbook:
   actions:
     - llm.session:
         args:
-          #provider: chatglm
+          provider: llama
           llm_args:
-            #model_path: /Volumes/Workspaces/models/Qwen-1_8B-Chat/ggml-model-q4_0.gguf
-            #chat_format: qwen-fn
-            #model_path: /Volumes/Workspaces/models/chatglm3-6b/chatglm3-6b-ggml.bin
-
-            api_key: sk-xxx
-            base_url: http://172.88.0.21:8888/v1/
-            model: Qwen-72B-Chat-Int4
-          playbooks:
-             - ./bing.yaml
+            model_path: /Volumes/Workspaces/models/Qwen-1_8B-Chat/ggml-model-q4_0.gguf
+            chat_format: qwen-fn
+        actions:
+          - playbook: ./bing.yaml
         result: $session
     - repeat:
         actions:
