@@ -18,6 +18,23 @@ class AgentExecutor:
         max_consecutive_auto_reply: Optional[int] = 10,
         react: Optional[bool] = False
     ) -> None:
+        """Initializes the AgentExecutor class.
+
+        This class is responsible for executing agents within a given session. It manages the interaction
+        between UserProxyAgent and ConversableAgent instances, handles message passing, and manages the
+        termination conditions for the chats.
+
+        Args:
+            agents (List[ConversableAgent]): A list of agent instances that will participate in the chat.
+            session (Session): The session object containing details about the current LLM session.
+            llm_args (Optional[Dict], optional): Additional arguments to pass to the LLM client. Defaults to None.
+            instructions (Optional[str], optional): System messages set to the UserProxyAgent.
+            human_input_mode (Optional[str], optional): The mode of human input, can be 'NEVER', 'TERNIMANTE',
+                or 'ALWAYS'. Defaults to "NEVER".
+            max_consecutive_auto_reply (Optional[int], optional): The maximum number of consecutive auto-replies
+                allowed before requiring human input. Defaults to 10.
+            react (Optional[bool], optional): Whether the agents should react to the messages. Defaults to False.
+        """
         self._session = session
         self._agents = agents
         self.human_input_mode = human_input_mode
@@ -96,6 +113,23 @@ class AgentExecutor:
         silent: Optional[bool] = False,
         **kwargs
     ) -> Dict:
+        """
+        Runs the chat session with the given message and configuration.
+
+        This method initiates a chat with the recipient (either a single agent or a group chat manager) using
+        the UserProxyAgent. It processes the message, manages the chat history, and generates a summary
+        of the conversation.
+
+        Args:
+            message (ChatMessage): The message to start the chat with.
+            clear_history (Optional[bool]): Determines whether to clear the chat history before starting
+                the new chat session. Defaults to True.
+            silent (Optional[bool]): If set to True, the agents will not output any messages. Defaults to False.
+            **kwargs: Additional keyword arguments that might be needed for extended functionality.
+
+        Returns:
+            Dict: A dictionary containing the chat history, summary of the conversation, and the cost of the session.
+        """
         result = self._user_proxy.initiate_chat(
             self._recipient,
             clear_history=clear_history,
@@ -115,19 +149,42 @@ class AgentExecutor:
         }
 
     def reset(self):
+        """Resets the state of all agents and the UserProxyAgent.
+
+        This method clears any stored state or history in the agents to prepare for a new task.
+        """
         for agent in self._agents + [self._user_proxy, self._recipient]:
             agent.reset()
 
     def set_human_input_mode(self, mode):
+        """Sets the human input mode for the UserProxyAgent and the recipient.
+
+        Args:
+            mode (str): The mode of human input to set. Can be 'NEVER', 'TERMINATE', or 'ALWAYS'.
+        """
         self.human_input_mode = mode
         for agent in [self._user_proxy, self._recipient]:
             agent.human_input_mode = mode
 
     def register_human_input_func(self, func):
+        """Registers a function to handle human input across all agents.
+
+        Args:
+            func (Callable): The function to be called when human input is needed.
+        """
         for agent in self._agents + [self._user_proxy, self._recipient]:
             agent.get_human_input = func
 
     def register_print_received(self, func):
+        """Registers a function to print messages received by agents.
+
+        The function will be called each time an agent receives a message, unless the silent
+        flag is set to True.
+
+        Args:
+            func (Callable): The function to be called with the message, sender, and receiver
+                             information when a message is received.
+        """
         agents = [self._user_proxy, self._recipient]
         if len(self._agents) > 1:
             agents = self._agents + agents
