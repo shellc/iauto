@@ -4,3 +4,4 @@ flake8
 autopep8
 isort
 pre-commit
+pydoc-markdown

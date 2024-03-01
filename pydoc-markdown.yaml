@@ -1,0 +1,20 @@
+loaders:
+  - type: python
+    search_path: [.]
+renderer:
+  # https://github.com/NiklasRosenstein/pydoc-markdown/blob/develop/src/pydoc_markdown/contrib/renderers/markdown.py
+  type: markdown
+  render_page_title: false
+  render_toc: true
+  render_toc_title: "iauto Python API Reference"
+  toc_maxdepth: 1
+processors:
+  # #https://github.com/NiklasRosenstein/pydoc-markdown/blob/develop/src/pydoc_markdown/contrib/processors/filter.py
+  - type: filter
+    expression: not name.startswith('_') and default()
+    documented_only: true
+    exclude_private: true
+    do_not_filter_modules: false
+    #skip_empty_modules: true
+  - type: smart
+  - type: crossref
