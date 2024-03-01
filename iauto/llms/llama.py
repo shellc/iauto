@@ -3,8 +3,8 @@ from typing import Iterator, List, Optional
 import llama_cpp
 from llama_cpp.llama_chat_format import LlamaChatCompletionHandlerRegistry
 
-from .._logging import get_logger
 from ..actions import ActionSpec
+from ..log import get_logger
 from ._qwen import qwen_chat_handler
 from .llm import LLM, ChatMessage, Function, Message, ToolCall
 

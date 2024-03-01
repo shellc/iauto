@@ -4,8 +4,8 @@ from typing import Iterator, List, Optional
 
 import chatglm_cpp
 
-from .._logging import DEBUG, get_logger
 from ..actions import ActionSpec
+from ..log import DEBUG, get_logger
 from .llm import LLM, ChatMessage, Function, Message, ToolCall
 
 

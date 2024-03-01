@@ -6,7 +6,7 @@ from typing_extensions import Dict, Optional
 
 from iauto.llms import ChatMessage, Session
 
-from .. import _logging
+from .. import log
 
 
 class IASessionClient(ModelClient):
@@ -23,10 +23,10 @@ class IASessionClient(ModelClient):
         self._react = react
         self._llm_args = llm_args or {}
 
-        self._log = _logging.get_logger("IASessionClient")
+        self._log = log.get_logger("IASessionClient")
 
     def create(self, params):
-        if self._log.isEnabledFor(_logging.DEBUG):
+        if self._log.isEnabledFor(log.DEBUG):
             self._log.debug(json.dumps(params, indent=4, ensure_ascii=False))
         resp = SimpleNamespace()
         resp.choices = []
@@ -49,7 +49,7 @@ class IASessionClient(ModelClient):
             m = self._session.react(messages=messages, use_tools=use_tools, auto_exec_tools=False, **self._llm_args)
         else:
             m = self._session.run(messages=messages, use_tools=use_tools, auto_exec_tools=False, **self._llm_args)
-        if self._log.isEnabledFor(_logging.DEBUG):
+        if self._log.isEnabledFor(log.DEBUG):
             self._log.debug(json.dumps(m.model_dump(), indent=4, ensure_ascii=False))
 
         choice = SimpleNamespace()

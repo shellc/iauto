@@ -1,6 +1,6 @@
 from typing import Any, Optional
 
-from ..._logging import get_logger
+from ...log import get_logger
 from ..action import Action, ActionSpec
 from ..executor import Executor
 from ..playbook import Playbook

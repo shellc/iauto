@@ -5,7 +5,7 @@ from typing import Iterator, List, Optional, Union
 import llama_cpp as llama
 import llama_cpp.llama_types as llama_types
 
-from .._logging import DEBUG, get_logger
+from ..log import DEBUG, get_logger
 
 _log = get_logger(__name__)
 

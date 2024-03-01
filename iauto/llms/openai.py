@@ -3,7 +3,7 @@ from typing import List, Optional
 
 import openai
 
-from .. import _logging
+from .. import log
 from ..actions import ActionSpec
 from .llm import LLM, ChatMessage, Function, Message, ToolCall
 
@@ -17,7 +17,7 @@ class OpenAI(LLM):
 
         self._openai = openai.OpenAI(**kwargs)
 
-        self._log = _logging.get_logger("OpenAI")
+        self._log = log.get_logger("OpenAI")
 
     def generate(self, instructions: str, **kwargs) -> Message:
         if "model" not in kwargs:
@@ -54,7 +54,7 @@ class OpenAI(LLM):
                 msg["tool_calls"] = [t.model_dump() for t in m.tool_calls]
             msgs.append(msg)
 
-        if self._log.isEnabledFor(_logging.DEBUG):
+        if self._log.isEnabledFor(log.DEBUG):
             self._log.debug(json.dumps({
                 "messages": msgs,
                 "tools": tools_desciption
