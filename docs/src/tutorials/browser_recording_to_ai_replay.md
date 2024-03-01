@@ -281,11 +281,11 @@ playbook:
             - shell.cmd
         actions:
           - playbook:
-            args:
-              - ./google_flights_search.yaml
-              - ./bing.yaml
-              - ./fetch_links_from_url.yaml
-              - ./get_readability_text_from_url.yaml
+              args:
+                - ./google_flights_search.yaml
+                - ./bing.yaml
+                - ./fetch_links_from_url.yaml
+                - ./get_readability_text_from_url.yaml
         result: $session
 ```
 
