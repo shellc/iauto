@@ -193,6 +193,10 @@ class AgentExecutor:
             receive_func = ReceiveFunc(agent, func)
             agent.receive = receive_func
 
+    @property
+    def session(self) -> Session:
+        return self._session
+
 
 class ReceiveFunc:
     def __init__(self, receiver, print_recieved) -> None:

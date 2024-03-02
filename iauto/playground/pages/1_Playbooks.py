@@ -1,10 +1,10 @@
-import glob
 import os
 import time
 
 import streamlit as st
 
 import iauto
+from iauto.playground import utils
 
 st.set_page_config(
     page_title='Playbooks',
@@ -32,7 +32,7 @@ def stop_run(playbook):
 
 
 def display_arguments(playbook, playbook_file):
-    if playbbook.spec is None or playbook.spec.arguments is None:
+    if playbook.spec is None or playbook.spec.arguments is None:
         return
     args = {}
     with st.expander("Arguments", expanded=False):
@@ -45,53 +45,39 @@ def display_arguments(playbook, playbook_file):
     return args
 
 
-playbooks_dir = os.environ["IA_PLAYBOOK_DIR"]
+playbooks = utils.list_playbooks()
 
-if playbooks_dir and os.path.isdir(playbooks_dir):
-    files = glob.glob("**/*.y*ml", root_dir=playbooks_dir, recursive=True)
-    files = [f for f in files if f.endswith((".yml", ".yaml"))]
-    for name in files:
-        f = os.path.join(playbooks_dir, name)
-        if not os.path.isfile(f):
-            continue
-        try:
-            playbbook = iauto.load(f)
-        except Exception:
-            continue
+for k, playbook in playbooks.items():
+    desc = k[0]
+    f = k[1]
 
-        playbbook_desc = name.replace(".yaml", "").replace(".yml", "")
-        if playbbook.description:
-            playbbook_desc = playbbook.description
-        elif playbbook.spec and playbbook.spec.description:
-            playbbook_desc = playbbook.spec.description
+    with st.container(border=True):
+        st.write(desc)
 
-        with st.container(border=True):
-            st.write(playbbook_desc)
+        col1, col2 = st.columns((100, 18))
+        with col1:
+            # Arguments
+            args = display_arguments(playbook, f)
+        with col2:
+            future = st.session_state.runs.get(f)
+            running = future is not None and future.running()
 
-            col1, col2 = st.columns((100, 18))
-            with col1:
-                # Arguments
-                args = display_arguments(playbbook, f)
-            with col2:
-                future = st.session_state.runs.get(f)
-                running = future is not None and future.running()
+            if st.button("Running" if running else "Run", disabled=running, key=f):
+                if running:
+                    stop_run(f)
+                else:
+                    run_playbook(f, args=args)
+                st.rerun()
 
-                if st.button("Running" if running else "Run", disabled=running, key=f):
-                    if running:
-                        stop_run(f)
-                    else:
-                        run_playbook(f, args=args)
-                    st.rerun()
-
-            # Result
-            if future and future.done():
-                with st.spinner("Status"):
-                    with st.expander("Result", expanded=False):
-                        try:
-                            result = future.result()
-                            st.write(result or "```Done with nothing return.```")
-                        except Exception as e:
-                            st.error(e)
+        # Result
+        if future and future.done():
+            with st.spinner("Status"):
+                with st.expander("Result", expanded=False):
+                    try:
+                        result = future.result()
+                        st.write(result or "```Done with nothing return.```")
+                    except Exception as e:
+                        st.error(e)
 
 for run in st.session_state.runs.values():
     if run and run.running():

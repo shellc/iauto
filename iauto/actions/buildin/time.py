@@ -42,7 +42,7 @@ class GetNow(Action):
                 {
                     "name": "format",
                     "type": "string",
-                    "description": "The format string to format the date and time. If not provided, returns timestamp in milliseconds.",  # noqa: E501
+                    "description": "The format string (python format) to format the date and time. If not provided, returns timestamp in milliseconds.",  # noqa: E501
                     "required": False
                 }
             ]

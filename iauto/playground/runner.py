@@ -21,6 +21,7 @@ def run(app=None, playbook_dir=None):
         "streamlit",
         "run",
         f"{app_py}",
-        "--theme.base=dark"
+        "--theme.base=dark",
+        "--client.showErrorDetails=False"
     ]
     streamlit_main()

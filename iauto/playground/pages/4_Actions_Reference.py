@@ -1,17 +1,17 @@
 import streamlit as st
 
-import iauto
+from iauto.playground import utils
 
 st.set_page_config(
-    page_title='Actions',
+    page_title='Actions Reference',
     page_icon='🎉',
     layout='centered',
     initial_sidebar_state="expanded"
 )
 
-st.title("Actions")
+st.title("Actions Reference")
 
-actions = [a.spec for a in iauto.actions.loader.actions]
+actions = utils.list_actions()
 
 for a in actions:
     with st.container(border=True):

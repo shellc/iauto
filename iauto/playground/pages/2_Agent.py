@@ -5,16 +5,19 @@ import streamlit as st
 import iauto
 from iauto.agents import AgentExecutor
 from iauto.llms import ChatMessage, Session
-
-here = os.path.dirname(__file__)
-playbooks_dir = os.path.abspath(os.path.join(here, os.path.pardir, "playbooks"))
-# playbooks_dir = os.environ["IA_PLAYBOOK_DIR"]
+from iauto.playground import llm_options, utils
 
 st.set_page_config(
     page_title='Agent',
     page_icon='🤖',
     layout='wide'
 )
+
+here = os.path.dirname(__file__)
+playbooks_dir = os.path.abspath(os.path.join(here, os.path.pardir, "playbooks"))
+
+st.session_state.tool_actions = st.session_state.get("tool_actions") or set()
+st.session_state.tool_playbooks = st.session_state.get("tool_playbooks") or set()
 
 # Initialize agent
 
@@ -37,6 +40,9 @@ def print_received(message, sender, receiver):
 
 
 def create_llm(llm_mode, playbook_vars):
+    playbook_vars["tools"] = list(st.session_state.tool_actions)
+    playbook_vars["playbooks"] = list(st.session_state.tool_playbooks)
+
     if llm_mode == "Chat" or llm_mode == "ReAct":
         return iauto.execute(os.path.join(playbooks_dir, "llm_chat.yaml"), variables=playbook_vars)
     elif llm_mode == "Multi-Agent":
@@ -67,8 +73,6 @@ playbook_vars = {
     "llm_chat_args": {},
     "react": False
 }
-st.session_state["llm_args"] = {}
-st.session_state["llm_chat_args"] = {}
 
 with st.sidebar:
     llm_mode = st.radio(
@@ -80,81 +84,26 @@ with st.sidebar:
     if llm_mode == "Multi-Agent":
         playbook_vars["react"] = st.checkbox("Enable agents ReAct", value=False)
 
-    llm_provider = st.radio(
-        "LLM",
-        ["OpenAI", "LLaMA", "ChatGLM"],
-        captions=["OpenAI compatible API", "llama.cpp GGUF models", "chatglm.cpp GGUF model"],
-    )
-
-    if llm_provider == "OpenAI":
-        playbook_vars["llm_provider"] = "openai"
-        api_key = st.text_input(
-            "API Key",
-            value=st.session_state["llm_args"].get("api_key", os.environ.get("OPENAI_API_KEY") or "sk-")
-        )
-        playbook_vars["llm_args"]["api_key"] = api_key
-        st.session_state["llm_args"]["api_key"] = api_key
-
-        base_url = st.text_input(
-            "API Base URL",
-            value=st.session_state["llm_args"].get("base_url", os.environ.get("OPENAI_API_BASE") or None)
-        )
-        if base_url == "":
-            base_url = None
-        playbook_vars["llm_args"]["base_url"] = base_url
-        st.session_state["llm_args"]["base_url"] = base_url
-
-        model = st.text_input(
-            "Model",
-            value=st.session_state["llm_args"].get("model",  os.environ.get("OPENAI_MODEL_NAME") or "gpt-3.5-turbo")
-        )
-        playbook_vars["llm_args"]["model"] = model
-        st.session_state["llm_args"]["model"] = model
-    elif llm_provider == "LLaMA":
-        playbook_vars["llm_provider"] = "llama"
-
-        model = st.text_input(
-            "Model path",
-            value=st.session_state["llm_args"].get(
-                "llama_model_path", os.environ.get("LLAMA_MODEL_PATH") or "<LLAMA_MODEL_PATH>")
-        )
-        playbook_vars["llm_args"]["model_path"] = model
-        st.session_state["llm_args"]["llama_model_path"] = model
-
-        chat_format = st.text_input(
-            "Chat format",
-            placeholder="auto",
-            value=st.session_state["llm_args"].get("chat_format", os.environ.get("LLAMA_CHAT_FORMAT"))
-        )
-        playbook_vars["llm_args"]["chat_format"] = chat_format
-        st.session_state["llm_args"]["chat_format"] = chat_format
-
-        repeat_penalty = st.number_input(
-            "repeat_penalty", value=st.session_state["llm_chat_args"].get("repeat_penalty", None))
-        if repeat_penalty:
-            playbook_vars["llm_chat_args"]["repeat_penalty"] = repeat_penalty
-            st.session_state["llm_chat_args"]["repeat_penalty"] = repeat_penalty
-    elif llm_provider == "ChatGLM":
-        playbook_vars["llm_provider"] = "chatglm"
-
-        model = st.text_input(
-            "Model path",
-            value=st.session_state["llm_args"].get("chatglm_model_path", os.environ.get(
-                "CHATGLM_MODEL_PATH") or "<CHATGLM_MODEL_PATH>")
-        )
-        playbook_vars["llm_args"]["model_path"] = model
-        st.session_state["llm_args"]["chatglm_model_path"] = model
-
-    if llm_provider != "OpenAI":
-        top_k = st.number_input("top_k", value=st.session_state["llm_chat_args"].get("top_k", 2))
-        playbook_vars["llm_chat_args"]["top_k"] = top_k
-        st.session_state["llm_chat_args"]["top_k"] = top_k
-
-    temperature = st.number_input("temperature", value=st.session_state["llm_chat_args"].get("temperature", 0.75))
-    playbook_vars["llm_chat_args"]["temperature"] = temperature
-    st.session_state["llm_chat_args"]["temperature"] = temperature
+    options = llm_options.render()
+    playbook_vars.update(options)
 
     use_tools = st.checkbox("Use tools", value=False)
+
+    # Tools
+    if use_tools:
+        actions = utils.list_actions()
+        playbooks = utils.list_playbooks()
+        with st.expander("Tools"):
+            for desc, file in playbooks.keys():
+                if st.checkbox(desc):
+                    st.session_state.tool_playbooks.add(file)
+                else:
+                    st.session_state.tool_playbooks.discard(file)
+            for action in actions:
+                if st.checkbox(action.name, help=action.description):
+                    st.session_state.tool_actions.add(action.name)
+                else:
+                    st.session_state.tool_actions.discard(action.name)
 
     label = "Reload" if st.session_state.get("llm") else "Launch"
     if st.button(label=label, type="primary"):
@@ -162,7 +111,7 @@ with st.sidebar:
 
 # Main container
 if st.session_state.get("llm"):
-    st.markdown(f"#### {llm_provider} {llm_mode}")
+    st.markdown(f"#### {llm_mode}")
 
 if st.session_state.get("llm") and len(st.session_state.messages) == 0:
     greeting = "Hello! How can I help you today?"
@@ -181,9 +130,8 @@ for message in st.session_state.messages:
             content = f"{content}"
         st.markdown(content)
 
-if st.session_state.get("llm") is not None:
-    llm = st.session_state.llm
-
+llm = st.session_state.get("llm")
+if llm is not None:
     # Accept user input
     if prompt := st.chat_input("What is up?"):
         # Add user message to chat history
@@ -200,9 +148,10 @@ if st.session_state.get("llm") is not None:
                 llm.add(ChatMessage(role="user", content=prompt))
                 if llm_mode == "Chat":
                     resp = llm.run(**playbook_vars["llm_chat_args"], use_tools=use_tools)
+                    resp_message = resp.content
                 elif llm_mode == "ReAct":
                     resp = llm.react(**playbook_vars["llm_chat_args"], use_tools=use_tools)
-            resp_message = resp.content
+                    resp_message = resp.content
         elif llm_mode == "Multi-Agent":
             with st.status("Agents Conversation", expanded=True):
                 resp = llm.run(message=ChatMessage(role="user", content=prompt), clear_history=False)
@@ -216,3 +165,13 @@ if st.session_state.get("llm") is not None:
 
     if len(st.session_state.messages) > 1:
         st.button("Clear", type="secondary", help="Clear history", on_click=lambda: reset(llm))
+
+model = None
+if llm is not None:
+    if hasattr(llm, "llm"):
+        model = llm.llm.model
+    if hasattr(llm, "session"):
+        model = llm.session.llm.model
+    st.markdown(f"```Model: {model}```")
+else:
+    st.warning("You need to launch a model first.")
