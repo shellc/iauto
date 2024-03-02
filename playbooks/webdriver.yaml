@@ -4,8 +4,8 @@ playbook:
     name: search_engine
     description: Use search engines to search the web.
     arguments:
-      - name: keywords,
-        type: string,
+      - name: keywords
+        type: string
         description: keywords to search for,
         required: true
   actions:

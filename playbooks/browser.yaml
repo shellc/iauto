@@ -3,8 +3,8 @@ playbook:
   spec:
     description: Open browser and goto the URL specified.
     arguments:
-      - name: url,
-        type: string,
+      - name: url
+        type: string
         description: HTTP URL,
         required: false
   actions:
