@@ -81,7 +81,7 @@ playbook:
 Run the playbook:
 
 ```bash
-python -m iauto ./browser.yaml
+python -m iauto run ./browser.yaml
 ```
 
 **Example 2: Chatbot**
@@ -118,7 +118,7 @@ export OPENAI_API_KEY=sk-<YOUR_API_KEY>
 Run the playbook:
 
 ```bash
-python -m iauto ./chatbot.yaml
+python -m iauto run ./chatbot.yaml
 ```
 
 **Example 3: Multi-Agent**
@@ -174,7 +174,7 @@ playbook:
 Run the playbook:
 
 ```bash
-python -m iauto ./multi-agent.yaml
+python -m iauto run ./multi-agent.yaml
 ```
 
 **[More examples](./playbooks)**
@@ -186,7 +186,7 @@ iauto offers a web-based playground program for executing workflows. The LLM pla
 Run LLM playground:
 
 ```bash
-python -m iauto --playground=llm --playbook-dir=./playbooks
+python -m iauto playground --playbooks=./playbooks
 ```
 
 **LLM playground screenshot:**
