@@ -6,7 +6,8 @@ Classes:
 * PlaybookExecutor
 """
 
-from .actions import Playbook, PlaybookExecutor, execute, load
+from .actions import (Playbook, PlaybookExecutor, execute, execute_in_thread,
+                      load)
 from .agents import _actions
 from .llms.actions import register_actions as register_llm_actions
 

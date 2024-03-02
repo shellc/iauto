@@ -1,0 +1,7 @@
+playbook:
+  actions:
+    - llm.session:
+        args:
+          provider: $llm_provider
+          llm_args: $llm_args
+        result: $session

@@ -4,17 +4,23 @@ import sys
 from streamlit.web.cli import main as streamlit_main
 
 
-def run(app, playbook_dir=None):
+def run(app=None, playbook_dir=None):
     here = os.path.dirname(__file__)
+
+    if app is None:
+        app = "Home"
+
     app_py = os.path.join(here, f"{app}.py")
 
     if playbook_dir is None:
-        playbook_dir = os.getcwd()
+        playbook_dir = str(os.getcwdb(), "UTF-8")
 
     os.environ["IA_PLAYBOOK_DIR"] = playbook_dir
 
-    # cmd = f"streamlit run {app_py}"
-    # os.system(cmd)
-
-    sys.argv = ["streamlit", "run", f"{app_py}"]
+    sys.argv = [
+        "streamlit",
+        "run",
+        f"{app_py}",
+        "--theme.base=dark"
+    ]
     streamlit_main()

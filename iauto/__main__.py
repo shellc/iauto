@@ -7,6 +7,14 @@ import traceback
 
 from dotenv import dotenv_values, load_dotenv
 
+env = {}
+
+
+def load_env(args):
+    if args.env:
+        load_dotenv(args.env)
+        env.update(dotenv_values(args.env))
+
 
 def list_actions():
     from iauto.actions import loader
@@ -36,17 +44,86 @@ def print_action_spec(name):
         print(json.dumps(spec.model_dump(), ensure_ascii=False, indent=2))
 
 
-def run_playground(args):
+def run_playground(args, parser):
     from iauto.playground.runner import run as playgroup_runner
 
-    playbook_dir = os.getcwd()
-    if args.playbook_dir:
-        playbook_dir = os.path.abspath(args.playbook_dir)
-    print("playbooks", playbook_dir)
-    playgroup_runner(app=args.playground, playbook_dir=playbook_dir)
+    playbook_dir = None
+    if args.playbooks:
+        playbook_dir = os.path.abspath(args.playbooks)
+    playgroup_runner(app=args.playground_name, playbook_dir=playbook_dir)
 
 
 def run(args, parser):
+    if not hasattr(args, "playbook") or not args.playbook:
+        parser.print_help()
+        sys.exit(-1)
+
+    playbook = args.playbook
+
+    p = os.path.abspath(playbook)
+    if not os.path.exists(p) or not os.path.isfile(p):
+        print(f"Invalid playbook file: {p}")
+        sys.exit(-1)
+
+    from iauto.actions import executor
+    variables = {}
+    if args.kwargs:
+        variables.update(args.kwargs)
+    variables.update(env)
+
+    result = executor.execute(playbook_file=p, variables=variables)
+    if result is not None:
+        print(result)
+
+
+class ParseDict(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        setattr(namespace, self.dest, dict())
+        if values is not None:
+            for value in values:
+                key, value = value.split('=')
+                getattr(namespace, self.dest)[key] = value
+
+
+def parse_args(argv):
+    parser = argparse.ArgumentParser(
+        prog='ia',
+    )
+
+    parser.add_argument('--env', default='.env', metavar="ENV_FILE", help="environment configuration file")
+    parser.add_argument('--load', nargs="+", default=[], metavar="module",
+                        help="load modules, like: --load module1 module2")
+    parser.add_argument('--list-actions', action="store_true", help="list actions")
+    parser.add_argument('--spec', metavar="action", default=None, help="print action spec")
+    parser.add_argument('--log-level', default=None, help="log level, default INFO")
+    parser.add_argument('--traceback', action="store_true", help="print error traceback")
+
+    subparser = parser.add_subparsers(title="commands", help="type command --help to print help message")
+    subparser.default = "run"
+
+    parser_run = subparser.add_parser('run', help="run a playbook")
+    parser_run.add_argument(
+        "playbook", nargs="?", default=None, help="playbook file path"
+    )
+    parser_run.add_argument('--kwargs', nargs="*", metavar="name=value",
+                            action=ParseDict, help="set playbook variables")
+    parser_run.set_defaults(func=lambda args: run(args=args, parser=parser_run))
+
+    parser_playground = subparser.add_parser('playground', help="start playground")
+    parser_playground.add_argument('playground_name', nargs="?", default=None,
+                                   metavar="PLAYGROUND_NAME", help="playground name")
+    parser_playground.add_argument('--playbooks', default=None, help="playbook dir for playground")
+    parser_playground.set_defaults(func=lambda args: run_playground(args, parser=parser_playground))
+
+    args = parser.parse_args(argv)
+    return args, parser
+
+
+def main():
+    args, parser = parse_args(sys.argv[1:])
+
+    load_env(args=args)
+
     if args.log_level:
         os.environ["IA_LOG_LEVEL"] = args.log_level
 
@@ -66,78 +143,9 @@ def run(args, parser):
         print_action_spec(args.spec)
         sys.exit(0)
 
-    if args.playground:
-        run_playground(args)
-        sys.exit(0)
-
-    playbook = args.playbook
-    if not playbook:
-        parser.print_help()
-        sys.exit(-1)
-
-    p = os.path.abspath(playbook)
-    if not os.path.exists(p) or not os.path.isfile(p):
-        print(f"Invalid playbook file: {p}")
-        sys.exit(-1)
-
-    from iauto.actions import executor
-    variables = {}
-    if args.kwargs:
-        variables.update(args.kwargs)
-    if args.env:
-        env = dotenv_values(args.env)
-        variables.update(env)
-    result = executor.execute(playbook_file=p, variables=variables)
-    if result is not None:
-        print(result)
-
-
-class ParseDict(argparse.Action):
-    def __call__(self, parser, namespace, values, option_string=None):
-        setattr(namespace, self.dest, dict())
-        if values is not None:
-            for value in values:
-                key, value = value.split('=')
-                getattr(namespace, self.dest)[key] = value
-
-
-def parse_args(argv):
-    parser = argparse.ArgumentParser(
-        prog='ia',
-        usage="ia playbook.yaml"
-    )
-
-    parser.add_argument(
-        "playbook", nargs="?", default=None, help="playbook file path"
-    )
-
-    parser.add_argument('--kwargs', nargs="*", metavar="name=value", action=ParseDict, help="set playbook variables")
-    parser.add_argument('--load', nargs="+", default=[], metavar="module",
-                        help="load modules, like: --load module1 module2")
-    parser.add_argument('--list-actions', action="store_true", help="list actions")
-    parser.add_argument('--spec', metavar="action", default=None, help="print action spec")
-    parser.add_argument('--traceback', action="store_true", help="print error traceback")
-    parser.add_argument('--log-level', default=None, help="log level, default INFO")
-
-    parser.add_argument('--playground', metavar="PLAYGROUND_NAME", default=None, help="start playground")
-    parser.add_argument('--playbook-dir', default=None, help="playbook dir for playground")
-
-    parser.add_argument('--env', default='.env', metavar="ENV_FILE", help="environment configuration file")
-
-    parser.set_defaults(func=run)
-
-    args = parser.parse_args(argv)
-    return args, parser
-
-
-def main():
-    args, parser = parse_args(sys.argv[1:])
-
-    load_dotenv(args.env)
-
     if hasattr(args, "func"):
         try:
-            args.func(args, parser)
+            args.func(args)
         except Exception as e:
             if args.traceback:
                 traceback.print_exc()

@@ -6,12 +6,12 @@ import iauto
 from iauto.agents import AgentExecutor
 from iauto.llms import ChatMessage, Session
 
-# here = os.path.dirname(__file__)
-# playbooks_dir = os.path.abspath(os.path.join(here, os.path.pardir, "playbooks"))
-playbooks_dir = os.environ["IA_PLAYBOOK_DIR"]
+here = os.path.dirname(__file__)
+playbooks_dir = os.path.abspath(os.path.join(here, os.path.pardir, "playbooks"))
+# playbooks_dir = os.environ["IA_PLAYBOOK_DIR"]
 
 st.set_page_config(
-    page_title='Agents',
+    page_title='Agent',
     page_icon='🤖',
     layout='wide'
 )

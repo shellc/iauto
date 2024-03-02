@@ -351,8 +351,23 @@ def execute(playbook_file, variables={}) -> Any:
     executor = PlaybookExecutor()
     executor.set_variable("__file__", playbook_file)
 
+    variables = variables or {}
+    variables.update(dict(os.environ))
+
     if variables is not None:
         for k, v in variables.items():
             executor.set_variable(f"${k}", v)
 
     return executor.perform(playbook=playbook)
+
+
+_thread_executor = ThreadPoolExecutor()
+
+
+def execute_in_thread(playbook_file, variables={}):
+    kwargs = {
+        "playbook_file": playbook_file,
+        "variables": variables
+    }
+    future = _thread_executor.submit(execute, **kwargs)
+    return future

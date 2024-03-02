@@ -1,0 +1,16 @@
+playbook:
+  actions:
+    - playbook: llm_chat.yaml
+    - agents.create:
+        args:
+          session: $session
+          react: $react
+          name: GeneralAssistant
+        result: $general_assistant
+    - agents.executor:
+        args:
+          session: $session
+          react: $react
+          agents:
+            - $general_assistant
+        result: $agent_executor
