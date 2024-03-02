@@ -63,10 +63,10 @@ class PlaybookAction(Action):
         actions = []
 
         if len(args) > 0:
-            fpath = None
-            fname = executor.variables.get("__file__")
-            if fname is not None:
-                fpath = os.path.dirname(fname)
+            fpath = playbook.metadata.get("__root__")
+            # fname = executor.variables.get("__file__")
+            # if fname is not None:
+            #    fpath = os.path.dirname(fname)
             for p in args:
                 if not isinstance(p, str):
                     raise ValueError(f"Invalid playbook path: {p}")

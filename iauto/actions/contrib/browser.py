@@ -425,7 +425,19 @@ class EvaluateJavascriptAction(Action):
             ]
         })
 
-    def perform(self, *args, page: Page, javascript: str, **kwargs) -> Any:
+    def perform(
+        self,
+        *args,
+        browser: Optional[Browser] = None,
+        page: Optional[Page] = None,
+        javascript: str,
+        **kwargs
+    ) -> Any:
+        if page is None:
+            page = get_default_page(browser=browser)
+        if page is None:
+            raise ValueError("page not found")
+
         async def _func(page):
             return await page.evaluate(javascript)
 
@@ -561,9 +573,9 @@ def get_default_page(*args, browser: Browser, **kwargs):
         return browser.contexts[0].pages[0]
 
 
-def replay(*args, browser: Browser, script: str, executor, **kwargs):
+def replay(*args, browser: Browser, script: str, playbook, executor, **kwargs):
     if not script.startswith("{"):
-        with open(executor.resolve_path(script), "r") as f:
+        with open(playbook.resolve_path(script), "r") as f:
             script = f.read()
     try:
         data = json.loads(script)

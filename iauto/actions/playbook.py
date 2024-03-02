@@ -1,4 +1,5 @@
-from typing import Dict, List, Optional, Union
+import os
+from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel
 
@@ -36,6 +37,21 @@ class Playbook(BaseModel):
     actions: Optional[List['Playbook']] = None
     result: Union[str, List, Dict, None] = None
     spec: Optional[ActionSpec] = None
+    metadata: Dict[str, Any] = {}
+
+    def resolve_path(self, path: str) -> str:
+        """
+        Resolves a potentially relative path to an absolute path using the playbook's metadata.
+
+        Args:
+            path (str): The file path that may be relative or absolute.
+
+        Returns:
+            str: The absolute path resolved from the given path and the playbook's metadata root.
+        """
+        if os.path.isabs(path):
+            return path
+        return os.path.join(self.metadata["__root__"], path)
 
 
 def from_dict(d: Dict) -> Playbook:
@@ -100,5 +116,14 @@ def load(fname: str) -> Playbook:
     with open(fname, 'r', encoding='utf-8') as f:
         data = yaml_load(f, Loader=yaml_loader)
         playbook = from_dict(data)
+        root = os.path.dirname(fname)
+        _resolve_path(playbook=playbook, root=root)
 
     return playbook
+
+
+def _resolve_path(playbook: Playbook, root: str):
+    if playbook.actions is not None and len(playbook.actions) > 0:
+        for action in playbook.actions:
+            action.metadata["__root__"] = root
+            _resolve_path(action, root)
