@@ -52,6 +52,7 @@ class PromptAction(Action):
         self._history = InMemoryHistory()
 
         self.spec = ActionSpec.from_dict({
+            "name": "shell.prompt",
             "description": "Receive user input from the terminal.",
         })
 
@@ -67,6 +68,7 @@ class PrintAction(Action):
         super().__init__()
 
         self.spec = ActionSpec.from_dict({
+            "name": "shell.print",
             "description": "Print to the terminal.",
         })
 

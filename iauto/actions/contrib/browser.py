@@ -96,6 +96,7 @@ class CloseBrowserAction(Action):
     def __init__(self) -> None:
         super().__init__()
         self.spec = ActionSpec.from_dict({
+            "name": "browser.close",
             "description": "Close the browser.",
         })
 
@@ -109,6 +110,7 @@ class GotoAction(Action):
     def __init__(self) -> None:
         super().__init__()
         self.spec = ActionSpec.from_dict({
+            "name": "browser.goto",
             "description": "Open URL in the browser.",
         })
 
@@ -149,6 +151,7 @@ class LocatorAction(Action):
     def __init__(self) -> None:
         super().__init__()
         self.spec = ActionSpec.from_dict({
+            "name": "browser.locator",
             "description": "Locate elements in the page.",
         })
 
@@ -210,6 +213,7 @@ class ClickAction(Action):
     def __init__(self) -> None:
         super().__init__()
         self.spec = ActionSpec.from_dict({
+            "name": "browser.click",
             "description": "Click the element.",
         })
 
@@ -244,6 +248,7 @@ class ScrollAction(Action):
     def __init__(self) -> None:
         super().__init__()
         self.spec = ActionSpec.from_dict({
+            "name": "browser.scroll",
             "description": "Scroll the mouse wheel.",
         })
 
@@ -262,6 +267,7 @@ class EvaluateJavascriptAction(Action):
     def __init__(self) -> None:
         super().__init__()
         self.spec = ActionSpec.from_dict({
+            "name": "browser.eval",
             "description": "Execute JavaScript in the browser page.",
         })
 
@@ -276,6 +282,7 @@ class GetContentAction(Action):
     def __init__(self) -> None:
         super().__init__()
         self.spec = ActionSpec.from_dict({
+            "name": "browser.content",
             "description": "Get the HTML content of the page.",
         })
 
@@ -320,6 +327,7 @@ class ReadabilityAction(Action):
     def __init__(self) -> None:
         super().__init__()
         self.spec = ActionSpec.from_dict({
+            "name": "browser.readability",
             "description": "Convert the HTML content to easy-to-read pure text content.",
         })
 

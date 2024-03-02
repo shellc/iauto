@@ -10,6 +10,7 @@ class WaitAction(Action):
         super().__init__()
 
         self.spec = ActionSpec.from_dict({
+            "name": "time.wait",
             "description": "Wait for a specified seconds.",
         })
 
@@ -34,6 +35,7 @@ class GetNow(Action):
         super().__init__()
 
         self.spec = ActionSpec.from_dict({
+            "name": "time.now",
             "description": "Get the current datetime.",
         })
 

@@ -359,27 +359,35 @@ def execute(*args, webdriver: Remote, command: str, params, **kwargs) -> Any:
 def create_actions() -> Dict[str, Action]:
     actions = {}
     actions["wd.connect"] = create_action(func=connect, spec={
+        "name": "wd.connect",
         "description": "Connect to the Appium server."
     })
     actions["wd.execute_script"] = create_action(func=execute_script, spec={
+        "name": "wd.execute_script",
         "description": "Execute the script."
     })
     actions["wd.get_element"] = create_action(func=get_element, spec={
+        "name": "wd.get_element",
         "description": "Get the element."
     })
     actions["wd.get_elements"] = create_action(func=get_elements, spec={
+        "name": "wd.get_elements",
         "description": "Get all elements."
     })
     actions["wd.get_attr"] = create_action(func=get_attr, spec={
+        "name": "wd.get_attr",
         "description": "Get element attribute value"
     })
     actions["wd.text"] = create_action(func=text, spec={
+        "name": "wd.text",
         "description": "Get element text content."
     })
     actions["wd.send_keys"] = create_action(func=send_keys, spec={
+        "name": "wd.send_keys",
         "description": "Send content."
     })
     actions["wd.click"] = create_action(func=click, spec={
+        "name": "wd.click",
         "description": "Click the element."
     })
 

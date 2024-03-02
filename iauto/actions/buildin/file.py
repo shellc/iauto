@@ -10,7 +10,28 @@ class FileWriteAction(Action):
     def __init__(self) -> None:
         super().__init__()
         self.spec = ActionSpec.from_dict({
+            "name": "file.write",
             "description": "Write content to a file.",
+            "arguments": [
+                {
+                    "name": "file",
+                    "description": "File path",
+                    "type": "string",
+                    "required": True
+                },
+                {
+                    "name": "mode",
+                    "description": "Write mode, default: 'w'",
+                    "type": "string",
+                    "required": False
+                },
+                {
+                    "name": "cotent",
+                    "description": "Content to be wrote",
+                    "type": "string",
+                    "required": True
+                }
+            ]
         })
 
     def perform(self, *args, file: str, model: str = "w", content: Any, **kwargs: Any) -> Any:
@@ -21,7 +42,17 @@ class FileWriteAction(Action):
             f.write(content)
 
 
-@register_action(name="file.exists", spec={"description": "Test if file exists."})
+@register_action(name="file.exists", spec={
+    "description": "Test if file exists.",
+    "arguments": [
+        {
+            "name": "file",
+            "description": "File path",
+            "type": "string",
+            "required": True
+        }
+    ]
+})
 def file_exists(file: Optional[str] = None, *args, **kwargs) -> bool:
     if file is None and len(args) == 1:
         file = args[0]

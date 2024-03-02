@@ -7,14 +7,36 @@ from ..loader import register_action
 
 
 @register_action(name="db.create_engine", spec={
-    "description": "Create SQL Engine."
+    "description": "Create SQL Engine.",
+    "arguments": [
+        {
+            "name": "url",
+            "description": "SQLAlchemy-style database connection URL.",
+            "type": "string",
+            "required": True
+        }
+    ]
 })
 def create_engine(*args, url: str, **kwargs) -> sqlalchemy.Engine:
     return sqlalchemy.create_engine(url)
 
 
 @register_action(name="db.read", spec={
-    "description": "Read data from database."
+    "description": "Read data from database.",
+    "arguments": [
+        {
+            "name": "sql",
+            "description": "SQL.",
+            "type": "string",
+            "required": True
+        },
+        {
+            "name": "return_type",
+            "description": "Return data type, optional, default: dataframe.",
+            "type": "string",
+            "required": False
+        }
+    ]
 })
 def read(
     *args,
@@ -33,7 +55,21 @@ def read(
 
 
 @register_action(name="db.exec", spec={
-    "description": "Execute SQL."
+    "description": "Execute SQL.",
+    "arguments": [
+        {
+            "name": "sql",
+            "description": "SQL.",
+            "type": "string",
+            "required": True
+        },
+        {
+            "name": "values",
+            "description": "SQL parameters.",
+            "type": "dict",
+            "required": False
+        }
+    ]
 })
 def exec(
     *args,
@@ -53,7 +89,21 @@ def exec(
 
 
 @register_action(name="db.select", spec={
-    "description": "Eexecute select statement."
+    "description": "Eexecute select statement.",
+    "arguments": [
+        {
+            "name": "sql",
+            "description": "SQL.",
+            "type": "string",
+            "required": True
+        },
+        {
+            "name": "values",
+            "description": "SQL parameters.",
+            "type": "dict",
+            "required": False
+        }
+    ]
 })
 def select(
     *args,

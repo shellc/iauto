@@ -6,6 +6,7 @@ class ModAction(Action):
         super().__init__()
 
         self.spec = ActionSpec.from_dict({
+            "name": "math.mod",
             "description": "Calculate the modulus and return the result.",
         })
 

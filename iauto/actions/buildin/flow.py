@@ -108,6 +108,7 @@ class RepeatAction(Action):
     def __init__(self) -> None:
         super().__init__()
         self.spec = ActionSpec.from_dict({
+            "name": "repeat",
             "description": "Repeat the execution based on specified conditions.",
         })
 
@@ -143,6 +144,7 @@ class WhenAction(Action):
     def __init__(self) -> None:
         super().__init__()
         self.spec = ActionSpec.from_dict({
+            "name": "when",
             "description": "Execute actions when the condition is met.",
         })
 
@@ -168,6 +170,7 @@ class ForEachAction(Action):
     def __init__(self) -> None:
         super().__init__()
         self.spec = ActionSpec.from_dict({
+            "name": "each",
             "description": "Execute 'actions' for each element in the set.",
         })
 

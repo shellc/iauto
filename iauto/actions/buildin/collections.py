@@ -9,7 +9,8 @@ class ListAppendAction(Action):
     def __init__(self) -> None:
         super().__init__()
         self.spec = ActionSpec.from_dict({
-            "description": "Add an elements to the end of the list.",
+            "name": "list.append",
+            "description": "Add an elements to the end of the list."
         })
 
     def perform(
@@ -40,6 +41,7 @@ class DictSetAction(Action):
     def __init__(self) -> None:
         super().__init__()
         self.spec = ActionSpec.from_dict({
+            "name": "dict.set",
             "description": "Set dict value.",
         })
 
@@ -71,6 +73,7 @@ class DictGetAction(Action):
     def __init__(self) -> None:
         super().__init__()
         self.spec = ActionSpec.from_dict({
+            "name": "dict.get",
             "description": "Get value from the dictionary. like: dict.get: [$dict, key]",
         })
 
