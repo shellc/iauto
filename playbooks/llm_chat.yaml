@@ -1,4 +1,5 @@
 playbook:
+  description: Create a LLM chat session
   actions:
     - llm.session:
         args:

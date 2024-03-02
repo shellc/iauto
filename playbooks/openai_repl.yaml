@@ -1,5 +1,5 @@
 playbook:
-  description: Chat to OpenAI
+  description: Chat to OpenAI-compatible API (REPL)
   actions:
     - llm.session:
         #args:

@@ -1,7 +1,7 @@
 playbook:
   spec:
     name: caixin_news
-    description: Get latest news from Caixin website.
+    description: Get latest news from Caixin website
   actions:
     - browser.open:
         args:

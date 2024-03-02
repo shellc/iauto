@@ -8,7 +8,52 @@ from .executor import AgentExecutor
 
 
 @register_action(name="agents.create", spec={
-    "description": "Create an agent."
+    "description": "Create a new agent instance.",
+    "arguments": [
+        {
+            "name": "type",
+            "description": "The type of agent to create.",
+            "type": "string",
+            "default": "assistant",
+            "enum": ["assistant"]
+        },
+        {
+            "name": "session",
+            "description": "The LLM Session instance containing the state and configuration.",
+            "type": "Session"
+        },
+        {
+            "name": "llm_args",
+            "description": "Additional arguments for the language model.",
+            "type": "dict",
+            "required": False
+        },
+        {
+            "name": "react",
+            "description": "Whether the agent should use react reasning.",
+            "type": "bool",
+            "required": False,
+            "default": False
+        },
+        {
+            "name": "name",
+            "description": "The name of the agent.",
+            "type": "string",
+            "default": "assistant"
+        },
+        {
+            "name": "description",
+            "description": "A brief description of the agent's purpose.",
+            "type": "string",
+            "required": False
+        },
+        {
+            "name": "instructions",
+            "description": "Instructions for the agent.",
+            "type": "string",
+            "required": False
+        }
+    ]
 })
 def create_agent(
     *args,
@@ -50,7 +95,45 @@ def create_agent(
 
 
 @register_action(name="agents.executor", spec={
-    "description": "Create an agent executor."
+    "description": "Instantiate a new agent executor.",
+    "arguments": [
+        {
+            "name": "session",
+            "description": "The LLM Session instance containing the state and configuration.",
+            "type": "Session"
+        },
+        {
+            "name": "llm_args",
+            "description": "Additional arguments for the language model.",
+            "type": "dict",
+            "required": False
+        },
+        {
+            "name": "react",
+            "description": "Whether the agent should use react reasoning.",
+            "type": "bool",
+            "required": False,
+            "default": False
+        },
+        {
+            "name": "agents",
+            "description": "A list of ConversableAgent instances to be managed by the executor.",
+            "type": "List[ConversableAgent]"
+        },
+        {
+            "name": "instructions",
+            "description": "Instructions for the agent executor.",
+            "type": "string",
+            "required": False
+        },
+        {
+            "name": "max_consecutive_auto_reply",
+            "description": "The maximum number of consecutive auto-replies allowed by the executor.",
+            "type": "int",
+            "required": False,
+            "default": 10
+        }
+    ]
 })
 def create_agent_executor(
     *args,
@@ -73,7 +156,33 @@ def create_agent_executor(
 
 
 @register_action(name="agents.run", spec={
-    "description": "Submit a agent run."
+    "description": "Run the specified agent executor with a given message.",
+    "arguments": [
+        {
+            "name": "agent_executor",
+            "description": "The agent executor instance to run.",
+            "type": "AgentExecutor"
+        },
+        {
+            "name": "message",
+            "description": "The message to process.",
+            "type": "string"
+        },
+        {
+            "name": "clear_history",
+            "description": "Whether to clear the conversation history before running.",
+            "type": "bool",
+            "required": False,
+            "default": True
+        },
+        {
+            "name": "silent",
+            "description": "Whether to suppress output during execution.",
+            "type": "bool",
+            "required": False,
+            "default": False
+        }
+    ]
 })
 def executor_run(
     *args,

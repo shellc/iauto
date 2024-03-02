@@ -7,15 +7,27 @@ class ModAction(Action):
 
         self.spec = ActionSpec.from_dict({
             "name": "math.mod",
-            "description": "Calculate the modulus and return the result.",
+            "description": "Calculates the remainder of the division of two numbers.",
+            "arguments": [
+                {
+                    "name": "l",
+                    "type": "int",
+                    "description": "The dividend in the division operation.",
+                    "required": True
+                },
+                {
+                    "name": "r",
+                    "type": "int",
+                    "description": "The divisor in the division operation.",
+                    "required": True
+                }
+            ],
         })
 
     def perform(
         self,
-        *args,
+        l: int,
+        r: int,
         **kwargs
     ) -> int:
-        if len(args) != 2:
-            raise ValueError("mod requires 2 numbers, like: [10, 2]")
-
-        return args[0] % args[1]
+        return l % r

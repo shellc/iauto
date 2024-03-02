@@ -1,7 +1,7 @@
 playbook:
   spec:
     name: get_readability_text_from_url
-    description: Get web content suitable for humans to read.
+    description: Get web content suitable for humans to read
     arguments:
       - name: url
         type: string

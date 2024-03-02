@@ -7,14 +7,22 @@ namespace = _uuid.uuid1()
 
 
 @register_action(name="uuid", spec={
-    "description": "Generate UUID."
+    "description": "Generate a version 5 UUID using SHA1 hash.",
 })
 def uuid(*args, **kwargs):
     return _uuid.uuid5(namespace, _uuid.uuid1().hex).hex
 
 
 @register_action(name="sha1", spec={
-    "description": "SHA1"
+    "description": "Generate a SHA1 hash of the given input string.",
+    "arguments": [
+        {
+            "name": "s",
+            "type": "string",
+            "description": "The input string to hash with SHA1.",
+            "required": True
+        }
+    ],
 })
 def sha1(s: str, *args, **kwargs):
     m = hashlib.sha1()
@@ -23,7 +31,15 @@ def sha1(s: str, *args, **kwargs):
 
 
 @register_action(name="sha256", spec={
-    "description": "SHA256"
+    "description": "Generate a SHA256 hash of the given input string.",
+    "arguments": [
+        {
+            "name": "s",
+            "type": "string",
+            "description": "The input string to hash with SHA256.",
+            "required": True
+        }
+    ],
 })
 def sha256(s: str, *args, **kwargs):
     m = hashlib.sha256()

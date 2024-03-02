@@ -1,7 +1,7 @@
 playbook:
   spec:
     name: fetch_links_from_url
-    description: Fetch titles and links from a URL.
+    description: Fetch titles and links from a URL
     arguments:
       - name: url
         type: string

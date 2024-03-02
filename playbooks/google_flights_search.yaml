@@ -1,7 +1,7 @@
 playbook:
   spec:
     name: google_flights_search
-    description: Google flights search.
+    description: Google flights search
     arguments:
       - name: from
         type: string

@@ -1,7 +1,7 @@
 # python -m iauto ./playbooks/browser.yaml --kwargs url=https://bing.com
 playbook:
   spec:
-    description: Open browser and goto the URL specified.
+    description: Open browser and goto the URL specified
     arguments:
       - name: url
         type: string

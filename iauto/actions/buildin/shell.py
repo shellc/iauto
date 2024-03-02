@@ -1,9 +1,9 @@
 import json
 import os
 import sys
-from typing import Any
+from typing import Any, Optional
 
-from prompt_toolkit import prompt
+from prompt_toolkit import prompt as prompt_func
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.history import InMemoryHistory
 
@@ -26,7 +26,7 @@ System Environments: {json.dumps(dict(_env))}""",
         {
             "name": "command",
             "type": "string",
-            "description": "Command and arguments",
+            "description": "The command to execute, along with any arguments.",
             "required": True
         }
     ]
@@ -53,14 +53,20 @@ class PromptAction(Action):
 
         self.spec = ActionSpec.from_dict({
             "name": "shell.prompt",
-            "description": "Receive user input from the terminal.",
+            "description": "Prompt the user for input in the terminal and provide suggestions based on input history.",
+            "arguments": [
+                {
+                    "name": "prompt",
+                    "type": "string",
+                    "description": "The prompt message to display to the user.",
+                    "required": False
+                }
+            ]
         })
 
-    def perform(self, *args, **kwargs: Any) -> str:
-        p = ''
-        if len(args) == 1:
-            p = args[0]
-        return prompt(p, history=self._history, auto_suggest=AutoSuggestFromHistory(), in_thread=True)
+    def perform(self, prompt: Optional[str] = None, **kwargs: Any) -> str:
+        prompt = prompt or ""
+        return prompt_func(prompt, history=self._history, auto_suggest=AutoSuggestFromHistory(), in_thread=True)
 
 
 class PrintAction(Action):
@@ -69,7 +75,27 @@ class PrintAction(Action):
 
         self.spec = ActionSpec.from_dict({
             "name": "shell.print",
-            "description": "Print to the terminal.",
+            "description": "Output a message to the terminal with optional color formatting.",
+            "arguments": [
+                {
+                    "name": "message",
+                    "type": "string",
+                    "description": "The message to be printed.",
+                    "required": False
+                },
+                {
+                    "name": "end",
+                    "type": "string",
+                    "description": "The end character to append after the message.",
+                    "required": False
+                },
+                {
+                    "name": "color",
+                    "type": "string",
+                    "description": "The color in which the message should be printed. Supported colors: red, green, yellow, blue, purple.",  # noqa: E501
+                    "required": False
+                }
+            ]
         })
 
     def perform(self, *args, message=None, end="\n", color="", **kwargs) -> None:

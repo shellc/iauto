@@ -5,17 +5,31 @@ from ..loader import register_action
 
 
 @register_action(name="json.loads", spec={
-    "description": "JSON deserialize."
+    "description": "Convert a JSON-formatted string into a Python object.",
+    "arguments": [
+        {
+            "name": "s",
+            "description": "The JSON-encoded string to be deserialized.",
+            "type": "string",
+            "required": True
+        }
+    ]
 })
-def loads(*args, **kwargs) -> Any:
-    if len(args) != 1:
-        raise ValueError(f"Invalid args: {args}")
-    return json.loads(args[0])
+def loads(s, **kwargs) -> Any:
+    return json.loads(s)
 
 
 @register_action(name="json.load", spec={
-    "description": "Deserialize JSON from file."
+    "description": "Read a JSON file and convert its contents to a Python object.",
+    "arguments": [
+        {
+            "name": "file",
+            "description": "The file object representing the JSON file to deserialize.",
+            "type": "string",
+            "required": True
+        }
+    ]
 })
-def load(file: str, *args, **kwargs):
+def load(file: str, **kwargs):
     with open(file, "r", encoding="utf-8") as f:
         return json.loads(f.read())

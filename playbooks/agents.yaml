@@ -1,4 +1,5 @@
 playbook:
+  description: Build an AgentExecutor with multi agents
   actions:
     - playbook: llm_chat.yaml
     - agents.create:

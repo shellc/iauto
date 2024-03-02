@@ -19,7 +19,7 @@ class PlaybookAction(Action):
 
         self.spec = ActionSpec.from_dict({
             "name": "playbook",
-            "description": "Playbook is the top-level Action used to execute other Actions."
+            "description": "Executes a series of actions defined within a playbook."
         })
 
     def perform(
@@ -141,12 +141,27 @@ class SetVarAction(Action):
         super().__init__()
         self.spec = ActionSpec.from_dict({
             "name": "setvar",
-            "description": "Set a value to a variable, like: setvar: [var, value]"
+            "description": "Sets a variable to a specified value. Usage: setvar: [variable_name, value]",
+            "arguments": [
+                {
+                    "name": "name",
+                    "type": "string",
+                    "description": "The name of the variable to set.",
+                    "required": True
+                },
+                {
+                    "name": "value",
+                    "type": "any",
+                    "description": "The value to assign to the variable.",
+                    "required": True
+                }
+            ]
         })
 
     def perform(
         self,
-        *args,
+        name: str,
+        value: Any,
         executor: Optional[Executor] = None,
         playbook: Optional[Playbook] = None,
         **kwargs
@@ -154,6 +169,4 @@ class SetVarAction(Action):
         if executor is None:
             raise ValueError("executor is None")
 
-        if len(args) != 2:
-            raise ValueError("2 args required")
-        executor.set_variable(f"${args[0]}", args[1])
+        executor.set_variable(f"${name}", value)

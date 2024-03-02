@@ -11,21 +11,22 @@ class WaitAction(Action):
 
         self.spec = ActionSpec.from_dict({
             "name": "time.wait",
-            "description": "Wait for a specified seconds.",
+            "description": "Waits for a specified number of seconds.",
+            "arguments": [
+                {
+                    "name": "seconds",
+                    "type": "float",
+                    "description": "The number of seconds to wait.",
+                    "required": True
+                }
+            ]
         })
 
     def perform(
         self,
-        *args,
+        seconds: float,
         **kwargs
     ) -> None:
-        if len(args) > 0:
-            seconds = args[0]
-        elif 'seconds' in kwargs:
-            seconds = kwargs['seconds']
-        else:
-            raise ValueError(f"Invalid args: args={args}, kwargs={kwargs}")
-
         if seconds > 0:
             time.sleep(seconds)
 
@@ -36,10 +37,18 @@ class GetNow(Action):
 
         self.spec = ActionSpec.from_dict({
             "name": "time.now",
-            "description": "Get the current datetime.",
+            "description": "Returns the current date and time.",
+            "arguments": [
+                {
+                    "name": "format",
+                    "type": "string",
+                    "description": "The format string to format the date and time. If not provided, returns timestamp in milliseconds.",  # noqa: E501
+                    "required": False
+                }
+            ]
         })
 
-    def perform(self, *args, format: Optional[str] = None, **kwargs) -> Union[int, str]:
+    def perform(self, format: Optional[str] = None, **kwargs) -> Union[int, str]:
         now = datetime.now()
         if format is None:
             return int(now.timestamp() * 1000)

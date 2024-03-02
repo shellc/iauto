@@ -1,5 +1,5 @@
 playbook:
-  description: Chat to QWen
+  description: Chat to LLaMA via llama.cpp (REPL)
   actions:
     - llm.session:
         args:

@@ -7,11 +7,11 @@ from ..loader import register_action
 
 
 @register_action(name="db.create_engine", spec={
-    "description": "Create SQL Engine.",
+    "description": "Create a new SQLAlchemy engine instance.",
     "arguments": [
         {
             "name": "url",
-            "description": "SQLAlchemy-style database connection URL.",
+            "description": "Database connection URL in the SQLAlchemy format.",
             "type": "string",
             "required": True
         }
@@ -22,17 +22,17 @@ def create_engine(*args, url: str, **kwargs) -> sqlalchemy.Engine:
 
 
 @register_action(name="db.read", spec={
-    "description": "Read data from database.",
+    "description": "Read data from the database into a DataFrame or a list of dictionaries.",
     "arguments": [
         {
             "name": "sql",
-            "description": "SQL.",
+            "description": "SQL query string to be executed.",
             "type": "string",
             "required": True
         },
         {
             "name": "return_type",
-            "description": "Return data type, optional, default: dataframe.",
+            "description": "The format in which to return the data. Options are 'dataframe' or 'dict'. Defaults to 'dataframe'.",  # noqa: E501
             "type": "string",
             "required": False
         }
@@ -55,17 +55,17 @@ def read(
 
 
 @register_action(name="db.exec", spec={
-    "description": "Execute SQL.",
+    "description": "Execute an SQL statement.",
     "arguments": [
         {
             "name": "sql",
-            "description": "SQL.",
+            "description": "SQL statement to be executed.",
             "type": "string",
             "required": True
         },
         {
             "name": "values",
-            "description": "SQL parameters.",
+            "description": "Optional dictionary of parameters to pass to the SQL statement.",
             "type": "dict",
             "required": False
         }
@@ -89,17 +89,17 @@ def exec(
 
 
 @register_action(name="db.select", spec={
-    "description": "Eexecute select statement.",
+    "description": "Execute a select statement and return the results.",
     "arguments": [
         {
             "name": "sql",
-            "description": "SQL.",
+            "description": "SQL select query to be executed.",
             "type": "string",
             "required": True
         },
         {
             "name": "values",
-            "description": "SQL parameters.",
+            "description": "Optional dictionary of parameters to pass to the SQL select query.",
             "type": "dict",
             "required": False
         }

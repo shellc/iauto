@@ -10,7 +10,7 @@ class ListAppendAction(Action):
         super().__init__()
         self.spec = ActionSpec.from_dict({
             "name": "list.append",
-            "description": "Add an elements to the end of the list."
+            "description": "Add an element to the end of the list."
         })
 
     def perform(
@@ -42,22 +42,42 @@ class DictSetAction(Action):
         super().__init__()
         self.spec = ActionSpec.from_dict({
             "name": "dict.set",
-            "description": "Set dict value.",
+            "description": "Set a key-value pair in a dictionary.",
+
+            "arguments": [
+                {
+                    "name": "d",
+                    "type": "dict",
+                    "description": "The dictionary in which to set the key-value pair.",
+                    "required": True
+                },
+                {
+                    "name": "key",
+                    "type": "str",
+                    "description": "The key for the value to set in the dictionary.",
+                    "required": True
+                },
+                {
+                    "name": "value",
+                    "type": "any",
+                    "description": "The value to set for the given key in the dictionary.",
+                    "required": True
+                }
+            ]
         })
 
     def perform(
         self,
-        *args,
+        d: dict,
+        key: str,
+        value: str,
         executor: Optional[Executor] = None,
         playbook: Optional[Playbook] = None,
         **kwargs
     ) -> Any:
         if executor is None:
             raise ValueError("executor is None")
-        if len(args) != 3:
-            raise ValueError("dict.set needs 2 args, like: [$dict, key, value]")
 
-        d = args[0]
         if isinstance(d, str) and d.startswith("$"):
             var = d
             d = {}
@@ -66,7 +86,7 @@ class DictSetAction(Action):
         if not isinstance(d, dict):
             raise ValueError("args[0] is not a dict")
 
-        d[args[1]] = args[2]
+        d[key] = value
 
 
 class DictGetAction(Action):
@@ -74,16 +94,31 @@ class DictGetAction(Action):
         super().__init__()
         self.spec = ActionSpec.from_dict({
             "name": "dict.get",
-            "description": "Get value from the dictionary. like: dict.get: [$dict, key]",
+            "description": "Get a value by key from a dictionary.",
+            "arguments": [
+                {
+                    "name": "d",
+                    "type": "dict",
+                    "description": "The dictionary from which to get the value.",
+                    "required": True
+                },
+                {
+                    "name": "key",
+                    "type": "str",
+                    "description": "The key for the value to retrieve from the dictionary.",
+                    "required": True
+                }
+            ]
         })
 
     def perform(
         self,
-        *args,
+        d: dict,
+        key: str,
         executor: Optional[Executor] = None,
         playbook: Optional[Playbook] = None,
         **kwargs
     ) -> Any:
-        if len(args) != 2 or not isinstance(args[0], dict):
-            raise ValueError("invalid args")
-        return args[0].get(args[1])
+        if d is None or not isinstance(d, dict):
+            raise ValueError("invalid dict")
+        return d.get(key)

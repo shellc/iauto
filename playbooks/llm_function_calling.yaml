@@ -1,5 +1,5 @@
 playbook:
-  description: Chat to ChatGLM with Function callings
+  description: "Example: Function calling (REPL)"
   actions:
     - llm.session:
         args:

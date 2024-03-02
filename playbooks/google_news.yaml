@@ -1,7 +1,7 @@
 playbook:
   spec:
     name: google_news
-    description: Use keywords to query news
+    description: Search google news
     arguments:
       - name: keywords
         type: string
@@ -9,11 +9,11 @@ playbook:
         required: true
   actions:
     - when:
-        args: {eq: [$keywords, null]}
+        args: { eq: [$keywords, null] }
         actions:
           - setvar: [url, https://news.google.com]
     - when:
-        args: {ne: [$keywords, null]}
+        args: { ne: [$keywords, null] }
         actions:
           - setvar: [url, "https://news.google.com/search?q={$keywords}"]
     - log: "Visit GoogleNews: {$url}"

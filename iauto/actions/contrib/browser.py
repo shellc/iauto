@@ -18,18 +18,42 @@ class OpenBrowserAction(Action):
         super().__init__()
         self.spec = ActionSpec.from_dict({
             "name": "browser.open",
-            "description": "Open a browser.",
+            "description": "Opens a new browser instance.",
             "arguments": [
                 {
                     "name": "exec",
                     "type": "string",
-                    "description": "Browser executable path.",
+                    "description": "Path to the browser executable.",
                     "required": True
                 },
                 {
                     "name": "headless",
                     "type": "bool",
-                    "description": "Is the headless mode used.",
+                    "description": "Indicates whether to launch the browser in headless mode.",
+                    "required": False
+                },
+                {
+                    "name": "timeout",
+                    "type": "int",
+                    "description": "The maximum time to wait for the browser instance to start.",
+                    "required": False
+                },
+                {
+                    "name": "entry",
+                    "type": "string",
+                    "description": "The URL to open upon launching the browser.",
+                    "required": False
+                },
+                {
+                    "name": "user_data_dir",
+                    "type": "string",
+                    "description": "The path to a directory where user data can be stored.",
+                    "required": False
+                },
+                {
+                    "name": "devtools",
+                    "type": "bool",
+                    "description": "Whether to open the devtools panel on start.",
                     "required": False
                 }
             ]
@@ -76,8 +100,7 @@ class OpenBrowserAction(Action):
                     headless=headless,
                     timeout=timeout,
                     args=b_args,
-                    devtools=devtools,
-                    **kwargs
+                    devtools=devtools
                 )
             else:
                 browser = await _playwright.chromium.launch(
@@ -85,8 +108,7 @@ class OpenBrowserAction(Action):
                     headless=headless,
                     timeout=timeout,
                     args=b_args,
-                    devtools=devtools,
-                    **kwargs
+                    devtools=devtools
                 )
             return browser
         return _event_loop.run_until_complete(_func())
@@ -97,7 +119,15 @@ class CloseBrowserAction(Action):
         super().__init__()
         self.spec = ActionSpec.from_dict({
             "name": "browser.close",
-            "description": "Close the browser.",
+            "description": "Closes the currently open browser instance.",
+            "arguments": [
+                {
+                    "name": "browser",
+                    "type": "Browser",
+                    "description": "The browser instance to close.",
+                    "required": True
+                }
+            ]
         })
 
     def perform(self, browser: Browser, *args, **kwargs) -> Any:
@@ -111,7 +141,33 @@ class GotoAction(Action):
         super().__init__()
         self.spec = ActionSpec.from_dict({
             "name": "browser.goto",
-            "description": "Open URL in the browser.",
+            "description": "Navigates to a specified URL in the browser.",
+            "arguments": [
+                {
+                    "name": "browser",
+                    "type": "Union[Browser, Page]",
+                    "description": "The browser instance or page to navigate.",
+                    "required": True
+                },
+                {
+                    "name": "new_context",
+                    "type": "Optional[bool]",
+                    "description": "Whether to navigate in a new browser context.",
+                    "required": False
+                },
+                {
+                    "name": "url",
+                    "type": "str",
+                    "description": "The URL to navigate to.",
+                    "required": True
+                },
+                {
+                    "name": "timeout",
+                    "type": "int",
+                    "description": "Maximum time to wait for navigation to complete.",
+                    "required": False
+                }
+            ]
         })
 
     def perform(
@@ -152,7 +208,42 @@ class LocatorAction(Action):
         super().__init__()
         self.spec = ActionSpec.from_dict({
             "name": "browser.locator",
-            "description": "Locate elements in the page.",
+            "description": "Finds elements in the page using a selector.",
+            "arguments": [
+                {
+                    "name": "page",
+                    "type": "Page",
+                    "description": "The page object where the locator should be created.",
+                    "required": True
+                },
+                {
+                    "name": "selector",
+                    "type": "Union[str, List[str]]",
+                    "description": "The selector or list of selectors to locate the elements.",
+                    "required": True
+                },
+                {
+                    "name": "wait",
+                    "type": "bool",
+                    "description": "Whether to wait for the element to be present before returning the locator.",
+                    "required": False,
+                    "default": False
+                },
+                {
+                    "name": "not_found",
+                    "type": "Literal['fail', 'ignore']",
+                    "description": "Action to take if no elements match the selector.",
+                    "required": False,
+                    "default": "fail"
+                },
+                {
+                    "name": "timeout",
+                    "type": "int",
+                    "description": "Maximum time to wait for the element to be present, in milliseconds.",
+                    "required": False,
+                    "default": 3000
+                }
+            ]
         })
 
     def perform(
@@ -214,7 +305,34 @@ class ClickAction(Action):
         super().__init__()
         self.spec = ActionSpec.from_dict({
             "name": "browser.click",
-            "description": "Click the element.",
+            "description": "Performs a click on the specified element.",
+            "arguments": [
+                {
+                    "name": "locator",
+                    "type": "Optional[Locator]",
+                    "description": "The locator object representing the element to click on.",
+                    "required": False
+                },
+                {
+                    "name": "page",
+                    "type": "Optional[Page]",
+                    "description": "The page object where the click should occur.",
+                    "required": False
+                },
+                {
+                    "name": "selector",
+                    "type": "Optional[List[str]]",
+                    "description": "A list of selectors to locate the element to click on.",
+                    "required": False
+                },
+                {
+                    "name": "on_fail",
+                    "type": "Literal['ignore', 'fail']",
+                    "description": "Action to take if the click fails.",
+                    "required": False,
+                    "default": "fail"
+                }
+            ]
         })
 
     def perform(
@@ -249,7 +367,29 @@ class ScrollAction(Action):
         super().__init__()
         self.spec = ActionSpec.from_dict({
             "name": "browser.scroll",
-            "description": "Scroll the mouse wheel.",
+            "description": "Scrolls the page both horizontally and vertically.",
+            "arguments": [
+                {
+                    "name": "page",
+                    "type": "Page",
+                    "description": "The page object to scroll.",
+                    "required": True
+                },
+                {
+                    "name": "x",
+                    "type": "int",
+                    "description": "The number of pixels to scroll horizontally.",
+                    "required": False,
+                    "default": 0
+                },
+                {
+                    "name": "y",
+                    "type": "int",
+                    "description": "The number of pixels to scroll vertically.",
+                    "required": False,
+                    "default": 0
+                }
+            ]
         })
 
     def perform(
@@ -268,7 +408,21 @@ class EvaluateJavascriptAction(Action):
         super().__init__()
         self.spec = ActionSpec.from_dict({
             "name": "browser.eval",
-            "description": "Execute JavaScript in the browser page.",
+            "description": "Executes JavaScript code in the current page context.",
+            "arguments": [
+                {
+                    "name": "page",
+                    "type": "Page",
+                    "description": "The page object where the JavaScript will be executed.",
+                    "required": True
+                },
+                {
+                    "name": "javascript",
+                    "type": "string",
+                    "description": "The JavaScript code to execute.",
+                    "required": True
+                }
+            ]
         })
 
     def perform(self, *args, page: Page, javascript: str, **kwargs) -> Any:
@@ -283,7 +437,27 @@ class GetContentAction(Action):
         super().__init__()
         self.spec = ActionSpec.from_dict({
             "name": "browser.content",
-            "description": "Get the HTML content of the page.",
+            "description": "Retrieves the HTML content of the current page or of the elements matching the specified selector.",  # noqa: E501
+            "arguments": [
+                {
+                    "name": "browser",
+                    "type": "Optional[Browser]",
+                    "description": "The browser instance to retrieve content from.",
+                    "required": False
+                },
+                {
+                    "name": "page",
+                    "type": "Optional[Page]",
+                    "description": "The page object to retrieve content from.",
+                    "required": False
+                },
+                {
+                    "name": "selector",
+                    "type": "Optional[List[str]]",
+                    "description": "A list of selectors to locate the elements to retrieve content from.",
+                    "required": False
+                }
+            ]
         })
 
     def perform(
@@ -328,7 +502,15 @@ class ReadabilityAction(Action):
         super().__init__()
         self.spec = ActionSpec.from_dict({
             "name": "browser.readability",
-            "description": "Convert the HTML content to easy-to-read pure text content.",
+            "description": "Extracts the main content from the HTML, providing a clean and readable text.",
+            "arguments": [
+                {
+                    "name": "content",
+                    "type": "str",
+                    "description": "The HTML content to process for readability.",
+                    "required": True
+                }
+            ]
         })
 
     def perform(self, content: str, *args, **kwargs) -> Any:
@@ -420,5 +602,19 @@ def replay(*args, browser: Browser, script: str, executor, **kwargs):
 
 
 register_action(name="browser.replay", spec={
-    "description": "Replay the browser recording."
+    "description": "Replays a sequence of browser actions from a script.",
+    "arguments": [
+        {
+            "name": "browser",
+            "type": "Browser",
+            "description": "The browser instance to replay the script with.",
+            "required": True
+        },
+        {
+            "name": "script",
+            "type": "str",
+            "description": "The path to the script file or the script content as a JSON string.",
+            "required": True
+        }
+    ]
 })(replay)

@@ -1,7 +1,7 @@
 playbook:
   spec:
     name: bing_search
-    description: Search the web for any question.
+    description: Search the web via bing.com
     arguments:
       - name: keywords
         type: string

@@ -12,7 +12,27 @@ class CreateSessionAction(Action):
 
         self.spec = ActionSpec.from_dict({
             "name": "llm.session",
-            "description": "Create a session for chat with LLM.",
+            "description": "Establish a new LLM chat session.",
+            "arguments": [
+                {
+                    "name": "provider",
+                    "type": "str",
+                    "description": "The name of the LLM provider.",
+                    "default": "openai"
+                },
+                {
+                    "name": "llm_args",
+                    "type": "dict",
+                    "description": "Arguments to initialize the LLM.",
+                    "default": {}
+                },
+                {
+                    "name": "tools",
+                    "type": "List[str]",
+                    "description": "Optional list of tools to include in the session for LLM function calling.",
+                    "default": None
+                }
+            ],
         })
 
     def perform(
@@ -62,7 +82,39 @@ class ChatAction(Action):
 
         self.spec = ActionSpec.from_dict({
             "name": "llm.chat",
-            "description": "Send a message to LLM and wait for a reply.",
+            "description": "Initiate a conversation with an LLM by sending a message and receiving a response.",
+            "arguments": [
+                {
+                    "name": "session",
+                    "type": "Session",
+                    "description": "The active LLM session to interact with.",
+                    "required": True
+                },
+                {
+                    "name": "prompt",
+                    "type": "str",
+                    "description": "The message to send to the LLM.",
+                    "required": True
+                },
+                {
+                    "name": "history",
+                    "type": "int",
+                    "description": "The number of past interactions to consider in the conversation.",
+                    "default": 5
+                },
+                {
+                    "name": "rewrite",
+                    "type": "bool",
+                    "description": "Whether to rewrite the prompt before sending.",
+                    "default": False
+                },
+                {
+                    "name": "expect_json",
+                    "type": "int",
+                    "description": "Whether to expect a JSON response from the LLM.",
+                    "default": 0
+                }
+            ],
         })
 
     def perform(
@@ -91,7 +143,45 @@ class ReactAction(Action):
 
         self.spec = ActionSpec.from_dict({
             "name": "llm.react",
-            "description": "ReAct reasoning.",
+            "description": "Perform reactive reasoning with an LLM.",
+            "arguments": [
+                {
+                    "name": "session",
+                    "type": "Session",
+                    "description": "The active LLM session to interact with.",
+                    "required": True
+                },
+                {
+                    "name": "prompt",
+                    "type": "str",
+                    "description": "The message to send to the LLM for reactive reasoning.",
+                    "required": True
+                },
+                {
+                    "name": "history",
+                    "type": "int",
+                    "description": "The number of past interactions to consider in the conversation.",
+                    "default": 5
+                },
+                {
+                    "name": "rewrite",
+                    "type": "bool",
+                    "description": "Whether to rewrite the prompt before sending.",
+                    "default": False
+                },
+                {
+                    "name": "log",
+                    "type": "bool",
+                    "description": "Whether to log the reasoning process.",
+                    "default": False
+                },
+                {
+                    "name": "max_steps",
+                    "type": "int",
+                    "description": "The maximum number of reasoning steps to perform.",
+                    "default": 3
+                }
+            ],
         })
 
     def perform(

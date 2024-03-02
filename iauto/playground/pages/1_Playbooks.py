@@ -62,6 +62,8 @@ if playbooks_dir and os.path.isdir(playbooks_dir):
         playbbook_desc = name.replace(".yaml", "").replace(".yml", "")
         if playbbook.description:
             playbbook_desc = playbbook.description
+        elif playbbook.spec and playbbook.spec.description:
+            playbbook_desc = playbbook.spec.description
 
         with st.container(border=True):
             st.write(playbbook_desc)

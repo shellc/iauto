@@ -13,7 +13,7 @@ class LogAction(Action):
 
         self.spec = ActionSpec.from_dict({
             "name": "log",
-            "description": "Print the log to the terminal.",
+            "description": "Logs a message to the terminal.",
         })
 
     def perform(
@@ -39,7 +39,7 @@ class EchoAction(Action):
         super().__init__()
         self.spec = ActionSpec.from_dict({
             "name": "echo",
-            "description": "Output the input args.",
+            "description": "Echoes the input arguments back to the caller.",
         })
 
     def perform(

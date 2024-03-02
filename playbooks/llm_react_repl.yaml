@@ -1,5 +1,5 @@
 playbook:
-  description: LLM ReAct reasoning
+  description: LLM ReAct reasoning (REPL)
   actions:
     - llm.session:
         args:

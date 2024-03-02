@@ -2,7 +2,7 @@
 playbook:
   spec:
     name: search_engine
-    description: Use search engines to search the web.
+    description: "Example for appium webdriver"
     arguments:
       - name: keywords
         type: string

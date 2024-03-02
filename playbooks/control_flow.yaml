@@ -1,7 +1,7 @@
 # Playbook example
 #
 playbook:
-  description: this is a playbook example
+  description: "Example: Control Flows"
   actions:
     - repeat:
         description: do forever

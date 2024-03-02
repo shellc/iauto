@@ -360,35 +360,161 @@ def create_actions() -> Dict[str, Action]:
     actions = {}
     actions["wd.connect"] = create_action(func=connect, spec={
         "name": "wd.connect",
-        "description": "Connect to the Appium server."
+        "description": "Establish a connection to the Appium server with the specified server address and capabilities.",  # noqa: E501
+        "arguments": [
+                {
+                    "name": "server",
+                    "type": "string",
+                    "description": "The URL of the Appium server to connect to.",
+                    "default": "http://127.0.0.1:4723"
+                },
+            {
+                    "name": "caps",
+                    "type": "object",
+                    "description": "A dictionary of capabilities to be passed to the Appium server.",
+                    "default": {}
+                    }
+        ]
     })
     actions["wd.execute_script"] = create_action(func=execute_script, spec={
         "name": "wd.execute_script",
-        "description": "Execute the script."
+        "description": "Execute a given JavaScript script on the current page.",
+        "arguments": [
+            {
+                "name": "webdriver",
+                "type": "Remote",
+                "description": "The WebDriver instance to execute the script on.",
+                "required": True
+            },
+            {
+                "name": "javascript",
+                "type": "string",
+                "description": "The JavaScript code to execute.",
+                "required": True
+            }
+        ]
     })
     actions["wd.get_element"] = create_action(func=get_element, spec={
         "name": "wd.get_element",
-        "description": "Get the element."
+        "description": "Retrieve a single web element based on the specified selector and search method.",
+        "arguments": [
+            {
+                "name": "webdriver",
+                "type": "Optional[Remote]",
+                "description": "The WebDriver instance to use for finding the element.",
+                "required": False
+            },
+            {
+                "name": "element",
+                "type": "Optional[Element]",
+                "description": "The Element instance to use as the starting point for the search.",
+                "required": False
+            },
+            {
+                "name": "selector",
+                "type": "str",
+                "description": "The selector string used to find the element.",
+                "required": True
+            },
+            {
+                "name": "by",
+                "type": "str",
+                "description": "The method to use for the search (e.g., 'css' for CSS Selector, 'xpath' for XPath).",
+                "default": "css",
+                "required": False
+            }
+        ]
     })
     actions["wd.get_elements"] = create_action(func=get_elements, spec={
         "name": "wd.get_elements",
-        "description": "Get all elements."
+        "description": "Retrieve all web elements that match the specified selector and search method.",
+        "arguments": [
+            {
+                "name": "webdriver",
+                "type": "Optional[Remote]",
+                "description": "The WebDriver instance to use for finding the elements.",
+                "required": False
+            },
+            {
+                "name": "element",
+                "type": "Optional[Element]",
+                "description": "The Element instance to use as the starting point for the search.",
+                "required": False
+            },
+            {
+                "name": "selector",
+                "type": "str",
+                "description": "The selector string used to find the elements.",
+                "required": True
+            },
+            {
+                "name": "by",
+                "type": "str",
+                "description": "The method to use for the search (e.g., 'css' for CSS Selector, 'xpath' for XPath).",
+                "default": "css",
+                "required": False
+            }
+        ]
     })
     actions["wd.get_attr"] = create_action(func=get_attr, spec={
         "name": "wd.get_attr",
-        "description": "Get element attribute value"
+        "description": "Retrieve the value of a specified attribute from the element.",
+        "arguments": [
+            {
+                "name": "element",
+                "type": "Element",
+                "description": "The Element instance to retrieve the attribute from.",
+                "required": True
+            },
+            {
+                "name": "name",
+                "type": "str",
+                "description": "The name of the attribute to retrieve.",
+                "required": True
+            }
+        ]
     })
     actions["wd.text"] = create_action(func=text, spec={
         "name": "wd.text",
-        "description": "Get element text content."
+        "description": "Retrieve the text content of the element.",
+        "arguments": [
+            {
+                "name": "element",
+                "type": "Element",
+                "description": "The Element instance to retrieve the text from.",
+                "required": True
+            }
+        ]
     })
     actions["wd.send_keys"] = create_action(func=send_keys, spec={
         "name": "wd.send_keys",
-        "description": "Send content."
+        "description": "Send keystrokes to the specified element.",
+        "arguments": [
+            {
+                "name": "element",
+                "type": "Element",
+                "description": "The Element instance to send the keystrokes to.",
+                "required": True
+            },
+            {
+                "name": "content",
+                "type": "str",
+                "description": "The string of keystrokes to send to the element.",
+                "required": True
+            }
+        ]
     })
     actions["wd.click"] = create_action(func=click, spec={
         "name": "wd.click",
-        "description": "Click the element."
+        "description": "Simulate a mouse click on the specified element.",
+        "arguments": [
+            {
+                "name": "element",
+                "type": "Element",
+                "description": "The Element instance to perform the click action on.",
+                "required": True
+            }
+        ]
     })
 
     return actions

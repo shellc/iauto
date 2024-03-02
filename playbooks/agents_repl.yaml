@@ -1,4 +1,5 @@
 playbook:
+  description: Multi-Agent (REPL)
   actions:
     - playbook: agents.yaml
     - repeat:

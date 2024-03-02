@@ -19,5 +19,5 @@ for a in actions:
         st.caption(a.description)
         args = [arg.dict() for arg in a.arguments] if a.arguments is not None else []
         if len(args) > 0:
-            st.write("Arguments: ")
-            st.json(args, expanded=False)
+            with st.expander("Arguments", expanded=False):
+                st.json(args, expanded=True)
