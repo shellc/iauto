@@ -1,5 +1,7 @@
 import streamlit as st
 
+from iauto.playground import utils
+
 st.set_page_config(
     page_title='iauto Playground',
     page_icon='🦾',
@@ -7,10 +9,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-st.markdown("""
-<div style="text-align: center">
-<img src="https://shellc.cn/iauto/assets/img/icon.svg" width="120" style="filter: invert(50%)" />
-</div>
-""", unsafe_allow_html=True)
+utils.logo()
 
-st.title("iauto")
+st.title("ia")

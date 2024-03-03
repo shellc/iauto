@@ -13,6 +13,8 @@ st.set_page_config(
     layout='wide'
 )
 
+utils.logo()
+
 here = os.path.dirname(__file__)
 playbooks_dir = os.path.abspath(os.path.join(here, os.path.pardir, "playbooks"))
 

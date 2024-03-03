@@ -9,6 +9,8 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+utils.logo()
+
 st.title("Actions Reference")
 
 actions = utils.list_actions()

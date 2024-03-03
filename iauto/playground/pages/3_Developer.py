@@ -1,13 +1,15 @@
 import streamlit as st
 
 from iauto import llms
-from iauto.playground import llm_options
+from iauto.playground import llm_options, utils
 
 st.set_page_config(
     page_title='Developer',
     page_icon='👨🏻‍💻',
     layout='wide'
 )
+
+utils.logo()
 
 with st.sidebar:
     llm_options = llm_options.render()

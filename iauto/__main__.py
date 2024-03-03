@@ -45,12 +45,13 @@ def print_action_spec(name):
 
 
 def run_playground(args, parser):
-    from iauto.playground.runner import run as playgroup_runner
+    from iauto.playground import runner
 
     playbook_dir = None
     if args.playbooks:
         playbook_dir = os.path.abspath(args.playbooks)
-    playgroup_runner(app=args.playground_name, playbook_dir=playbook_dir)
+    runner.env.update(env)
+    runner.run(app=args.playground_name, playbook_dir=playbook_dir)
 
 
 def run(args, parser):

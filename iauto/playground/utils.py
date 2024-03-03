@@ -1,6 +1,8 @@
 import glob
 import os
 
+import streamlit as st
+
 import iauto
 
 
@@ -34,3 +36,32 @@ def list_playbooks():
 
             playbooks[(playbbook_desc, f)] = playbbook
     return playbooks
+
+
+def logo():
+    pass
+
+
+def _logo():
+    st.markdown(
+        """
+            <style>
+                [data-testid="stSidebar"] {{
+                    background-image: url(app/static/ia.png);
+                    background-repeat: no-repeat;
+                    padding-top: 0px;
+                    background-position: 20px 15px;
+                    background-size: 64px;
+                }}
+                [data-testid="stSidebar"]::before {{
+                    content: "ia";
+                    margin-left: 90px;
+                    margin-top: 36px;
+                    font-size: 18px;
+                    position: absolute;
+                    top: 0px;
+                }}
+            </style>
+            """,
+        unsafe_allow_html=True,
+    )

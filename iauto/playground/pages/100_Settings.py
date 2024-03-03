@@ -1,14 +1,16 @@
 import streamlit as st
-from dotenv import dotenv_values
+
+from iauto.playground import runner, utils
 
 st.set_page_config(
     page_title='Settings',
     page_icon='⚙️',
-    layout='centered',
+    layout='wide',
     initial_sidebar_state="expanded"
 )
 
+utils.logo()
+
 st.title("Settings")
 
-env = dotenv_values()
-env
+st.json(runner.env)

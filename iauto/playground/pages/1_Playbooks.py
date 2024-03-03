@@ -13,6 +13,8 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+utils.logo()
+
 st.title("Playbooks")
 
 st.session_state.runs = st.session_state.get("runs") or {}
