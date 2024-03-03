@@ -8,13 +8,22 @@ from ..actions import ActionSpec
 from ..log import DEBUG, get_logger
 from .llm import LLM, ChatMessage, Function, Message, ToolCall
 
+_model_cache = {}
+
 
 class ChatGLM(LLM):
     def __init__(self, model_path) -> None:
         super().__init__()
         if not os.path.isfile(model_path):
             raise ValueError(f"model_path must be a ggml file: {model_path}")
-        self._llm = chatglm_cpp.Pipeline(model_path=model_path)
+
+        self._model = model_path
+
+        self._llm = _model_cache.get(self._model)
+        if self._llm is None:
+            model = chatglm_cpp.Pipeline(model_path=self._model)
+            _model_cache[self._model] = model
+            self._llm = model
 
         self._log = get_logger("ChatGLM")
 
@@ -102,4 +111,4 @@ class ChatGLM(LLM):
 
     @property
     def model(self) -> str:
-        return "ChatGLM"
+        return self._model

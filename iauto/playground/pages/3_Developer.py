@@ -1,6 +1,7 @@
 import streamlit as st
 
 from iauto import llms
+from iauto.llms.llm import ChatMessage
 from iauto.playground import llm_options, utils
 
 st.set_page_config(
@@ -54,7 +55,7 @@ if prompt := st.chat_input("What is up?"):
         resp = llm_session.run(**llm_options["llm_chat_args"])
 
     with st.chat_message("assistant"):
-        content = resp.content
+        content = resp.content if isinstance(resp, ChatMessage) else resp
         st.markdown(content)
 
 
@@ -66,4 +67,4 @@ if len(llm_session.messages) > 1:
     st.button("Clear", type="secondary", help="Clear history", on_click=reset)
 
 model = llm_session.llm.model
-st.markdown(f"```Model: {model}```")
+st.markdown(f"```MODEL: {model}```")

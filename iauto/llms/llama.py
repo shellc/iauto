@@ -8,6 +8,8 @@ from ..log import get_logger
 from ._qwen import qwen_chat_handler
 from .llm import LLM, ChatMessage, Function, Message, ToolCall
 
+_model_cache = {}
+
 
 class LLaMA(LLM):
     """
@@ -26,8 +28,13 @@ class LLaMA(LLM):
         if "n_gpu_layers" not in kwargs:
             kwargs["n_gpu_layers"] = -1
 
-        self._llm = llama_cpp.Llama(**kwargs)
         self._model = kwargs.get("model_path", "LLaMA")
+
+        self._llm = _model_cache.get(self._model)
+        if self._llm is None:
+            model = llama_cpp.Llama(**kwargs)
+            _model_cache[self._model] = model
+            self._llm = model
 
         self._log = get_logger("LLaMA")
 
