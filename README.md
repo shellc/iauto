@@ -4,13 +4,12 @@
 
 # iauto
 
-`iauto` is a low-code automation tool enhanced by LLM.
+`iauto` is a low-code engine for building and deploying AI agents.
 
-
-- **Low-Code**: Define workflows with YAML for collaboration and version control.
+- **AI**: Cutting-edge AI capabilities.
+- **Low-Code**: Define your agents using YAML.
 - **Automation**: Integrated automation frameworks like [Appium](https://github.com/appium/appium) and [Playwright](https://playwright.dev/python/).
 - **Extensible**: Well-designed Python API.
-- **AI native**: Cutting-edge LLM capability integration. 
 
 ## News
 
@@ -46,6 +45,7 @@ CMAKE_ARGS="-DGGML_METAL=ON" pip install -U iauto
 ## Command-line tool
 
 Usage:
+
 ```bash
 python -m iauto --help
 
@@ -60,12 +60,11 @@ Run playbook:
 ia run ./your-plabook.yaml
 ```
 
-
 **[Example playbooks](./playbooks)**
 
 ## Playground
 
-`iauto` provides a web-based application for running workflows, LLM Chat, ReAct reasoning, and Multi-Agent tasks.
+`iauto` provides a web-based application for running playbooks, LLM Chat, ReAct reasoning, and Multi-Agent tasks.
 
 Launch playground:
 
