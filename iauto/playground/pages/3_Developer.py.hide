@@ -1,0 +1,166 @@
+import streamlit as st
+import json
+from iauto import llms
+from iauto.llms.llm import ChatMessage
+from iauto.playground import llm_options, utils
+
+st.set_page_config(
+    page_title='Developer',
+    page_icon='👨🏻‍💻',
+    layout='wide'
+)
+
+utils.logo()
+
+actions = utils.list_actions()
+action_specs = []
+for action in actions:
+    action_specs.append(json.dumps(action.dict()))
+action_specs = '\n'.join(action_specs)
+
+instructions = f"""
+`iauto` is an automation framework that uses YAML files to describe workflows, with each workflow referred to as a playbook.
+You are a helpful assistant in developing playbooks.
+
+Playbook specification:
+
+1. Playbook: A YAML file that describes a workflow.
+2. Variable: Values that can be evaluated at runtime, starting with $,like: $myvar
+3. Action: An action defines a single operation that can be performed. A playbook contains zero or more actions.
+4. Action arguments: Arguments for an action can be keyword arguments or positional arguments. For example:
+
+	Keyword arguments:
+	```
+	action_name:
+		args:
+			arg_name_1: arg_value_1
+			arg_name_2: arg_value_2
+	```
+
+	Positional arguments:
+	```
+	action_name:
+		args:
+			- first_arg
+			- second_arg
+	```
+5. Condition statements:
+	not: Represents "not true", usage: {{"not": $var}}
+	all: Represents "all true", usage: {{"all": [other conditions]}}
+	any: Represents "any is true", usage: {{"any": [other conditions]}}
+	lt: Represents "less than", usage: {{"lt": [left_value, right_value]}}
+	le: Represents "less than or equal to", usage: {{"le": [left_value, right_value]}}
+	eq: Represents "equal to", usage: {{"eq": [left_value, right_value]}}
+	ne: Represents "not equal to", usage: {{"ne": [left_value, right_value]}}
+	ge: Represents "greater than or equal to", usage: {{"ge": [left_value, right_value]}}
+	gt: Represents "greater than", usage: {{"gt": [left_value, right_value]}}
+
+6. Control flow:
+	when: Execute actions when the conditions are met
+	repeat: Loop through actions when the conditions are met
+	each: Iterate through lists and dictionaries
+7. Playbook spec: Playbooks can be used as functions called by LLM. The spec is used to describe the definition for calling the LLM function, which includes the name, description, and arguments.
+
+You can only use the following pre-defined Actions:
+```
+{action_specs}
+```
+
+A playbook example:
+```yaml
+playbook:
+  description: "Playbook description"
+  spec:
+      name: function_name_for_llm_function_calling
+      description: the description for llm function calling
+      arguments:
+        - name: playbook variable name
+          type: argument data type
+          description: argument description
+          required: tru
+  actions:
+      - list.append: [$list, 0]
+      - playbook: ./other_playbook.yaml
+      - repeat:
+          description: do forever
+          actions:
+            - time.now:
+                result: $now
+            - math.mod:
+                args: [$now, 2]
+                result: $tick
+            - when:
+                args:
+                  eq:
+                    - $tick
+                    - 0
+                actions:
+                  - log: "tick: {{$tick}}"
+            - log:
+                args:
+                  now: $now
+                  tick: $tick
+            - time.wait: 3
+```
+
+Write or modify playbook:
+"""
+
+with st.sidebar:
+    llm_options = llm_options.render()
+
+    llm_options["llm_chat_args"]["instructions"] = instructions
+
+    if st.button(label="Reload", type="primary"):
+        st.session_state["llm_session"] = None
+
+llm_session = st.session_state.get("llm_session")
+if llm_session is None:
+    llm = llms.create_llm(
+        provider=llm_options["llm_provider"],
+        **llm_options["llm_args"]
+    )
+
+    llm_session = llms.Session(llm=llm)
+    st.session_state.llm_session = llm_session
+
+
+if len(llm_session.messages) == 0:
+    greeting = "I can help you develop a playbook. You can give me a task, and the task description should be as clear as possible."  # noqa: E501
+    # llm_session.add(llms.ChatMessage(role="assistant", content=greeting))
+    with st.chat_message("assistant"):
+        st.markdown(greeting)
+
+# Display chat messages from history on app rerun
+for message in llm_session.messages:
+    role = message.role
+    content = message.content
+    with st.chat_message(role):
+        if role == "user":
+            content = f"{content}"
+        st.markdown(content)
+
+# Accept user input
+if prompt := st.chat_input("What is up?"):
+    # Display user message in chat message container
+    with st.chat_message("user"):
+        st.markdown(f"{prompt}")
+
+    llm_session.add(llms.ChatMessage(role="user", content=prompt))
+    with st.spinner("Generating..."):
+        resp = llm_session.run(**llm_options["llm_chat_args"])
+
+    with st.chat_message("assistant"):
+        content = resp.content if isinstance(resp, ChatMessage) else resp
+        st.markdown(content)
+
+
+def reset():
+    llm_session.messages.clear()
+
+
+if len(llm_session.messages) > 1:
+    st.button("Clear", type="secondary", help="Clear history", on_click=reset)
+
+model = llm_session.llm.model
+st.markdown(f"```MODEL: {model}```")
