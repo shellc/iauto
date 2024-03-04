@@ -7,27 +7,25 @@ from iauto.llms import ChatMessage
 from iauto.playground import llm_options, utils
 
 st.set_page_config(
-    page_title='Agent',
-    page_icon='🤖',
+    page_title='Agents',
+    page_icon='🦾',
     layout='wide'
 )
 
 utils.logo()
 
 here = os.path.dirname(__file__)
-playbooks_dir = os.path.abspath(os.path.join(here, os.path.pardir, "playbooks"))
+playbooks_dir = os.path.abspath(os.path.join(here, "playbooks"))
 
 # Initialize session state
 if "messages" not in st.session_state:
     st.session_state.messages = []
 if "tool_actions" not in st.session_state:
-    st.session_state.tool_actions = set()
+    st.session_state.tool_actions = []
 if "tool_playbooks" not in st.session_state:
-    st.session_state.tool_playbooks = set()
+    st.session_state.tool_playbooks = []
 
 messages = st.session_state.messages
-tool_actions = st.session_state.tool_actions
-tool_playbooks = st.session_state.tool_playbooks
 
 agent_executor = st.session_state.get("agent_executor")
 
@@ -51,11 +49,18 @@ def print_received(message, sender, receiver):
         messages.append({"role": "assistant", "content": content})
 
 
-def create_llm(llm_mode, args):
-    args["tools"] = list(tool_actions)
-    args["playbooks"] = list(tool_playbooks)
+def create_llm(options):
+    reset()
 
-    agent_executor = iauto.execute(os.path.join(playbooks_dir, "agents.yaml"), variables=args)
+    agent_executor = iauto.execute(
+        playbook_file=os.path.join(playbooks_dir, "agents.yaml"),
+        variables={
+            "llm_provider": options["llm_provider"][1],
+            "llm_args": options["llm_args"],
+            "tools": options["llm_action_tools"],
+            "playbooks": options["llm_playbook_tools"],
+        }
+    )
     agent_executor.register_print_received(print_received)
     agent_executor.set_human_input_mode("NEVER")
 
@@ -80,51 +85,14 @@ def get_model():
 
 
 # Sidebar
-config = {
-    "llm_provider": "openai",
-    "llm_args": {},
-    "llm_chat_args": {},
-    "react": False
-}
-
 with st.sidebar:
-    llm_mode = st.radio(
-        "Mode",
-        ["Chat", "ReAct", "Multi-Agent"]
-    )
-
-    if llm_mode == "Multi-Agent":
-        config["react"] = st.checkbox("Enable agents ReAct", value=False)
-
-    options = llm_options.render()
-    config.update(options)
-
-    use_tools = st.checkbox("Use tools", value=False)
-
-    # Tools
-    if use_tools:
-        actions = utils.list_actions()
-        playbooks = utils.list_playbooks()
-        with st.expander("Tools"):
-            for desc, file in playbooks.keys():
-                if st.checkbox(desc):
-                    tool_playbooks.add(file)
-                else:
-                    tool_playbooks.discard(file)
-            for action in actions:
-                if st.checkbox(action.name, help=action.description):
-                    tool_actions.add(action.name)
-                else:
-                    tool_actions.discard(action.name)
-
-    label = "Reload" if agent_executor else "Launch"
-    if st.button(label=label, type="primary"):
-        reset()
-        create_llm(llm_mode=llm_mode, args=config)
-        st.rerun()
+    button_label = "Reload" if agent_executor else "Launch"
+    options = llm_options.render(button_label=button_label, func=create_llm)
 
 # Main container
 if agent_executor:
+    llm_mode = options["llm_mode"][2]
+    llm_mode_key = options["llm_mode"][1]
     st.markdown(f"#### {llm_mode}")
 
     if len(messages) == 0:
@@ -148,16 +116,18 @@ if agent_executor:
 
         agent_executor.session.add(ChatMessage(role="user", content=prompt))
 
+        llm_chat_args = options["llm_chat_args"]
+        llm_use_tools = options["llm_use_tools"]
         resp_message = None
-        if llm_mode == "Chat":
+        if llm_mode_key == "chat":
             with st.spinner("Generating..."):
-                resp = agent_executor.session.run(**config["llm_chat_args"], use_tools=use_tools)
+                resp = agent_executor.session.run(**llm_chat_args, use_tools=llm_use_tools)
                 resp_message = resp.content
-        elif llm_mode == "ReAct":
+        elif llm_mode_key == "react":
             with st.spinner("Reacting..."):
-                resp = agent_executor.session.react(**config["llm_chat_args"], use_tools=use_tools)
+                resp = agent_executor.session.react(**llm_chat_args, use_tools=llm_use_tools)
                 resp_message = resp.content
-        elif llm_mode == "Multi-Agent":
+        elif llm_mode_key == "agent":
             with st.status("Agents Conversation", expanded=True):
                 resp = agent_executor.run(message=ChatMessage(role="user", content=prompt), clear_history=False)
                 resp_message = resp["summary"]

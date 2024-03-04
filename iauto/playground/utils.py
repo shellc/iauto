@@ -8,6 +8,7 @@ import iauto
 
 def list_actions():
     actions = [a.spec for a in iauto.actions.loader.actions]
+    actions.sort(key=lambda x: x.name)
     return actions
 
 
@@ -34,7 +35,8 @@ def list_playbooks():
             elif playbbook.spec and playbbook.spec.description:
                 playbbook_desc = playbbook.spec.description
 
-            playbooks[(playbbook_desc, f)] = playbbook
+            playbooks[(f, playbbook_desc)] = playbbook
+
     return playbooks
 
 

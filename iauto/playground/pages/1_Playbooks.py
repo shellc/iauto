@@ -50,8 +50,8 @@ def display_arguments(playbook, playbook_file):
 playbooks = utils.list_playbooks()
 
 for k, playbook in playbooks.items():
-    desc = k[0]
-    f = k[1]
+    desc = k[1]
+    f = k[0]
 
     with st.container(border=True):
         st.write(desc)

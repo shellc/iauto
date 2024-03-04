@@ -14,7 +14,7 @@ def run(app=None, playbook_dir=None):
     here = os.path.dirname(__file__)
 
     if app is None:
-        app = "Home"
+        app = "Agents"
 
     app_py = os.path.join(here, f"{app}.py")
 
