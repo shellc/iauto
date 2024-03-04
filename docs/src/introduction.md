@@ -2,4 +2,4 @@
 
 <img src="assets/img/icon.svg" title="iauto" height="128">
 
-iauto is a Low-Code intelligent automation tool that integrates LLM and RPA.
+`iauto` is a low-code automation tool enhanced by LLM.
