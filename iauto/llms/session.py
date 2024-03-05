@@ -34,10 +34,6 @@ class Session:
         self._llm = llm
         self._actions = actions
         self._messages = []
-        self._log = get_logger("LLM")
-        self._llm = llm
-        self._actions = actions
-        self._messages = []
 
     def add(self, message: ChatMessage) -> None:
         """
