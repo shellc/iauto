@@ -48,7 +48,8 @@ class AgentExecutor:
         code_execution_config = {"executor": "ipython-embedded"}
 
         if instructions is None:
-            instructions = 'Reply "TERMINATE" in the end when everything is done.'
+            instructions = ""
+        instructions += '\nReply "TERMINATE" in the end when everything is done.'
 
         self._user_proxy = UserProxyAgent(
             name="UserProxy",

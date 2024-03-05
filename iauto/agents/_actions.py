@@ -71,6 +71,9 @@ def create_agent(
     else:
         instructions += '\nReply "TERMINATE" in the end when everything is done.'
 
+    if description is not None and description.strip() == "":
+        description = None
+
     llm_config = {
         "model": session.llm.model,
         "model_client_cls": "IASessionClient",
