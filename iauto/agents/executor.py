@@ -1,10 +1,14 @@
 from typing import Dict, List, Optional, Union
 
+import autogen
 from autogen import (Agent, ConversableAgent, GroupChat, GroupChatManager,
                      UserProxyAgent)
 
 from ..llms import ChatMessage, Session
-from ._autogen_model_client import IASessionClient
+from ..log import get_level
+from .model_clients import SessionClient
+
+autogen.logger.setLevel(get_level("WARN"))
 
 
 class AgentExecutor:
@@ -41,7 +45,7 @@ class AgentExecutor:
 
         llm_config = {
             "model": session.llm.model,
-            "model_client_cls": "IASessionClient"
+            "model_client_cls": "SessionClient"
         }
 
         def termination_func(x): return x.get("content", "").upper().find("TERMINATE") >= 0
@@ -60,8 +64,10 @@ class AgentExecutor:
             max_consecutive_auto_reply=max_consecutive_auto_reply,
             llm_config=llm_config
         )
-        self._user_proxy.register_model_client(model_client_cls=IASessionClient,
-                                               session=session, react=react, llm_args=llm_args)
+        self._user_proxy.register_model_client(
+            model_client_cls=SessionClient,
+            session=session, react=react, llm_args=llm_args
+        )
 
         function_map = {}
         if self._session.actions:
@@ -84,8 +90,12 @@ class AgentExecutor:
                     llm_config=llm_config
                 )
                 tools_proxy.register_function(function_map=function_map)
-                tools_proxy.register_model_client(model_client_cls=IASessionClient,
-                                                  session=session, react=react, llm_args=llm_args)
+                tools_proxy.register_model_client(
+                    model_client_cls=SessionClient,
+                    session=session,
+                    react=react,
+                    llm_args=llm_args
+                )
                 self._agents.append(tools_proxy)
 
             speaker_selection_method = "round_robin" if len(self._agents) == 2 else "auto"
@@ -102,7 +112,12 @@ class AgentExecutor:
                 code_execution_config=code_execution_config,
                 max_consecutive_auto_reply=max_consecutive_auto_reply,
             )
-            mgr.register_model_client(model_client_cls=IASessionClient, session=session, react=react, llm_args=llm_args)
+            mgr.register_model_client(
+                model_client_cls=SessionClient,
+                session=session,
+                react=react,
+                llm_args=llm_args
+            )
             self._recipient = mgr
         else:
             raise ValueError("agents error")

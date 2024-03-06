@@ -3,8 +3,8 @@ from typing_extensions import Dict, List, Optional
 
 from ..actions.loader import register_action
 from ..llms import ChatMessage, Session
-from ._autogen_model_client import IASessionClient
 from .executor import AgentExecutor
+from .model_clients import SessionClient
 
 
 @register_action(name="agents.create", spec={
@@ -76,7 +76,7 @@ def create_agent(
 
     llm_config = {
         "model": session.llm.model,
-        "model_client_cls": "IASessionClient",
+        "model_client_cls": "SessionClient",
         "tools": []
     }
 
@@ -91,7 +91,12 @@ def create_agent(
             description=description,
             llm_config=llm_config
         )
-        agent.register_model_client(model_client_cls=IASessionClient, session=session, react=react, llm_args=llm_args)
+        agent.register_model_client(
+            model_client_cls=SessionClient,
+            session=session,
+            react=react,
+            llm_args=llm_args
+        )
     else:
         raise ValueError(f"Invalid agent type: {type}")
     return agent

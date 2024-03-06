@@ -1,10 +1,18 @@
 import os
+import tempfile
 
 import streamlit as st
 
 import iauto
 from iauto.llms import ChatMessage
-from iauto.playground import llm_options, utils
+from iauto.playground import st_widgets, utils
+
+try:
+    from yaml import CDumper as yaml_dumper
+except ImportError:
+    from yaml import Dumper as yaml_dumper
+
+from yaml import dump as yaml_dump
 
 st.set_page_config(
     page_title='Agents',
@@ -20,10 +28,6 @@ playbooks_dir = os.path.abspath(os.path.join(here, "playbooks"))
 # Initialize session state
 if "messages" not in st.session_state:
     st.session_state.messages = []
-if "tool_actions" not in st.session_state:
-    st.session_state.tool_actions = []
-if "tool_playbooks" not in st.session_state:
-    st.session_state.tool_playbooks = []
 
 messages = st.session_state.messages
 
@@ -49,22 +53,134 @@ def print_received(message, sender, receiver):
         messages.append({"role": "assistant", "content": content})
 
 
-def create_llm(options):
+def create_agent(options):
     reset()
 
-    agent_executor = iauto.execute(
-        playbook_file=os.path.join(playbooks_dir, "agents.yaml"),
-        variables={
-            "llm_provider": options["llm_provider"][1],
-            "llm_args": options["llm_args"],
-            "tools": options["llm_action_tools"],
-            "playbooks": options["llm_playbook_tools"],
+    playbook = {
+        "playbook": {
+            "actions": [
+                {
+                    "llm.session": {
+                        "args": {
+                            "provider": options["provider"],
+                            "llm_args": options["oai_args"] if options["provider"] == "openai" else options["llama_args"],  # noqa: E501
+                            "tools": options["tools"]
+                        },
+                        "actions": [
+                            {
+                                "playbook": options["playbooks"]
+                            }
+                        ],
+                        "result": "$llm_session"
+                    }
+                }
+            ]
         }
-    )
-    agent_executor.register_print_received(print_received)
-    agent_executor.set_human_input_mode("NEVER")
+    }
 
+    agents = []
+    agents_vars = []
+
+    if len(options["agents"]) == 0:
+        options["agents"].append({
+            "name": "Assistant",
+            "description": None
+        })
+    for idx, agent in enumerate(options["agents"]):
+        v = f"$agent_{idx}"
+        agents.append({
+            "agents.create": {
+                "args": {
+                    "session": "$llm_session",
+                    "name": f"Assistant-{idx}" if agent["name"] == "" else agent["name"],
+                    "description": agent["description"] if agent["description"] != "" else None,
+                    "react": options["agent_react"]
+                },
+                "result": v
+            }
+        })
+        agents_vars.append(v)
+
+    playbook["playbook"]["actions"].extend(agents)
+    playbook["playbook"]["actions"].append({
+        "agents.executor": {
+            "args": {
+                "session": "$llm_session",
+                "instructions": options["instructions"],
+                "react": options["agent_react"],
+                "agents": agents_vars
+            },
+            "result": "$agent_executor"
+        }
+    })
+    repl = {
+        "repeat": {
+            "actions": [
+                {
+                    "shell.prompt": {
+                        "args": "Human: ",
+                        "result": "$prompt"
+                    }
+                },
+                {
+                    "agents.run": {
+                        "args": {
+                            "agent_executor": "$agent_executor",
+                            "message": "$prompt"
+                        },
+                        "result": "$message"
+                    }
+                },
+                {
+                    "shell.print": {
+                        "args": {
+                            "message": "AI: {$message}",
+                            "color": "green"
+                        }
+                    }
+                }
+            ]
+        }
+    }
+
+    playbook_yml = yaml_dump(
+        playbook,
+        Dumper=yaml_dumper,
+        sort_keys=False,
+        indent=2,
+        allow_unicode=True,
+        default_flow_style=False,
+        explicit_start=True,
+        explicit_end=False
+    ).strip()
+
+    with tempfile.NamedTemporaryFile(delete=False) as f:
+        f.write(playbook_yml.encode("utf-8"))
+        f.close()
+
+        agent_executor = iauto.execute(
+            playbook_file=f.name
+        )
+
+        agent_executor.register_print_received(print_received)
+        agent_executor.set_human_input_mode("NEVER")
+
+    playbook["playbook"]["actions"].append(repl)
+    playbook_yml = yaml_dump(
+        playbook,
+        Dumper=yaml_dumper,
+        sort_keys=False,
+        indent=2,
+        allow_unicode=True,
+        default_flow_style=False,
+        explicit_start=True,
+        explicit_end=False
+    ).strip()
+
+    st.session_state.playbook_yml = playbook_yml
     st.session_state.agent_executor = agent_executor
+
+    return playbook_yml, agent_executor
 
 
 def clear():
@@ -87,13 +203,18 @@ def get_model():
 # Sidebar
 with st.sidebar:
     button_label = "Reload" if agent_executor else "Launch"
-    options = llm_options.render(button_label=button_label, func=create_llm)
+    options = st_widgets.options(button_label=button_label, func=create_agent)
 
 # Main container
+
+if "playbook_yml" in st.session_state:
+    with st.expander("Generated playbook"):
+        st.markdown(f"```yaml\n{st.session_state.playbook_yml}\n```")
+
 if agent_executor:
-    llm_mode = options["llm_mode"][2]
-    llm_mode_key = options["llm_mode"][1]
-    st.markdown(f"#### {llm_mode}")
+    mode = options["mode"]
+    mode_name = st_widgets.mode_options[mode]
+    st.markdown(f"#### {mode_name}")
 
     if len(messages) == 0:
         greeting = "Hello! How can I help you today?"
@@ -116,18 +237,18 @@ if agent_executor:
 
         agent_executor.session.add(ChatMessage(role="user", content=prompt))
 
-        llm_chat_args = options["llm_chat_args"]
-        llm_use_tools = options["llm_use_tools"]
+        chat_args = options["chat_args"]
+        use_tools = options["use_tools"]
         resp_message = None
-        if llm_mode_key == "chat":
+        if mode == "chat":
             with st.spinner("Generating..."):
-                resp = agent_executor.session.run(**llm_chat_args, use_tools=llm_use_tools)
+                resp = agent_executor.session.run(**chat_args, use_tools=use_tools)
                 resp_message = resp.content
-        elif llm_mode_key == "react":
+        elif mode == "react":
             with st.spinner("Reacting..."):
-                resp = agent_executor.session.react(**llm_chat_args, use_tools=llm_use_tools)
+                resp = agent_executor.session.react(**chat_args, use_tools=use_tools)
                 resp_message = resp.content
-        elif llm_mode_key == "agent":
+        elif mode == "agent":
             with st.status("Agents Conversation", expanded=True):
                 resp = agent_executor.run(message=ChatMessage(role="user", content=prompt), clear_history=False)
                 resp_message = resp["summary"]

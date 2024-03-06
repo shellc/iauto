@@ -2,14 +2,28 @@ import json
 from types import SimpleNamespace
 
 from autogen import ModelClient
-from typing_extensions import Dict, Optional
+from typing_extensions import Any, Dict, List, Optional, Union
 
 from iauto.llms import ChatMessage, Session
 
 from .. import log
 
 
-class IASessionClient(ModelClient):
+class SessionResponse(SimpleNamespace):
+    class Choice(SimpleNamespace):
+        class Message(SimpleNamespace):
+            role: Optional[str]
+            content: Optional[str]
+            tool_calls: Optional[List[Dict]]
+
+        message: Message
+
+    choices: List[Choice]
+    model: str
+    cost: float = 0
+
+
+class SessionClient(ModelClient):
     def __init__(
         self,
         config,
@@ -25,12 +39,10 @@ class IASessionClient(ModelClient):
 
         self._log = log.get_logger("IASessionClient")
 
-    def create(self, params):
+    def create(self, params: Dict[str, Any]) -> ModelClient.ModelClientResponseProtocol:
         if self._log.isEnabledFor(log.DEBUG):
             self._log.debug(json.dumps(params, indent=4, ensure_ascii=False))
-        resp = SimpleNamespace()
-        resp.choices = []
-        resp.model = self._model
+
         messages = []
 
         for m in params.get("messages") or []:
@@ -49,46 +61,50 @@ class IASessionClient(ModelClient):
             m = self._session.react(messages=messages, use_tools=use_tools, auto_exec_tools=False, **self._llm_args)
         else:
             m = self._session.run(messages=messages, use_tools=use_tools, auto_exec_tools=False, **self._llm_args)
+
+        if not isinstance(m, ChatMessage):
+            raise ValueError("invalid message type response from SessionClient")
+
         if self._log.isEnabledFor(log.DEBUG):
             self._log.debug(json.dumps(m.model_dump(), indent=4, ensure_ascii=False))
 
-        choice = SimpleNamespace()
-        choice.message = SimpleNamespace()
-        choice.message.role = m.role
-        choice.message.content = m.content
-        choice.message.tool_calls = None
-        if m.tool_calls:
-            choice.message.tool_calls = [t.model_dump() for t in m.tool_calls]
-            # for tool_call in choice.message.tool_calls:
-            #    tool_call["function"]["arguments"] = json.dumps(tool_call["function"]["arguments"], ensure_ascii=False)
-
-        resp.choices.append(choice)
+        resp = SessionResponse(
+            choices=[
+                SessionResponse.Choice(
+                    message=SessionResponse.Choice.Message(
+                        role=m.role,
+                        content=m.content,
+                        tool_calls=[t.model_dump() for t in m.tool_calls or []]
+                    )
+                )
+            ],
+            model=self._model
+        )
 
         return resp
 
-    def message_retrieval(self, response):
+    def message_retrieval(
+        self,
+        response: ModelClient.ModelClientResponseProtocol
+    ) -> Union[List[str], List[ModelClient.ModelClientResponseProtocol.Choice.Message]]:
         choices = response.choices
 
-        messages = []
         has_tool_calls = False
         for choice in choices:
             tool_calls = choice.message.tool_calls
-            if tool_calls:
+            if tool_calls and len(tool_calls) > 0:
                 has_tool_calls = True
-            messages.append({
-                "role": choice.message.role,
-                "content": choice.message.content,
-                "tool_calls": tool_calls
-            })
+                break
 
-        if not has_tool_calls:
-            messages = [c.message.content for c in choices]
-        return messages
+        if has_tool_calls:
+            return [c.message for c in choices]
+        else:
+            return [c.message.content for c in choices if c.message.content is not None]
 
-    def cost(self, response) -> float:
+    def cost(self, response: SessionResponse) -> float:
         response.cost = 0
         return 0
 
     @staticmethod
-    def get_usage(response) -> Dict:
+    def get_usage(response: SessionResponse) -> Dict:
         return {}

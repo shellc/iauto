@@ -7,6 +7,8 @@ import traceback
 
 from dotenv import dotenv_values, load_dotenv
 
+os.environ["PYDEVD_DISABLE_FILE_VALIDATION"] = "1"
+
 env = {}
 
 
