@@ -1,3 +1,4 @@
+import json
 import os
 import tempfile
 
@@ -37,20 +38,34 @@ agent_executor = st.session_state.get("agent_executor")
 
 
 def print_received(message, sender, receiver):
-    with st.chat_message("assistant"):
-        content = ""
-        if isinstance(message, str):
-            content = message
-        else:
-            content = message["content"]
-            if "tool_calls" in message:
-                func_name = message["tool_calls"][0]["function"]["name"]
-                func_args = message["tool_calls"][0]["function"]["arguments"]
-                content = content + f"\n```python\n{func_name}({func_args})\n```"
+    content = ""
+    if isinstance(message, str):
+        content = message
+    else:
+        content = message["content"]
+        if "tool_calls" in message:
+            func_name = message["tool_calls"][0]["function"]["name"]
+            func_args = message["tool_calls"][0]["function"]["arguments"]
+            content = content + f"\nFunction call:\n```python\n{func_name}({func_args})\n```"
 
-        content = f"**{sender.name}** (to {receiver.name})\n\n{content}"
-        st.markdown(content)
-        messages.append({"role": "assistant", "content": content})
+    message = f"**{sender.name}** (to {receiver.name})"
+    json_obj = None
+    content = content.strip()
+    if content.startswith("{") or content.startswith("["):
+        message = f"{message}\n\n```json\n{content}\n```"
+        try:
+            json_obj = json.loads(content)
+        except Exception:
+            pass
+    else:
+        message = f"{message}\n\n{content}"
+
+    messages.append({"role": "assistant", "content": message, "json": json_obj})
+
+    with st.chat_message("assistant"):
+        st.markdown(message)
+        if json_obj:
+            st.json(json_obj, expanded=False)
 
 
 def create_agent(options):
@@ -93,6 +108,7 @@ def create_agent(options):
                 "args": {
                     "session": "$llm_session",
                     "name": f"Assistant-{idx}" if agent["name"] == "" else agent["name"],
+                    "instructions": agent["instructions"] if agent["instructions"] != "" else None,
                     "description": agent["description"] if agent["description"] != "" else None,
                     "react": options["agent_react"]
                 },
@@ -228,6 +244,8 @@ if agent_executor:
             if message["role"] == "user":
                 content = f"{content}"
             st.markdown(content)
+            if message.get("json"):
+                st.json(message["json"], expanded=False)
 
     # Accept user input
     if prompt := st.chat_input("What is up?"):

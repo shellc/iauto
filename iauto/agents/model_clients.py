@@ -1,8 +1,8 @@
 import json
 from types import SimpleNamespace
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple, Union
 
 from autogen import ModelClient
-from typing_extensions import Any, Dict, List, Optional, Union
 
 from iauto.llms import ChatMessage, Session
 
@@ -11,10 +11,21 @@ from .. import log
 
 class SessionResponse(SimpleNamespace):
     class Choice(SimpleNamespace):
-        class Message(SimpleNamespace):
+        class Message(SimpleNamespace, Iterable):
             role: Optional[str]
             content: Optional[str]
             tool_calls: Optional[List[Dict]]
+
+            def __iter__(self) -> Iterator[Tuple]:
+                return iter([
+                    ("role", self.role),
+                    ("content", self.content),
+                    ("tool_calls", self.tool_calls)
+                ])
+
+            def __getitem__(self, index):
+                d = dict(self)
+                return d.get(index)
 
         message: Message
 
@@ -91,7 +102,7 @@ class SessionClient(ModelClient):
 
         has_tool_calls = False
         for choice in choices:
-            tool_calls = choice.message.tool_calls
+            tool_calls = choice.message["tool_calls"]
             if tool_calls and len(tool_calls) > 0:
                 has_tool_calls = True
                 break
@@ -99,7 +110,7 @@ class SessionClient(ModelClient):
         if has_tool_calls:
             return [c.message for c in choices]
         else:
-            return [c.message.content for c in choices if c.message.content is not None]
+            return [c.message["content"] for c in choices if c.message["content"] is not None]
 
     def cost(self, response: SessionResponse) -> float:
         response.cost = 0

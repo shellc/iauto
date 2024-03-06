@@ -51,9 +51,11 @@ class AgentExecutor:
         def termination_func(x): return x.get("content", "").upper().find("TERMINATE") >= 0
         code_execution_config = {"executor": "ipython-embedded"}
 
-        if instructions is None:
-            instructions = ""
-        instructions += '\nReply "TERMINATE" in the end when everything is done.'
+        if instructions is None or instructions == "":
+            instructions = """You are a helpful AI Assistant."""
+        instructions += """Your purpose is to help users resolve their problems as quickly and efficiently as possible.
+
+        Reply "TERMINATE" in the end when everything is done."""
 
         self._user_proxy = UserProxyAgent(
             name="UserProxy",

@@ -66,7 +66,7 @@ def create_agent(
     instructions: Optional[str] = None,
     **kwargs
 ) -> ConversableAgent:
-    if instructions is None:
+    if instructions is None or instructions == "":
         instructions = AssistantAgent.DEFAULT_SYSTEM_MESSAGE
     else:
         instructions += '\nReply "TERMINATE" in the end when everything is done.'

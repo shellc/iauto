@@ -55,9 +55,10 @@ def options(button_label, func):
 
         for idx in range(agent_nums):
             with st.expander(f"\\# {idx+1}"):
-                name = st.text_input("Name", key=f"name_{idx}")
-                desc = st.text_input("Description", key=f"desc_{idx}")
-                opts["agents"].append({"name": name, "description": desc})
+                name = st.text_input("Name", key=f"name_{idx}", placeholder="Role name")
+                inst = st.text_input("Instructions", key=f"inst_{idx}", placeholder="For role instruction")
+                desc = st.text_input("Description", key=f"desc_{idx}", placeholder="For role selection")
+                opts["agents"].append({"name": name, "instructions": inst, "description": desc})
 
         opts["agent_react"] = st.checkbox(
             "Enable agents ReAct"
@@ -110,7 +111,7 @@ def options(button_label, func):
             chat_format = st.text_input(
                 "Chat format",
                 placeholder="auto",
-                value=opts["oai_args"].get("chat_format", os.environ.get("LLAMA_CHAT_FORMAT"))
+                value=opts["oai_args"].get("chat_format", os.environ.get("CHAT_FORMAT"))
             )
             opts["llama_args"]["chat_format"] = chat_format
 
