@@ -99,6 +99,7 @@ def create_agent(options):
     if len(options["agents"]) == 0:
         options["agents"].append({
             "name": "Assistant",
+            "instructions": None,
             "description": None
         })
     for idx, agent in enumerate(options["agents"]):
