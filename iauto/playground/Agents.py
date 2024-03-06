@@ -223,7 +223,7 @@ with st.sidebar:
     options = st_widgets.options(button_label=button_label, func=create_agent)
 
 # Main container
-
+# st.session_state
 if "playbook_yml" in st.session_state:
     with st.expander("Generated playbook"):
         st.markdown(f"```yaml\n{st.session_state.playbook_yml}\n```")
