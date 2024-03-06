@@ -39,4 +39,7 @@ playbook:
         result: $results
     - browser.close: $browser
     #- log: $results
+    - json.dumps:
+        args: $results
+        result: $results
     - echo: $results
