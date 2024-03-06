@@ -33,3 +33,18 @@ def loads(s, **kwargs) -> Any:
 def load(file: str, **kwargs):
     with open(file, "r", encoding="utf-8") as f:
         return json.loads(f.read())
+
+
+@register_action(name="json.dumps", spec={
+    "description": "Convert a Python object into a JSON-formatted string.",
+    "arguments": [
+        {
+            "name": "obj",
+            "description": "The Python object to be serialized as a JSON-encoded string.",
+            "type": "object",
+            "required": True
+        }
+    ]
+})
+def dummps(obj, **kwargs) -> Any:
+    return json.dumps(obj=obj, ensure_ascii=True)
