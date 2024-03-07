@@ -17,7 +17,8 @@ utils.logo()
 
 st.title("Playbooks")
 
-st.session_state.runs = st.session_state.get("runs") or {}
+if "runs" not in st.session_state:
+    st.session_state.runs = {}
 
 
 def run_playbook(playbook, args):

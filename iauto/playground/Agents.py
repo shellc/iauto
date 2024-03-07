@@ -176,7 +176,7 @@ def create_agent(options):
         f.close()
 
         agent_executor = iauto.execute(
-            playbook_file=f.name
+            playbook=f.name
         )
 
         agent_executor.register_print_received(print_received)

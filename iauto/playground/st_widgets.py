@@ -91,7 +91,7 @@ def options(button_label, func):
             value=opts["instructions"]
         )
 
-        tab1.markdown("Agents")
+        st.markdown("Agents")
 
         opts["agent_nums"] = st.slider('Number of agents', min_value=1, max_value=5, key="opts_agent_nums")
         opts["agents"] = [None] * opts["agent_nums"]
