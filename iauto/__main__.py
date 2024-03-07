@@ -74,7 +74,7 @@ def run(args, parser):
         variables.update(args.kwargs)
     variables.update(env)
 
-    result = executor.execute(playbook_file=p, variables=variables)
+    result = executor.execute(playbook=p, variables=variables)
     if result is not None:
         print(result)
 

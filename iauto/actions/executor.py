@@ -1,3 +1,4 @@
+import multiprocessing
 import os
 from abc import ABC, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
@@ -327,7 +328,7 @@ class PlaybookExecutor(Executor):
                 return path
 
 
-def execute(playbook_file, variables={}) -> Any:
+def execute(playbook: Union[str, Playbook], variables={}) -> Any:
     """
     Executes a playbook from a given file with optional initial variables.
 
@@ -346,10 +347,13 @@ def execute(playbook_file, variables={}) -> Any:
         depending on the actions performed within the playbook.
     """
 
-    playbook = playbook_load(playbook_file)
+    playbook_fname = None
+    if isinstance(playbook, str):
+        playbook_fname = playbook
+        playbook = playbook_load(playbook)
 
     executor = PlaybookExecutor()
-    executor.set_variable("__file__", playbook_file)
+    executor.set_variable("__file__", playbook_fname)
 
     variables = variables or {}
     variables.update(dict(os.environ))
@@ -364,10 +368,45 @@ def execute(playbook_file, variables={}) -> Any:
 _thread_executor = ThreadPoolExecutor()
 
 
-def execute_in_thread(playbook_file, variables={}):
+def execute_in_thread(playbook, variables={}):
     kwargs = {
-        "playbook_file": playbook_file,
+        "playbook": playbook,
         "variables": variables
     }
     future = _thread_executor.submit(execute, **kwargs)
+    return future
+
+
+def process_worker(queue, execute_kwargs):
+    ret = execute(**execute_kwargs)
+    queue.put(ret)
+
+
+class ProcessFuture:
+    def __init__(self, process, queue) -> None:
+        self._process = process
+        self._queue = queue
+
+    def done(self):
+        return not self._process.is_alive()
+
+    def running(self):
+        return self._process.is_alive()
+
+    def result(self):
+        return self._queue.get()
+
+
+def execute_in_process(playbook, variables={}):
+    queue = multiprocessing.Queue()
+    kwargs = {
+        "queue": queue,
+        "execute_kwargs": {
+            "playbook": playbook,
+            "variables": variables
+        }
+    }
+    process = multiprocessing.Process(target=process_worker, kwargs=kwargs)
+    process.start()
+    future = ProcessFuture(process=process, queue=queue)
     return future
