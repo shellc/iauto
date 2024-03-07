@@ -1,11 +1,13 @@
 import json
+import re
+from types import SimpleNamespace
 from typing import List, Optional
 
 import openai
 
 from .. import log
 from ..actions import ActionSpec
-from .llm import LLM, ChatMessage, Function, Message, ToolCall
+from .llm import LLM, ChatMessage, Function, Message, ToolCall, Usage
 
 
 class OpenAI(LLM):
@@ -13,6 +15,7 @@ class OpenAI(LLM):
 
     def __init__(self, model: Optional[str] = None, **kwargs) -> None:
         super().__init__()
+
         self._model = model or "gpt-3.5-turbo"
 
         self._openai = openai.OpenAI(**kwargs)
@@ -40,10 +43,12 @@ class OpenAI(LLM):
         if tools:
             tools_desciption = [t.oai_spec() for t in tools]
 
+        use_func_prompt = tools and self.use_func_prompt()
+
         msgs = []
         for m in messages:
             msg = {
-                "role": m.role,
+                "role": "user" if use_func_prompt and m.role == "tool" else m.role,
                 "content": m.content
             }
             if m.tool_call_id:
@@ -54,13 +59,19 @@ class OpenAI(LLM):
                 msg["tool_calls"] = [t.model_dump() for t in m.tool_calls]
             msgs.append(msg)
 
+        if use_func_prompt:
+            msgs.insert(0, {
+                "role": "system",
+                "content": self.func_prompt(tools=tools_desciption)
+            })
+
         if self._log.isEnabledFor(log.DEBUG):
-            self._log.debug(json.dumps({
+            self._log.debug("Request: " + json.dumps({
                 "messages": msgs,
                 "tools": tools_desciption
             }, ensure_ascii=False, indent=4))
 
-        if tools_desciption:
+        if tools_desciption and not use_func_prompt:
             kwargs["tools"] = tools_desciption
             kwargs["tool_choice"] = tool_choice
 
@@ -69,9 +80,22 @@ class OpenAI(LLM):
             **kwargs
         )
 
+        if self._log.isEnabledFor(log.DEBUG):
+            self._log.debug("Response: " + json.dumps(r.model_dump(), ensure_ascii=False, indent=4))
+
         m = r.choices[0].message
 
         resp = ChatMessage(role=m.role, content=m.content or "")
+        if r.usage:
+            resp.usage = Usage(
+                input_tokens=r.usage.prompt_tokens,
+                output_tokens=r.usage.completion_tokens
+            )
+
+        if use_func_prompt:
+            tool_call = self.parse_func_call(m.content)
+            if tool_call is not None:
+                m.tool_calls = [tool_call]
 
         tool_calls = m.tool_calls
         if tool_calls:
@@ -95,3 +119,84 @@ class OpenAI(LLM):
     @property
     def model(self) -> str:
         return self._model
+
+    def use_func_prompt(self):
+        """Check if use func prompt to call function"""
+        not_match_models = [
+            "gpt-3.5",
+            "gpt-4"
+        ]
+        for m in not_match_models:
+            if self._model.startswith(m):
+                return False
+        return True
+
+    def func_prompt(self, tools):
+        tools_texts = []
+        for tool in tools:
+            tools_texts.append(TOOL_DESC.format(
+                name=tool["function"]["name"],
+                description=tool["function"]["description"],
+                parameters=json.dumps(tool["function"]["parameters"])
+            ))
+
+        tools_text = "\n".join(tools_texts)
+
+        return FUNC_INSTRUCTION.format(tools_text=tools_text)
+
+    def parse_func_call(self, content):
+        def _parse(s):
+            ret = SimpleNamespace(
+                id="dummy_function_call_id",
+                type="function",
+                function=SimpleNamespace(
+                    name=None,
+                    arguments=None
+                )
+            )
+            try:
+                j = json.loads(s)
+                if "name" in j:
+                    ret.function.name = j["name"]
+                else:
+                    return None
+                if "parameters" in j and isinstance(j["parameters"], dict):
+                    ret.function.arguments = json.dumps(j["parameters"], ensure_ascii=False)
+                return ret
+            except Exception:
+                return None
+
+        func_call = _parse(content)
+        if func_call is None:
+            json_blocks = re.findall('({.*})', content, re.MULTILINE | re.DOTALL)
+            for b in json_blocks:
+                func_call = _parse(b)
+                if func_call is not None:
+                    return func_call
+
+
+TOOL_DESC = (
+    'name: `{name}`; Description: `{description}`; Parameters: {parameters}'
+)
+
+FUNC_INSTRUCTION = """You have access to the following APIs:
+
+{tools_text}
+
+You need to decide whether to call an API to generate response based on the conversation.
+
+If you choose to call an API, follow this steps:
+1. Evaluate the actual parameters of the API as a JSON dict according to your needs.
+2. Generate API call in the format within markdown code block without any additional Notes or Explanations.
+
+If there is no API that match the conversation, you will skip API selection.
+
+API call like this:
+
+```json
+{{
+    "name": "<name of the selected API>",
+    "parameters": <parameters for the API calling>
+}}
+```
+"""

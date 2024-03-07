@@ -38,6 +38,18 @@ class Message(BaseModel):
     content: str
 
 
+class Usage(BaseModel):
+    """
+    Represents a token usage.
+
+    Attributes:
+        input_tokens (int): The number of tokens in the input message.
+        output_tokens (int): The number of tokens in the generated response message.
+    """
+    input_tokens: int
+    output_tokens: int
+
+
 class ChatMessage(Message):
     """
     Represents a chat message with additional metadata and optional tool call information.
@@ -48,12 +60,14 @@ class ChatMessage(Message):
         with this message, if any.
         tool_call_id (Optional[str]): The identifier of the tool call associated with this message, if any.
         name (Optional[str]): The name of the tool or function called.
+        useage (Optional[Usage]): The token usage.
     """
 
     role: str
     tool_calls: Optional[List[ToolCall]] = None
     tool_call_id: Optional[str] = None
     name: Optional[str] = None
+    usage: Optional[Usage] = None
 
     @staticmethod
     def from_dict(d: Dict) -> "ChatMessage":
