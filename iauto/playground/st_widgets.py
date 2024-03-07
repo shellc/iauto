@@ -181,6 +181,9 @@ def options(button_label, func):
         if provider != "openai":
             top_k = st.number_input("top_k", value=2, key="opts_chat_args_top_k")
             opts["chat_args"]["top_k"] = top_k
+        else:
+            if "top_k" in opts["chat_args"]:
+                opts["chat_args"].pop("top_k")
 
         temperature = st.number_input(
             "temperature",
