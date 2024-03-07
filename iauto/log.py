@@ -50,10 +50,11 @@ def get_logger(name, level=None):
     logger = logging.getLogger(name=name)
     logger.setLevel(level=log_level)
 
-    handler = logging.StreamHandler()
-    handler.setFormatter(logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s'))
-    handler.setLevel(level=log_level)
-    logger.addHandler(handler)
+    if len(logger.handlers) == 0:
+        handler = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s'))
+        handler.setLevel(level=log_level)
+        logger.addHandler(handler)
 
     return logger
 
