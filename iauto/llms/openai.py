@@ -43,12 +43,14 @@ class OpenAI(LLM):
         if tools:
             tools_desciption = [t.oai_spec() for t in tools]
 
-        use_func_prompt = tools and self.use_func_prompt()
+        native_tool_call = self.native_tool_call()
+        use_tool_call_prompt = tools and not native_tool_call
 
         msgs = []
+
         for m in messages:
             msg = {
-                "role": "user" if use_func_prompt and m.role == "tool" else m.role,
+                "role": "user" if not native_tool_call and m.role == "tool" else m.role,
                 "content": m.content
             }
             if m.tool_call_id:
@@ -59,10 +61,10 @@ class OpenAI(LLM):
                 msg["tool_calls"] = [t.model_dump() for t in m.tool_calls]
             msgs.append(msg)
 
-        if use_func_prompt:
-            msgs.insert(0, {
-                "role": "system",
-                "content": self.func_prompt(tools=tools_desciption)
+        if use_tool_call_prompt:
+            msgs.insert(-1, {
+                "role": "user",
+                "content": self.tool_call_prompt(tools=tools_desciption)
             })
 
         if self._log.isEnabledFor(log.DEBUG):
@@ -71,7 +73,7 @@ class OpenAI(LLM):
                 "tools": tools_desciption
             }, ensure_ascii=False, indent=4))
 
-        if tools_desciption and not use_func_prompt:
+        if tools_desciption and not use_tool_call_prompt:
             kwargs["tools"] = tools_desciption
             kwargs["tool_choice"] = tool_choice
 
@@ -92,8 +94,8 @@ class OpenAI(LLM):
                 output_tokens=r.usage.completion_tokens
             )
 
-        if use_func_prompt:
-            tool_call = self.parse_func_call(m.content)
+        if use_tool_call_prompt:
+            tool_call = self.parse_tool_call(m.content)
             if tool_call is not None:
                 m.tool_calls = [tool_call]
 
@@ -120,18 +122,18 @@ class OpenAI(LLM):
     def model(self) -> str:
         return self._model
 
-    def use_func_prompt(self):
-        """Check if use func prompt to call function"""
-        not_match_models = [
+    def native_tool_call(self):
+        """Check if the model support fuction calling"""
+        models = [
             "gpt-3.5",
             "gpt-4"
         ]
-        for m in not_match_models:
+        for m in models:
             if self._model.startswith(m):
-                return False
-        return True
+                return True
+        return False
 
-    def func_prompt(self, tools):
+    def tool_call_prompt(self, tools):
         tools_texts = []
         for tool in tools:
             tools_texts.append(TOOL_DESC.format(
@@ -144,7 +146,7 @@ class OpenAI(LLM):
 
         return FUNC_INSTRUCTION.format(tools_text=tools_text)
 
-    def parse_func_call(self, content):
+    def parse_tool_call(self, content):
         def _parse(s):
             ret = SimpleNamespace(
                 id="dummy_function_call_id",
@@ -199,4 +201,6 @@ API call like this:
     "parameters": <parameters for the API calling>
 }}
 ```
+
+If there is no API that match the conversation, you will skip API selection.
 """
