@@ -31,7 +31,7 @@ class SessionResponse(SimpleNamespace):
 
     choices: List[Choice]
     model: str
-    cost: float = 0
+    usage: Dict[str, int]
 
 
 class SessionClient(ModelClient):
@@ -76,8 +76,16 @@ class SessionClient(ModelClient):
         if not isinstance(m, ChatMessage):
             raise ValueError("invalid message type response from SessionClient")
 
-        if self._log.isEnabledFor(log.DEBUG):
-            self._log.debug(json.dumps(m.model_dump(), indent=4, ensure_ascii=False))
+        # if self._log.isEnabledFor(log.DEBUG):
+        #    self._log.debug(json.dumps(m.model_dump(), indent=4, ensure_ascii=False))
+
+        usage = {
+            "prompt_tokens": 0,
+            "completion_tokens": 0
+        }
+        if m.usage:
+            usage["prompt_tokens"] = m.usage.input_tokens
+            usage["completion_tokens"] = m.usage.output_tokens
 
         resp = SessionResponse(
             choices=[
@@ -89,7 +97,8 @@ class SessionClient(ModelClient):
                     )
                 )
             ],
-            model=self._model
+            model=self._model,
+            usage=usage
         )
 
         return resp
@@ -113,9 +122,11 @@ class SessionClient(ModelClient):
             return [c.message["content"] for c in choices if c.message["content"] is not None]
 
     def cost(self, response: SessionResponse) -> float:
-        response.cost = 0
         return 0
 
     @staticmethod
     def get_usage(response: SessionResponse) -> Dict:
-        return {}
+        usage = response.usage
+        usage["cost"] = 0
+        usage["total_tokens"] = usage["prompt_tokens"] + usage["completion_tokens"]
+        return usage
