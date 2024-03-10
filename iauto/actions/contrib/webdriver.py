@@ -272,11 +272,12 @@ class Remote(AppiumWebDriver):
             delay=delay
         )
 
-    def get_element_and_click(self, css_selector, retries=0, delay=0.5, error_skip=False):
+    def get_element_and_click(self, by, selector, retries=0, delay=0.5, error_skip=False):
         for i in range(retries + 1):
             try:
-                e = self.get_element_by_css(value=css_selector, retries=0, delay=0.5, error_skip=error_skip)
-                e.click()
+                e = self.get_element(by=by, value=selector, retries=0, delay=delay, not_found_ignore=error_skip)
+                if e is not None:
+                    e.click()
             except Exception as e:
                 _log.debug(f"Get element and click error: {e}")
                 if i < retries - 1:
@@ -302,16 +303,24 @@ def get_element(
     element: Optional[Element] = None,
     selector: str,
     by: str = "css",
+    retries: int = 0,
+    delay: float = 0.5,
+    error_skip: bool = False,
     **kwargs
 ) -> Optional[Element]:
-    a_by = AppiumBy.CSS_SELECTOR
-    if by == "xpath":
-        a_by = AppiumBy.XPATH
+    if by == "tag":
+        a_by = AppiumBy.TAG_NAME
+    elif by == "css":
+        a_by = AppiumBy.CSS_SELECTOR
+    elif by == "class":
+        a_by = AppiumBy.CLASS_NAME
+    else:
+        a_by = by
 
     if element is not None:
-        return element.get_element(by=a_by, value=selector)
+        return element.get_element(by=a_by, value=selector, retries=retries, delay=delay, not_found_ignore=error_skip)
     elif webdriver is not None:
-        return webdriver.get_element(by=a_by, value=selector)
+        return webdriver.get_element(by=a_by, value=selector, retries=retries, delay=delay, not_found_ignore=error_skip)
     else:
         raise ValueError("No element or webdriver specified.")
 
@@ -322,26 +331,60 @@ def get_elements(
     element: Optional[Element] = None,
     selector: str,
     by: str = "css",
+    retries: int = 0,
+    delay: float = 0.5,
+    error_skip: bool = False,
     **kwargs
 ) -> List[Element]:
-    a_by = AppiumBy.CSS_SELECTOR
-    if by == "xpath":
-        a_by = AppiumBy.XPATH
+    if by == "tag":
+        a_by = AppiumBy.TAG_NAME
+    elif by == "css":
+        a_by = AppiumBy.CSS_SELECTOR
+    elif by == "class":
+        a_by = AppiumBy.CLASS_NAME
+    else:
+        a_by = by
 
     if element is not None:
-        return element.get_elements(by=a_by, value=selector)
+        return element.get_elements(
+            by=a_by,
+            value=selector,
+            retries=retries,
+            delay=delay,
+            not_found_ignore=error_skip
+        )
     elif webdriver is not None:
-        return webdriver.get_elements(by=a_by, value=selector)
+        return webdriver.get_elements(
+            by=a_by,
+            value=selector,
+            retries=retries,
+            delay=delay,
+            not_found_ignore=error_skip
+        )
     else:
         raise ValueError("No element or webdriver specified.")
 
 
-def send_keys(*args, element: Element, content, **kwargs):
-    element.send_keys(content)
+def send_keys(*args, element: Element, keys: str, **kwargs):
+    element.send_keys(keys)
 
 
-def click(element: Element, *args, **kwargs):
-    element.click()
+def click(
+    element: Optional[Element] = None,
+    webdriver: Optional[Remote] = None,
+    by: Optional[AppiumBy] = None,
+    selector: Optional[str] = None,
+    retries: int = 0,
+    error_skip: bool = False,
+    *args,
+    **kwargs
+):
+    if element:
+        return element.click()
+    else:
+        if webdriver is None:
+            raise ValueError("webdirver is none")
+        return webdriver.get_element_and_click(by=by, selector=selector, retries=retries, error_skip=error_skip)
 
 
 def get_attr(*args, element: Element, name: str, **kwargs) -> Any:
@@ -352,7 +395,9 @@ def text(element: Element, *args, **kwargs) -> Any:
     return element.text
 
 
-def execute(*args, webdriver: Remote, command: str, params, **kwargs) -> Any:
+def execute(*args, webdriver: Remote, command: str, params: Optional[Dict] = None, **kwargs) -> Any:
+    if params is None:
+        params = {}
     return webdriver.execute(driver_command=command, params=params)
 
 
@@ -497,7 +542,7 @@ def create_actions() -> Dict[str, Action]:
                 "required": True
             },
             {
-                "name": "content",
+                "name": "keys",
                 "type": "str",
                 "description": "The string of keystrokes to send to the element.",
                 "required": True
@@ -515,6 +560,11 @@ def create_actions() -> Dict[str, Action]:
                 "required": True
             }
         ]
+    })
+
+    actions["wd.execute"] = create_action(func=execute, spec={
+        "name": "wd.execute",
+        "description": "Execute a command"
     })
 
     return actions
