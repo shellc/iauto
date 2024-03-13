@@ -1,7 +1,7 @@
 import asyncio
 import json
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any, List, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 
 from playwright.async_api import (Browser, BrowserContext, Locator, Page,
                                   async_playwright)
@@ -61,19 +61,27 @@ class OpenBrowserAction(Action):
 
     def perform(self,
                 *args,
-                exec=None,
+                browser_type: Optional[str] = None,
+                exec: Optional[str] = None,
                 headless: Union[bool, str] = False,
                 timeout=30000,
                 entry=None,
                 user_data_dir=None,
                 devtools=False,
+                extra_kwargs: Optional[Dict] = None,
                 playbook,
                 executor,
                 **kwargs
                 ) -> Union[Browser, BrowserContext]:
 
+        if browser_type is None:
+            browser_type = "chromium"
+
         if isinstance(headless, str):
             headless = headless.lower() == "true"
+
+        if extra_kwargs is None:
+            extra_kwargs = {}
 
         async def _func():
             b_args = [
@@ -93,22 +101,35 @@ class OpenBrowserAction(Action):
                 b_args.append(f"--window-size={kwargs['size']}")
 
             _playwright = await async_playwright().start()
+
+            browser_instance = None
+            if browser_type == "chromium":
+                browser_instance = _playwright.chromium
+            elif browser_type == "firefox":
+                browser_instance = _playwright.firefox
+            elif browser_type == "webkit":
+                browser_instance = _playwright.webkit
+            else:
+                raise IndexError(f"invalid browser_type: {browser_type}")
+
             if user_data_dir:
-                browser = await _playwright.chromium.launch_persistent_context(
+                browser = await browser_instance.launch_persistent_context(
                     user_data_dir=user_data_dir,
                     executable_path=exec,
                     headless=headless,
                     timeout=timeout,
                     args=b_args,
-                    devtools=devtools
+                    devtools=devtools,
+                    **extra_kwargs
                 )
             else:
-                browser = await _playwright.chromium.launch(
+                browser = await browser_instance.launch(
                     executable_path=exec,
                     headless=headless,
                     timeout=timeout,
                     args=b_args,
-                    devtools=devtools
+                    devtools=devtools,
+                    **extra_kwargs
                 )
             return browser
         return _event_loop.run_until_complete(_func())
