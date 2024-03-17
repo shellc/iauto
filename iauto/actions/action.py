@@ -235,7 +235,7 @@ class FunctionAction(Action):
         return self._func(*args, **kwargs)
 
 
-def create_action(func, spec: Dict) -> Action:
+def create(func, spec: Dict) -> Action:
     """
     Factory function to create a FunctionAction.
 

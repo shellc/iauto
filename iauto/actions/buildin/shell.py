@@ -100,15 +100,15 @@ class PrintAction(Action):
 
     def perform(self, *args, message=None, end="\n", color="", **kwargs) -> None:
         if color.lower() == "red":
-            color = "\033[91m"
+            color = "\033[1;31m"
         elif color.lower() == "green":
-            color = "\033[92m"
+            color = "\033[1;32m"
         elif color.lower() == "yellow":
-            color = "\033[93m"
+            color = "\033[1;33m"
         elif color.lower() == "blue":
-            color = "\033[94m"
+            color = "\033[1;34m"
         elif color.lower() == "purple":
-            color = "\033[95m"
+            color = "\033[1;35m"
         else:
             color = ""
 

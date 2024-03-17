@@ -1,13 +1,13 @@
 from autogen import AssistantAgent, ConversableAgent
 from typing_extensions import Dict, List, Optional
 
-from ..actions.loader import register_action
+from ..actions.loader import register
 from ..llms import ChatMessage, Session
 from .executor import AgentExecutor
 from .model_clients import SessionClient
 
 
-@register_action(name="agents.create", spec={
+@register(name="agents.create", spec={
     "description": "Create a new agent instance.",
     "arguments": [
         {
@@ -102,7 +102,7 @@ def create_agent(
     return agent
 
 
-@register_action(name="agents.executor", spec={
+@register(name="agents.executor", spec={
     "description": "Instantiate a new agent executor.",
     "arguments": [
         {
@@ -163,7 +163,7 @@ def create_agent_executor(
     )
 
 
-@register_action(name="agents.run", spec={
+@register(name="agents.run", spec={
     "description": "Run the specified agent executor with a given message.",
     "arguments": [
         {

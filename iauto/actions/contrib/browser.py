@@ -7,7 +7,7 @@ from playwright.async_api import (Browser, BrowserContext, Locator, Page,
                                   async_playwright)
 
 from ..action import Action, ActionSpec
-from ..loader import register_action
+from ..loader import register
 
 _event_loop = asyncio.new_event_loop()
 _thread_executor = ThreadPoolExecutor()
@@ -634,7 +634,7 @@ def replay(*args, browser: Browser, script: str, playbook, executor, **kwargs):
     return result
 
 
-register_action(name="browser.replay", spec={
+register(name="browser.replay", spec={
     "description": "Replays a sequence of browser actions from a script.",
     "arguments": [
         {

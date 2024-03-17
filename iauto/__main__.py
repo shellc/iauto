@@ -94,8 +94,7 @@ def parse_args(argv):
     )
 
     parser.add_argument('--env', default='.env', metavar="ENV_FILE", help="environment configuration file")
-    parser.add_argument('--load', nargs="+", default=[], metavar="module",
-                        help="load modules, like: --load module1 module2")
+    parser.add_argument('--load', default=None, metavar="module", help="load modules, like: --load module")
     parser.add_argument('--list-actions', action="store_true", help="list actions")
     parser.add_argument('--spec', metavar="action", default=None, help="print action spec")
     parser.add_argument('--log-level', default=None, help="log level, default INFO")
@@ -132,8 +131,9 @@ def main():
 
     if args.load:
         try:
-            for m in args.load:
-                importlib.import_module(m)
+            modules = args.load.split(",")
+            for m in modules:
+                importlib.import_module(m.strip())
         except ImportError as e:
             print(f"Load moudle error: {e}")
             sys.exit(-1)

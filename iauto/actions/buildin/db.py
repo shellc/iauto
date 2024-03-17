@@ -3,10 +3,10 @@ from typing import Any, Dict, Optional
 import pandas as pd
 import sqlalchemy
 
-from ..loader import register_action
+from ..loader import register
 
 
-@register_action(name="db.create_engine", spec={
+@register(name="db.create_engine", spec={
     "description": "Create a new SQLAlchemy engine instance.",
     "arguments": [
         {
@@ -21,7 +21,7 @@ def create_engine(*args, url: str, **kwargs) -> sqlalchemy.Engine:
     return sqlalchemy.create_engine(url)
 
 
-@register_action(name="db.read", spec={
+@register(name="db.read", spec={
     "description": "Read data from the database into a DataFrame or a list of dictionaries.",
     "arguments": [
         {
@@ -54,7 +54,7 @@ def read(
         return df.to_dict(orient='records')
 
 
-@register_action(name="db.exec", spec={
+@register(name="db.exec", spec={
     "description": "Execute an SQL statement.",
     "arguments": [
         {
@@ -88,7 +88,7 @@ def exec(
         conn.commit()
 
 
-@register_action(name="db.select", spec={
+@register(name="db.select", spec={
     "description": "Execute a select statement and return the results.",
     "arguments": [
         {

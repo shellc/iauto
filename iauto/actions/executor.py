@@ -184,7 +184,7 @@ class PlaybookExecutor(Executor):
             if isinstance(o, dict):
                 o = o.get(s)
             else:
-                o = getattr(o, s)
+                o = getattr(o, s) if hasattr(o, s) else None
         return o
 
     def eval_vars(self, vars):

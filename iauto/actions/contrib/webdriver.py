@@ -10,7 +10,7 @@ from selenium.common.exceptions import (ElementNotInteractableException,
                                         NoSuchElementException)
 
 from ...log import get_logger
-from ..action import Action, create_action
+from ..action import Action, create
 
 _log = get_logger("webdriver")
 
@@ -403,7 +403,7 @@ def execute(*args, webdriver: Remote, command: str, params: Optional[Dict] = Non
 
 def create_actions() -> Dict[str, Action]:
     actions = {}
-    actions["wd.connect"] = create_action(func=connect, spec={
+    actions["wd.connect"] = create(func=connect, spec={
         "name": "wd.connect",
         "description": "Establish a connection to the Appium server with the specified server address and capabilities.",  # noqa: E501
         "arguments": [
@@ -421,7 +421,7 @@ def create_actions() -> Dict[str, Action]:
                     }
         ]
     })
-    actions["wd.execute_script"] = create_action(func=execute_script, spec={
+    actions["wd.execute_script"] = create(func=execute_script, spec={
         "name": "wd.execute_script",
         "description": "Execute a given JavaScript script on the current page.",
         "arguments": [
@@ -439,7 +439,7 @@ def create_actions() -> Dict[str, Action]:
             }
         ]
     })
-    actions["wd.get_element"] = create_action(func=get_element, spec={
+    actions["wd.get_element"] = create(func=get_element, spec={
         "name": "wd.get_element",
         "description": "Retrieve a single web element based on the specified selector and search method.",
         "arguments": [
@@ -470,7 +470,7 @@ def create_actions() -> Dict[str, Action]:
             }
         ]
     })
-    actions["wd.get_elements"] = create_action(func=get_elements, spec={
+    actions["wd.get_elements"] = create(func=get_elements, spec={
         "name": "wd.get_elements",
         "description": "Retrieve all web elements that match the specified selector and search method.",
         "arguments": [
@@ -501,7 +501,7 @@ def create_actions() -> Dict[str, Action]:
             }
         ]
     })
-    actions["wd.get_attr"] = create_action(func=get_attr, spec={
+    actions["wd.get_attr"] = create(func=get_attr, spec={
         "name": "wd.get_attr",
         "description": "Retrieve the value of a specified attribute from the element.",
         "arguments": [
@@ -519,7 +519,7 @@ def create_actions() -> Dict[str, Action]:
             }
         ]
     })
-    actions["wd.text"] = create_action(func=text, spec={
+    actions["wd.text"] = create(func=text, spec={
         "name": "wd.text",
         "description": "Retrieve the text content of the element.",
         "arguments": [
@@ -531,7 +531,7 @@ def create_actions() -> Dict[str, Action]:
             }
         ]
     })
-    actions["wd.send_keys"] = create_action(func=send_keys, spec={
+    actions["wd.send_keys"] = create(func=send_keys, spec={
         "name": "wd.send_keys",
         "description": "Send keystrokes to the specified element.",
         "arguments": [
@@ -549,7 +549,7 @@ def create_actions() -> Dict[str, Action]:
             }
         ]
     })
-    actions["wd.click"] = create_action(func=click, spec={
+    actions["wd.click"] = create(func=click, spec={
         "name": "wd.click",
         "description": "Simulate a mouse click on the specified element.",
         "arguments": [
@@ -562,7 +562,7 @@ def create_actions() -> Dict[str, Action]:
         ]
     })
 
-    actions["wd.execute"] = create_action(func=execute, spec={
+    actions["wd.execute"] = create(func=execute, spec={
         "name": "wd.execute",
         "description": "Execute a command"
     })

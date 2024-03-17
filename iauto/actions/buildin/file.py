@@ -3,7 +3,7 @@ import os
 from typing import Any, Dict, List, Optional, Union
 
 from ..action import Action, ActionSpec
-from ..loader import register_action
+from ..loader import register
 
 
 class FileWriteAction(Action):
@@ -42,7 +42,7 @@ class FileWriteAction(Action):
             f.write(content)
 
 
-@register_action(name="file.exists", spec={
+@register(name="file.exists", spec={
     "description": "Determines if a file exists at the given path.",
     "arguments": [
         {

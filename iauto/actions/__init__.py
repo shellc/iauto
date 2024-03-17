@@ -23,8 +23,8 @@ The module also handles the registration and discovery of built-in actions.
 """
 
 from . import buildin, contrib
-from .action import Action, ActionArg, ActionSpec, create_action
+from .action import Action, ActionArg, ActionSpec, create
 from .executor import (Executor, PlaybookExecutor, execute, execute_in_process,
                        execute_in_thread)
-from .loader import loader, register_action
+from .loader import loader, register
 from .playbook import Playbook, load

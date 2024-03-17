@@ -1,7 +1,7 @@
 import importlib
 from typing import Dict, Union
 
-from .action import Action, create_action
+from .action import Action, create
 
 
 class ActionLoader:
@@ -80,7 +80,7 @@ This instance will be used to register and retrieve actions. It maintains a dict
 loader = ActionLoader()
 
 
-def register_action(name: str, spec: Dict):
+def register(name: str, spec: Dict):
     """
     Registers a new action with the provided name and specification.
 
@@ -99,7 +99,7 @@ def register_action(name: str, spec: Dict):
     """
 
     def decorator(func, *args, **kwargs):
-        action = create_action(func=func, spec=spec)
+        action = create(func=func, spec=spec)
         action.spec.name = name
         loader.register({name: action})
         return action

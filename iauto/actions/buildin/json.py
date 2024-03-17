@@ -1,10 +1,10 @@
 import json
 from typing import Any
 
-from ..loader import register_action
+from ..loader import register
 
 
-@register_action(name="json.loads", spec={
+@register(name="json.loads", spec={
     "description": "Convert a JSON-formatted string into a Python object.",
     "arguments": [
         {
@@ -19,7 +19,7 @@ def loads(s, **kwargs) -> Any:
     return json.loads(s)
 
 
-@register_action(name="json.load", spec={
+@register(name="json.load", spec={
     "description": "Read a JSON file and convert its contents to a Python object.",
     "arguments": [
         {
@@ -35,7 +35,7 @@ def load(file: str, **kwargs):
         return json.loads(f.read())
 
 
-@register_action(name="json.dumps", spec={
+@register(name="json.dumps", spec={
     "description": "Convert a Python object into a JSON-formatted string.",
     "arguments": [
         {
