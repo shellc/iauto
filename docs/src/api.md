@@ -19,10 +19,10 @@
   * [ActionSpec](#iauto.actions.action.ActionSpec)
   * [Action](#iauto.actions.action.Action)
   * [FunctionAction](#iauto.actions.action.FunctionAction)
-  * [create\_action](#iauto.actions.action.create_action)
+  * [create](#iauto.actions.action.create)
 * [iauto.actions.loader](#iauto.actions.loader)
   * [ActionLoader](#iauto.actions.loader.ActionLoader)
-  * [register\_action](#iauto.actions.loader.register_action)
+  * [register](#iauto.actions.loader.register)
 * [iauto.actions.executor](#iauto.actions.executor)
   * [Executor](#iauto.actions.executor.Executor)
   * [PlaybookExecutor](#iauto.actions.executor.PlaybookExecutor)
@@ -34,6 +34,7 @@
 * [iauto.llms.llm](#iauto.llms.llm)
   * [Function](#iauto.llms.llm.Function)
   * [ToolCall](#iauto.llms.llm.ToolCall)
+  * [Usage](#iauto.llms.llm.Usage)
   * [ChatMessage](#iauto.llms.llm.ChatMessage)
   * [LLM](#iauto.llms.llm.LLM)
 * [iauto.llms.llama](#iauto.llms.llama)
@@ -239,6 +240,25 @@ A class representing a playbook which includes a series of actions to be execute
 - `args` _Union[str, List, Dict, None]_ - Arguments that can be passed to the actions in the playbook.
 - `actions` _Optional[List['Playbook']]_ - A list of actions (playbooks) to be executed.
 - `result` _Union[str, List, Dict, None]_ - The result of the playbook execution.
+
+<a id="iauto.actions.playbook.Playbook.resolve_path"></a>
+
+#### resolve\_path
+
+```python
+def resolve_path(path: str) -> str
+```
+
+Resolves a potentially relative path to an absolute path using the playbook's metadata.
+
+**Arguments**:
+
+- `path` _str_ - The file path that may be relative or absolute.
+  
+
+**Returns**:
+
+- `str` - The absolute path resolved from the given path and the playbook's metadata root.
 
 <a id="iauto.actions.playbook.from_dict"></a>
 
@@ -497,12 +517,12 @@ Execute the wrapped Python callable with the given arguments.
 
 - `Any` - The result of the callable execution.
 
-<a id="iauto.actions.action.create_action"></a>
+<a id="iauto.actions.action.create"></a>
 
-#### create\_action
+#### create
 
 ```python
-def create_action(func, spec: Dict) -> Action
+def create(func, spec: Dict) -> Action
 ```
 
 Factory function to create a FunctionAction.
@@ -612,12 +632,12 @@ is the full path to the module containing the class 'ClassName' that is the acti
 
   None
 
-<a id="iauto.actions.loader.register_action"></a>
+<a id="iauto.actions.loader.register"></a>
 
-#### register\_action
+#### register
 
 ```python
-def register_action(name: str, spec: Dict)
+def register(name: str, spec: Dict)
 ```
 
 Registers a new action with the provided name and specification.
@@ -918,7 +938,7 @@ playbook file, which is stored in the executor's variables under the key
 #### execute
 
 ```python
-def execute(playbook_file, variables={}) -> Any
+def execute(playbook: Union[str, Playbook], variables={}) -> Any
 ```
 
 Executes a playbook from a given file with optional initial variables.
@@ -1215,6 +1235,21 @@ Represents a call to a specific tool with an optional function call.
 - `type` _str_ - The type of the tool.
 - `function` _Optional[Function]_ - An optional Function instance representing the function call associated with         the tool, if any.
 
+<a id="iauto.llms.llm.Usage"></a>
+
+## Usage Objects
+
+```python
+class Usage(BaseModel)
+```
+
+Represents a token usage.
+
+**Attributes**:
+
+- `input_tokens` _int_ - The number of tokens in the input message.
+- `output_tokens` _int_ - The number of tokens in the generated response message.
+
 <a id="iauto.llms.llm.ChatMessage"></a>
 
 ## ChatMessage Objects
@@ -1231,6 +1266,7 @@ Represents a chat message with additional metadata and optional tool call inform
 - `tool_calls` _Optional[List[ToolCall]]_ - A list of ToolCall instances representing the tool calls associated         with this message, if any.
 - `tool_call_id` _Optional[str]_ - The identifier of the tool call associated with this message, if any.
 - `name` _Optional[str]_ - The name of the tool or function called.
+- `useage` _Optional[Usage]_ - The token usage.
 
 <a id="iauto.llms.llm.ChatMessage.from_dict"></a>
 
@@ -1365,6 +1401,16 @@ class OpenAI(LLM)
 ```
 
 
+
+<a id="iauto.llms.openai.OpenAI.native_tool_call"></a>
+
+#### native\_tool\_call
+
+```python
+def native_tool_call()
+```
+
+Check if the model support fuction calling
 
 <a id="iauto.llms.llm_factory"></a>
 
