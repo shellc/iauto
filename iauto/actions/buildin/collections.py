@@ -2,6 +2,7 @@ from typing import Any, Optional
 
 from ..action import Action, ActionSpec
 from ..executor import Executor
+from ..loader import register
 from ..playbook import Playbook
 
 
@@ -122,3 +123,21 @@ class DictGetAction(Action):
         if d is None or not isinstance(d, dict):
             raise ValueError("invalid dict")
         return d.get(key)
+
+
+@register(name="list.clear", spec={
+    "description": "Clear the list."
+})
+def list_clear(ls, **kwargs):
+    if not isinstance(ls, list):
+        raise ValueError("invalid list")
+    ls.clear()
+
+
+@register(name="dict.clear", spec={
+    "description": "Clear the dict."
+})
+def dict_clear(d, **kwargs):
+    if not isinstance(d, dict):
+        raise ValueError("invalid dict")
+    d.clear()

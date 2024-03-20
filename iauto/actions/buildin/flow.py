@@ -4,7 +4,7 @@ from ..action import Action, ActionSpec
 from ..executor import Executor
 from ..playbook import Playbook
 
-_operators = set(["not", "all", "any", "lt", 'le', 'eq', 'ne', 'ge', 'gt'])
+_operators = set(["not", "all", "any", "lt", 'le', 'eq', 'ne', 'ge', 'gt', 'in'])
 
 
 def is_operator(d):
@@ -25,6 +25,7 @@ def eval_operator(operator, vars={}) -> bool:
     ne: not equal to
     ge: greater than or equal to
     gt: greater than
+    in: contains
     """
     if not isinstance(operator, Dict) or len(operator) != 1:
         raise ValueError(f"Invalid operator: {operator}")
@@ -35,6 +36,8 @@ def eval_operator(operator, vars={}) -> bool:
         raise ValueError(f"Invalid operator: {o}")
 
     values = operator.get(o) or []
+    if not isinstance(values, list):
+        values = [values]
     values = values[::]
 
     if not (o == "not" or o == "all" or o == "any") and len(values) != 2:
@@ -45,11 +48,7 @@ def eval_operator(operator, vars={}) -> bool:
         if v is not None and isinstance(v, str) and v.startswith("$"):
             values[i] = vars.get(v)
 
-    if o == "not":
-        if len(values) > 1:
-            raise ValueError(f"operator not reqiure 1 args: {values}")
-        return not values[0]
-    elif o == "all" or o == "any":
+    if o == "not" or o == "all" or o == "any":
         results = []
         for v in values:
             if is_operator(v):
@@ -57,7 +56,11 @@ def eval_operator(operator, vars={}) -> bool:
             else:
                 r = bool(v)
             results.append(r)
-        if o == "all":
+        if o == "not":
+            if len(results) == 0 or len(results) > 1:
+                raise ValueError(f"operator not reqiure 1 args: {values}")
+            return not results[0]
+        elif o == "all":
             return all(results)
         elif o == "any":
             return any(results)
@@ -75,6 +78,8 @@ def eval_operator(operator, vars={}) -> bool:
         return values[0] >= values[1]
     elif o == "gt":
         return values[0] > values[1]
+    elif o == "in":
+        return values[0] in values[1]
     else:
         raise ValueError(f"Bug: {operator}")
 

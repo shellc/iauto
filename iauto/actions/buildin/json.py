@@ -46,5 +46,5 @@ def load(file: str, **kwargs):
         }
     ]
 })
-def dummps(obj, **kwargs) -> Any:
-    return json.dumps(obj=obj, ensure_ascii=True)
+def dumps(obj, **kwargs) -> Any:
+    return json.dumps(obj=obj, ensure_ascii=False)

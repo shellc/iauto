@@ -1,6 +1,6 @@
 from ..loader import loader
 from . import (collections, db, file, flow, hash, json, log, math, playbook,
-               shell, time)
+               queue, shell, time)
 
 actions = {}
 
