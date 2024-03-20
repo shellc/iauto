@@ -293,6 +293,11 @@ def connect(*args, server="http://127.0.0.1:4723", caps={}, **kwargs):
     return Remote(command_executor=server, options=options, strict_ssl=False)
 
 
+def get_webdriver_from_context(kwargs):
+    if "executor" in kwargs:
+        return kwargs["executor"].variables.get("$webdriver")
+
+
 def execute_script(*args, webdriver: Remote, javascript: str, **kwargs) -> Any:
     return webdriver.execute_script(javascript)
 
@@ -316,6 +321,9 @@ def get_element(
         a_by = AppiumBy.CLASS_NAME
     else:
         a_by = by
+
+    if webdriver is None:
+        webdriver = get_webdriver_from_context(kwargs)
 
     if element is not None:
         return element.get_element(by=a_by, value=selector, retries=retries, delay=delay, not_found_ignore=error_skip)
@@ -344,6 +352,9 @@ def get_elements(
         a_by = AppiumBy.CLASS_NAME
     else:
         a_by = by
+
+    if webdriver is None:
+        webdriver = get_webdriver_from_context(kwargs)
 
     if element is not None:
         return element.get_elements(
@@ -379,6 +390,9 @@ def click(
     *args,
     **kwargs
 ):
+    if webdriver is None:
+        webdriver = get_webdriver_from_context(kwargs)
+
     if element:
         return element.click()
     else:
@@ -395,7 +409,13 @@ def text(element: Element, *args, **kwargs) -> Any:
     return element.text
 
 
-def execute(*args, webdriver: Remote, command: str, params: Optional[Dict] = None, **kwargs) -> Any:
+def execute(*args, webdriver: Optional[Remote] = None, command: str, params: Optional[Dict] = None, **kwargs) -> Any:
+    if webdriver is None:
+        webdriver = get_webdriver_from_context(kwargs)
+
+    if webdriver is None:
+        raise ValueError("webdriver is none.")
+
     if params is None:
         params = {}
     return webdriver.execute(driver_command=command, params=params)
@@ -427,7 +447,7 @@ def create_actions() -> Dict[str, Action]:
         "arguments": [
             {
                 "name": "webdriver",
-                "type": "Remote",
+                "type": "WebDriver",
                 "description": "The WebDriver instance to execute the script on.",
                 "required": True
             },
@@ -445,25 +465,25 @@ def create_actions() -> Dict[str, Action]:
         "arguments": [
             {
                 "name": "webdriver",
-                "type": "Optional[Remote]",
+                "type": "WebDriver",
                 "description": "The WebDriver instance to use for finding the element.",
                 "required": False
             },
             {
                 "name": "element",
-                "type": "Optional[Element]",
+                "type": "Element",
                 "description": "The Element instance to use as the starting point for the search.",
                 "required": False
             },
             {
                 "name": "selector",
-                "type": "str",
+                "type": "string",
                 "description": "The selector string used to find the element.",
                 "required": True
             },
             {
                 "name": "by",
-                "type": "str",
+                "type": "string",
                 "description": "The method to use for the search (e.g., 'css' for CSS Selector, 'xpath' for XPath).",
                 "default": "css",
                 "required": False
@@ -476,25 +496,25 @@ def create_actions() -> Dict[str, Action]:
         "arguments": [
             {
                 "name": "webdriver",
-                "type": "Optional[Remote]",
+                "type": "WebDriver",
                 "description": "The WebDriver instance to use for finding the elements.",
                 "required": False
             },
             {
                 "name": "element",
-                "type": "Optional[Element]",
+                "type": "Element",
                 "description": "The Element instance to use as the starting point for the search.",
                 "required": False
             },
             {
                 "name": "selector",
-                "type": "str",
+                "type": "string",
                 "description": "The selector string used to find the elements.",
                 "required": True
             },
             {
                 "name": "by",
-                "type": "str",
+                "type": "string",
                 "description": "The method to use for the search (e.g., 'css' for CSS Selector, 'xpath' for XPath).",
                 "default": "css",
                 "required": False
@@ -513,7 +533,7 @@ def create_actions() -> Dict[str, Action]:
             },
             {
                 "name": "name",
-                "type": "str",
+                "type": "string",
                 "description": "The name of the attribute to retrieve.",
                 "required": True
             }
