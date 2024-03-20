@@ -1,5 +1,4 @@
 import json
-import re
 from datetime import datetime
 from typing import Dict, List, Optional, Union
 
@@ -277,66 +276,80 @@ class Session:
         if instructions is None:
             instructions = ""
 
-        primary_prompt = """{instructions}
+        react_prompt = """{instructions}
 Solve a task with interleaving Thought, Action, Observation steps.
 
-Thought can reason about the current situation, and Action is a tool/function or API calling:
+Thought can reason about the current situation.
+Action is the decision to act, use available tools, functions, or APIs as needed.
 
 Use the following format:
 
 Task: the task you must solve
 Thought: you should always think about what to do
-Action: tool/function or API to call
-Action Input: parameters for tool/function or API calling
+Action: action you make to act or tools/functions/APIs to call
+Action Input: parameters to tools/functions/APIs
 Observation: the result of the action
-... (this Thought/Action/Observation can be repeated zero or more times)
 Thought: I now know the final answer
-Final Answer: the final answer to the original input question
+Finished: the final answer to the task if the task solved
 
 Refer to the conversation hisotry to help you understand the task.
 
 Begin!
 
 Task: {task}
-{steps}
-        """
+"""
+
+        messages.append(
+            ChatMessage(
+                role="user",
+                content=react_prompt.format(
+                    task=question,
+                    instructions=instructions
+                )
+            )
+        )
+
         THOUGHT = "Thought: "
         ACTION = "Action: "
-        ACTION_INPUT = "Action Input: "
+        # ACTION_INPUT = "Action Input: "
         OBSERVATION = "Observation: "
-        FINAL_ANSWER = "Final Answer: "
+        FINISHED = "Finished: "
+
+        stop = None
+        if tools_spec is not None:
+            stop = [OBSERVATION]
 
         if log:
             self._log.info(f"Task: {question}")
 
-        anwser = ChatMessage(role="assistant", content="NOT ENOUGH INFO")
-
-        steps = []
-        finished = False
-        anwser_found = False
-
-        def _save_step(s):
-            steps.append(s)
-            if log:
-                self._log.info(s)
+        answer = ChatMessage(role="assistant", content="NOT ENOUGH INFO")
 
         steps_count = 0
-        while not finished and steps_count < max_steps:
-            prompt = primary_prompt.format(
-                task=question,
-                steps="\n".join(steps),
-                instructions=instructions
-            )
-
+        while steps_count < max_steps:
             m = self._llm.chat(
-                messages=messages + [ChatMessage(role="user", content=prompt)],
+                messages=messages,
                 tools=tools_spec,
+                stop=stop,
                 **kwargs
             )
+            answer.content = m.content  # for default answer if answer not found
+
+            messages.append(m)
 
             content = m.content
 
-            m = self._execute_tools(
+            z = content.rfind(FINISHED)
+            if z >= 0:
+                answer.content = content[z + len(FINISHED):]
+                break
+
+            # fix qwen function calling result
+            if all([x not in content for x in [ACTION, THOUGHT]]):
+                answer.content = content
+                break
+
+            # try to execute tools
+            m_tool = self._execute_tools(
                 message=m,
                 history=messages,
                 actions=tools or self._actions or [],
@@ -344,73 +357,14 @@ Task: {task}
                 **kwargs
             )
 
-            if m.role == "tool":
-                tool_content = m.content.replace("\n", "\\n")
-                content += f"\n{OBSERVATION}{tool_content}"
-            elif FINAL_ANSWER not in content:
-                content = f"{FINAL_ANSWER}{content}"
-
-            ss = content.split("\n")
-
-            for s in ss:
-                s = s.strip()
-                if s.startswith(OBSERVATION):
-                    _save_step(s)
-                elif s.startswith(ACTION) or s.startswith(ACTION_INPUT):
-                    _save_step(s)
-                elif s.startswith(THOUGHT):
-                    _save_step(s)
-                elif s.startswith(FINAL_ANSWER):
-                    _save_step(s)
-                    finished = True
-                    anwser_pattern = re.compile(r'Final Answer: (.*)')
-                    founds = anwser_pattern.findall(s)
-                    if len(founds) > 0:
-                        found = founds[0]
-                        found = found.lstrip('"').rstrip('"')
-                        anwser.content = found
-                        anwser_found = True
-                    break
-                else:
-                    if len(steps) == 0:
-                        steps.append(THOUGHT)
-                    steps[-1] += s
+            if m_tool.role == "tool":
+                m_tool.content = f"{OBSERVATION}{m_tool.content}"
+                messages.append(m_tool)
 
             steps_count += 1
-            if steps_count > max_steps:
-                _save_step("Thought: No enough infomation to solve this task, i have to give up.")
-                _save_step("Final Answer: NOT ENOUGH INFO")
 
-        final_anwser_prompt = """{instructions}
-Please answer the final user question based on the following thought steps.
-
-Task: {task}
-Thought Steps:
-```
-{steps}
-```
-
-Final question: {question}
-Final Answer:"""
-        if not anwser_found:
-            prompt = final_anwser_prompt.format(
-                task=question,
-                steps="\n".join(steps),
-                question=original_question,
-                instructions=instructions
-            )
-            messages.append(ChatMessage(role="user", content=prompt))
-            anwser = self._llm.chat(messages=messages, **kwargs)
-
-        content = anwser.content
-        if content:
-            z = content.rfind('\nFinal Answer: ')
-            if z >= 0:
-                content = content[z + len('\nFinal Answer: '):]
-
-            anwser.content = content.replace("Final", "").replace("Answer:", "").replace("Thought:", "")
-        self.add(anwser)
-        return anwser
+        self.add(answer)
+        return answer
 
     def rewrite(self, history: int = 5, **kwargs) -> None:
         """

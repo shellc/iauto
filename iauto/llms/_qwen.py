@@ -238,7 +238,8 @@ def parse_messages(messages, functions):
         elif role == "user":
             messages.append({
                 "role": "user",
-                "content": f"Question: {content}"
+                # "content": f"Question: {content}"
+                "content": content
             })
         elif role == "system":
             messages.append({"role": "system", "content": content})
@@ -270,26 +271,6 @@ def parse_messages(messages, functions):
             "role": "user",
             "content": f"{query}\nThought: "
         })
-        """
-        is_final_anwser = False
-        if len(messages) > 0 and messages[-1]["role"] == "assistant" and "Final Answer" in messages[-1]["content"]:
-            is_final_anwser = True
-
-        if (last_tool and last_user) or (not is_final_anwser and last_user):
-            user_content = last_user["content"].lstrip('\n').rstrip()
-            last_user["content"] = f"{instruction}\n\nQuestion: {user_content}"
-
-            content = f"Question: {query}\nThought: "
-            messages.append({
-                "role": "user",
-                "content": content
-            })
-        else:
-            messages.append({
-                "role": "user",
-                "content": f"{instruction}\n\nQuestion: {query}"
-            })
-            """
     elif last_role == "assistant":
         messages.append({
             "role": "assistant",

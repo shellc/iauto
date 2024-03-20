@@ -26,7 +26,10 @@ class QWen(OpenAI):
         # tools call
         tools_description = [t.oai_spec() for t in tools]
         qe_messages = [m.model_dump() for m in messages]
-        qe_messages = _qwen.parse_messages(messages=qe_messages, functions=tools_description)
+        # qe_messages = _qwen.parse_messages(messages=qe_messages, functions=tools_description)
+        func_prompt = _qwen.generate_function_instructions(functions=tools_description)
+        qe_messages.insert(0, {"role": "system", "content": func_prompt})
+
         messages = [ChatMessage.from_dict(m) for m in qe_messages]
 
         m = super().chat(messages=messages, tools=tools, **kwargs)
