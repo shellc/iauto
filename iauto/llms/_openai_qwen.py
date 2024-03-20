@@ -1,4 +1,3 @@
-import json
 from typing import List, Optional
 
 from ..actions import ActionSpec
@@ -34,23 +33,32 @@ class QWen(OpenAI):
         choice = _qwen.parse_response(m.content)
 
         if choice["finish_reason"] == "tool_calls":
+            contents = []
+            content = choice["message"]["content"]
+            contents.append(f"{content}")
+
             m.tool_calls = []
             for tool_call in choice["message"]["tool_calls"]:
                 try:
+                    func_name = tool_call["function"]["name"]
+                    func_args = tool_call["function"]["arguments"]
                     m.tool_calls.append(
                         ToolCall(
                             id=tool_call["id"],
                             type=tool_call["type"],
                             function=Function(
-                                name=tool_call["function"]["name"],
-                                arguments=tool_call["function"]["arguments"]
+                                name=func_name,
+                                arguments=func_args
                             )
                         )
                     )
+
+                    contents.append(f"Action: {func_name}")
+                    contents.append(f"Action Input: {func_args}")
                 except Exception:
                     self._log.warn(f"ToolCall error: {tool_call}")
-            if len(m.tool_calls):
-                m.content = json.dumps([tc.model_dump() for tc in m.tool_calls], ensure_ascii=False)
+
+            m.content = "\n".join(contents)
         elif choice["finish_reason"] == "stop":
             m.content = choice["message"]["content"]
         return m

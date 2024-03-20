@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from ..actions import Action, ActionSpec, Executor, Playbook, loader
 from .llm import ChatMessage
@@ -123,14 +123,33 @@ class ChatAction(Action):
         executor: Optional[Executor] = None,
         playbook: Optional[Playbook] = None,
         session: Session,
-        prompt,
+        prompt: Optional[str] = None,
+        messages: Optional[List[Dict]] = None,
         history: int = 5,
         rewrite: bool = False,
         expect_json: int = 0,
         **kwargs: Any
     ) -> Union[str, Any]:
-        session.add(ChatMessage(role="user", content=prompt))
-        m = session.run(history=history, rewrite=rewrite, expect_json=expect_json, **kwargs)
+        chat_messages = None
+        if messages is not None and len(messages) > 0:
+            chat_messages = []
+            for msg in messages:
+                chat_messages.append(ChatMessage(
+                    role=msg["role"],
+                    content=msg["content"]
+                ))
+        elif prompt is not None:
+            session.add(ChatMessage(role="user", content=prompt))
+        else:
+            raise ValueError("prompt or message required.")
+
+        m = session.run(
+            messages=chat_messages,
+            history=history,
+            rewrite=rewrite,
+            expect_json=expect_json,
+            **kwargs
+        )
         if isinstance(m, dict) or isinstance(m, list):
             return m
         else:
@@ -190,15 +209,28 @@ class ReactAction(Action):
         executor: Optional[Executor] = None,
         playbook: Optional[Playbook] = None,
         session: Session,
-        prompt,
+        prompt: Optional[str] = None,
+        messages: Optional[List[Dict]] = None,
         history: int = 5,
         rewrite: bool = False,
         log: bool = False,
         max_steps: int = 3,
         **kwargs: Any
     ) -> str:
-        session.add(ChatMessage(role="user", content=prompt))
-        m = session.react(history=history, rewrite=rewrite, log=log, **kwargs)
+        chat_messages = None
+        if messages is not None and len(messages) > 0:
+            chat_messages = []
+            for msg in messages:
+                chat_messages.append(ChatMessage(
+                    role=msg["role"],
+                    content=msg["content"]
+                ))
+        elif prompt is not None:
+            session.add(ChatMessage(role="user", content=prompt))
+        else:
+            raise ValueError("prompt or message required.")
+
+        m = session.react(messages=chat_messages, history=history, rewrite=rewrite, log=log, **kwargs)
         return m.content
 
 

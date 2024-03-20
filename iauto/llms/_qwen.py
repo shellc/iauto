@@ -120,7 +120,7 @@ def qwen_chat_handler(
 # https://github.com/QwenLM/Qwen/blob/main/openai_api.py
 TOOL_DESC = (
     '`{name_for_model}`: Call this tool to interact with the {name_for_human} API.'
-    ' What is the `{name_for_human}` API useful for? {description_for_model} Parameters: {parameters}'
+    ' What is the `{name_for_human}` API useful for? {description_for_model} Parameters: ```{parameters}```'
 )
 
 REACT_INSTRUCTION = """Answer the following questions as best you can. You have access to the following APIs:
@@ -305,7 +305,7 @@ def parse_messages(messages, functions):
 
     messages.insert(0, {
         "role": "system",
-        "content": f"{instruction}\n\n{query}"
+        "content": f"{instruction}"
     })
     return messages
 

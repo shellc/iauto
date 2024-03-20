@@ -126,10 +126,11 @@ class OpenAI(LLM):
         """Check if the model support fuction calling"""
         models = [
             "gpt-3.5",
-            "gpt-4"
+            "gpt-4",
+            "qwen"
         ]
         for m in models:
-            if self._model.startswith(m):
+            if self._model.lower().startswith(m):
                 return True
         return False
 
