@@ -363,6 +363,7 @@ Task: {task}
 
             steps_count += 1
 
+        answer.content = answer.content.strip()
         self.add(answer)
         return answer
 
