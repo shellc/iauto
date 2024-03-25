@@ -1,5 +1,5 @@
 import time
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 
 from appium.options.common.base import AppiumOptions
 from appium.webdriver.appium_connection import AppiumConnection
@@ -162,6 +162,7 @@ class Element(WebElement):
         el = []
         for i in range(retries + 1):
             el = obj.find_elements(by=by, value=value)
+
             if len(el) > 0:
                 break
             else:
@@ -171,7 +172,7 @@ class Element(WebElement):
                 continue
 
         if not not_found_ignore and len(el) == 0:
-            raise NoSuchElementException(f"Element not found: {value}")
+            raise NoSuchElementException(f"Element not found: {by} {value}")
         return [Element(appium_element=e) for e in el]
 
 
@@ -298,8 +299,8 @@ def get_webdriver_from_context(kwargs):
         return kwargs["executor"].variables.get("$webdriver")
 
 
-def execute_script(*args, webdriver: Remote, javascript: str, **kwargs) -> Any:
-    return webdriver.execute_script(javascript)
+def execute_script(*args, webdriver: Remote, script: str, params=None, **kwargs) -> Any:
+    return webdriver.execute_script(script=script, *params)
 
 
 def get_element(
@@ -419,6 +420,63 @@ def execute(*args, webdriver: Optional[Remote] = None, command: str, params: Opt
     if params is None:
         params = {}
     return webdriver.execute(driver_command=command, params=params)
+
+
+def win_click(
+    element: Element,
+    button: Literal["left", "right"] = "left",
+    webdriver: Optional[Remote] = None,
+    **kwargs
+):
+    if webdriver is None:
+        webdriver = get_webdriver_from_context(kwargs)
+
+    webdriver.execute_script("windows:click", {
+        "elementId": element.id,
+        "button": button
+    })
+
+
+def win_get_clipboard(type: Literal["plaintext", "image"] = "plaintext", webdriver: Optional[Remote] = None, **kwargs):
+    if webdriver is None:
+        webdriver = get_webdriver_from_context(kwargs)
+
+    result = webdriver.execute_script("windows:getClipboard", {
+        "contentType": type
+    })
+
+    return result
+
+
+def win_set_clipboard(
+    type: Literal["plaintext", "image"] = "plaintext",
+    content: str = "",
+    webdriver: Optional[Remote] = None,
+    **kwargs
+):
+    if webdriver is None:
+        webdriver = get_webdriver_from_context(kwargs)
+
+    webdriver.execute_script("windows:setClipboard", {
+        "contentType": type,
+        "b64Content": content
+    })
+
+
+def win_scroll(element: Element, deltaX=None, deltaY=None, webdriver: Optional[Remote] = None, **kwargs):
+    if webdriver is None:
+        webdriver = get_webdriver_from_context(kwargs)
+
+    params = {
+        "elementId": element.id
+    }
+
+    if deltaX is not None:
+        params["deltaX"] = deltaX
+    if deltaY is not None:
+        params["deltaY"] = deltaY
+
+    webdriver.execute_script("windows:scroll", params)
 
 
 def create_actions() -> Dict[str, Action]:
@@ -585,6 +643,26 @@ def create_actions() -> Dict[str, Action]:
     actions["wd.execute"] = create(func=execute, spec={
         "name": "wd.execute",
         "description": "Execute a command"
+    })
+
+    actions["wd.win.click"] = create(func=win_click, spec={
+        "name": "wd.win.click",
+        "description": "Windows click"
+    })
+
+    actions["wd.win.get_clipboard"] = create(func=win_get_clipboard, spec={
+        "name": "wd.win.get_clipboard",
+        "description": "Windows get clipboard"
+    })
+
+    actions["wd.win.set_clipboard"] = create(func=win_set_clipboard, spec={
+        "name": "wd.win.get_clipboard",
+        "description": "Windows set clipboard"
+    })
+
+    actions["wd.win.scroll"] = create(func=win_scroll, spec={
+        "name": "wd.win.scroll",
+        "description": "Windows scroll"
     })
 
     return actions

@@ -57,3 +57,13 @@ def file_exists(file: Optional[str] = None, **kwargs) -> bool:
     if file is None:
         raise ValueError(f"invalid args: {file}")
     return os.path.exists(file) and os.path.isfile(file)
+
+
+@register(name="file.rename", spec={
+    "description": "Rename file.",
+    "arguments": [
+
+    ]
+})
+def file_rename(src: str = None, dst: str = None, **kwargs) -> bool:
+    return os.rename(src, dst)

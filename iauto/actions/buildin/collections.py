@@ -141,3 +141,21 @@ def dict_clear(d, **kwargs):
     if not isinstance(d, dict):
         raise ValueError("invalid dict")
     d.clear()
+
+
+@register(name="len", spec={
+    "description": "Get the length."
+})
+def length(c, **kwargs):
+    if not isinstance(c, list) and not isinstance(c, dict):
+        raise ValueError("invalid args")
+    return len(c)
+
+
+@register(name="list.get", spec={
+    "description": "Get the list from list."
+})
+def list_get(ls, idx, **kwargs):
+    if not isinstance(ls, list):
+        raise ValueError("invalid args")
+    return ls[idx]
