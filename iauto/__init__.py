@@ -11,7 +11,7 @@ from .actions import (Playbook, PlaybookExecutor, execute, execute_in_process,
 from .agents import _actions
 from .llms.actions import register_actions as register_llm_actions
 
-VERSION = "0.1.9"
+VERSION = "0.1.10"
 """The current version."""
 
 # Register actions
