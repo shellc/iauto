@@ -2,6 +2,7 @@ import json
 import os
 from typing import Any, Dict, List, Literal, Optional
 
+from sqlalchemy.orm import load_only
 from sqlmodel import Session, SQLModel, create_engine, select, text
 
 
@@ -67,12 +68,16 @@ class Persistence:
     def list(
         self,
         cls,
+        fields: Optional[List] = None,
         filters: Optional[List] = None,
         limit: Optional[int] = None,
         order_by: Optional[Any] = None,
         order: Literal["asc", "desc", None] = None
     ):
         stmt = select(cls)
+
+        if fields is not None:
+            stmt = stmt.options(load_only(*fields))
 
         if filters is not None:
             for filter in filters:
@@ -81,10 +86,13 @@ class Persistence:
         if limit is not None:
             stmt = stmt.limit(limit)
 
-        if order == "asc":
-            stmt = stmt.order_by(order_by)
-        elif order == "desc":
-            stmt = stmt.order_by(-order_by)
+        if order_by is not None:
+            if order not in ["asc", "desc"]:
+                raise ValueError("invalid order")
+            if order == "desc":
+                stmt = stmt.order_by(-order_by)
+            else:
+                stmt = stmt.order_by(order_by)
 
         with self.create_session() as session:
             results = session.exec(stmt)
