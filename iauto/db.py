@@ -87,7 +87,7 @@ class Persistence:
             stmt = stmt.limit(limit)
 
         if order_by is not None:
-            if order not in ["asc", "desc"]:
+            if order not in ["asc", "desc", None]:
                 raise ValueError("invalid order")
             if order == "desc":
                 stmt = stmt.order_by(-order_by)
