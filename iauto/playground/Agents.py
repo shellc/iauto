@@ -171,7 +171,7 @@ def create_agent(options):
         explicit_end=False
     ).strip()
 
-    with tempfile.NamedTemporaryFile(delete=False) as f:
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".yaml") as f:
         f.write(playbook_yml.encode("utf-8"))
         f.close()
 
