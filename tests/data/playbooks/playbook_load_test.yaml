@@ -1,0 +1,25 @@
+# Playbook example
+#
+playbook:
+  description: "playbook_load_test"
+  actions:
+    - repeat:
+        description: do forever
+        actions:
+          - time.now:
+              result: $now
+          - math.mod:
+              args: [$now, 2]
+              result: $tick
+          - when:
+              args:
+                eq:
+                  - $tick
+                  - 0
+              actions:
+                - log: "tick: {$tick}"
+          - log:
+              args:
+                now: $now
+                tick: $tick
+          - time.wait: 3

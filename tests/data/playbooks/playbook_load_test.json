@@ -1,0 +1,76 @@
+{
+    "actions": [
+        {
+            "actions": [
+                {
+                    "metadata": {
+                        "__root__": "./tests/data/playbooks"
+                    },
+                    "name": "time.now",
+                    "result": "$now"
+                },
+                {
+                    "args": [
+                        "$now",
+                        2
+                    ],
+                    "metadata": {
+                        "__root__": "./tests/data/playbooks"
+                    },
+                    "name": "math.mod",
+                    "result": "$tick"
+                },
+                {
+                    "actions": [
+                        {
+                            "args": [
+                                "tick: {$tick}"
+                            ],
+                            "metadata": {
+                                "__root__": "./tests/data/playbooks"
+                            },
+                            "name": "log"
+                        }
+                    ],
+                    "args": {
+                        "eq": [
+                            "$tick",
+                            0
+                        ]
+                    },
+                    "metadata": {
+                        "__root__": "./tests/data/playbooks"
+                    },
+                    "name": "when"
+                },
+                {
+                    "args": {
+                        "now": "$now",
+                        "tick": "$tick"
+                    },
+                    "metadata": {
+                        "__root__": "./tests/data/playbooks"
+                    },
+                    "name": "log"
+                },
+                {
+                    "args": [
+                        3
+                    ],
+                    "metadata": {
+                        "__root__": "./tests/data/playbooks"
+                    },
+                    "name": "time.wait"
+                }
+            ],
+            "description": "do forever",
+            "metadata": {
+                "__root__": "./tests/data/playbooks"
+            },
+            "name": "repeat"
+        }
+    ],
+    "description": "playbook_load_test",
+    "metadata": {},
+    "name": "playbook"
+}

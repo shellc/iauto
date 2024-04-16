@@ -642,27 +642,85 @@ def create_actions() -> Dict[str, Action]:
 
     actions["wd.execute"] = create(func=execute, spec={
         "name": "wd.execute",
-        "description": "Execute a command"
+        "description": "Execute a custom command on the browser.",
+        "arguments": [
+            {
+                "name": "command",
+                "type": "str",
+                "description": "The command to execute.",
+                "required": True
+            },
+            {
+                "name": "params",
+                "type": "dict",
+                "description": "The arguments to pass to the command.",
+                "required": False
+            }
+        ]
     })
 
     actions["wd.win.click"] = create(func=win_click, spec={
         "name": "wd.win.click",
-        "description": "Windows click"
+        "description": "Click on a window.",
+        "arguments": [
+            {
+                "name": "element",
+                "type": "string",
+                "description": "The element to click.",
+                "required": True
+            },
+            {
+                "name": "button",
+                "type": "string",
+                "description": "The button to click on.",
+                "required": False
+            }
+        ]
     })
 
     actions["wd.win.get_clipboard"] = create(func=win_get_clipboard, spec={
         "name": "wd.win.get_clipboard",
-        "description": "Windows get clipboard"
+        "description": "Get the clipboard content.",
+        "arguments": [
+            {
+                "name": "type",
+                "type": "string",
+                "description": "The type of the clipboard content.",
+                "required": False
+            }
+        ]
     })
 
     actions["wd.win.set_clipboard"] = create(func=win_set_clipboard, spec={
         "name": "wd.win.get_clipboard",
-        "description": "Windows set clipboard"
+        "description": "Set the clipboard content.",
+        "arguments": [
+            {
+                "name": "content",
+                "type": "string",
+                "description": "The content to set to the clipboard.",
+                "required": True
+            }
+        ]
     })
 
     actions["wd.win.scroll"] = create(func=win_scroll, spec={
         "name": "wd.win.scroll",
-        "description": "Windows scroll"
+        "description": "Scroll the window.",
+        "arguments": [
+            {
+                "name": "deltaX",
+                "type": "int",
+                "description": "The x offset to scroll.",
+                "required": True
+            },
+            {
+                "name": "deltaY",
+                "type": "int",
+                "description": "The y offset to scroll.",
+                "required": True
+            }
+        ]
     })
 
     return actions

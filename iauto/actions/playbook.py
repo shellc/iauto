@@ -1,13 +1,17 @@
+import json
 import os
 from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel
 
 try:
+    from yaml import CDumper as yaml_dumper
     from yaml import CLoader as yaml_loader
 except ImportError:
     from yaml import Loader as yaml_loader
+    from yaml import Dumper as yaml_dumper
 
+from yaml import dump as yaml_dump
 from yaml import load as yaml_load
 
 from .action import ActionSpec
@@ -29,6 +33,8 @@ class Playbook(BaseModel):
         args (Union[str, List, Dict, None]): Arguments that can be passed to the actions in the playbook.
         actions (Optional[List['Playbook']]): A list of actions (playbooks) to be executed.
         result (Union[str, List, Dict, None]): The result of the playbook execution.
+        spec (Optional[ActionSpec]): The function spec of the playbook.
+        metadata (Optional[Dict]): The metadata of the playbook.
     """
 
     name: Optional[str] = None
@@ -64,18 +70,22 @@ def from_dict(d: Dict) -> Playbook:
     Returns:
         playbook (Playbook): The converted Playbook object.
     """
-    if d is None or len(d) != 1:
+    if d is None:
         raise ValueError(f"Invalid playbook: {d}")
 
-    name = list(d.keys())[0]
+    if len(d) == 1:
+        name = list(d.keys())[0]
+        pb = d[name]
+    else:
+        name = d.get("name")
+        pb = d
+
     if name is None or not isinstance(name, str):
         raise ValueError(f"Invalid name: {name}")
 
     playbook = Playbook(
         name=name
     )
-
-    pb = d[name]
 
     if isinstance(pb, Dict):
         playbook.description = pb.get(KEY_DESCRIPTION)
@@ -108,18 +118,47 @@ def load(fname: str) -> Playbook:
     """Load a playbook from file.
 
     Attributes:
-        fname (str): Path to the YAML file containing the playbook.
+        fname (str): Path to the YAML/JSON file containing the playbook.
 
     Returns:
         playbook (Playbook): The loaded playbook.
     """
+    ext = fname[fname.rfind(".") + 1:].lower()
+
     with open(fname, 'r', encoding='utf-8') as f:
-        data = yaml_load(f, Loader=yaml_loader)
+        if ext in ["yaml", "yml"]:
+            data = yaml_load(f, Loader=yaml_loader)
+        elif ext == "json":
+            data = json.load(f)
+        else:
+            raise ValueError(f"Unsupported file extension: {ext}")
+
         playbook = from_dict(data)
         root = os.path.dirname(fname)
         _resolve_path(playbook=playbook, root=root)
 
     return playbook
+
+
+def dump(playbook: Playbook, fname: str, format: str = "yaml"):
+    """Dump a playbook to a file.
+
+    Attributes:
+        playbook (Playbook): The playbook to dump.
+        fname (str): The file name to dump to.
+        format (str): The format to dump to.
+    """
+
+    pb = playbook.model_dump(exclude_none=True)
+
+    if format == "yaml":
+        with open(fname, "w") as f:
+            yaml_dump(pb, f, Dumper=yaml_dumper, allow_unicode=True)
+    elif format == "json":
+        with open(fname, "w") as f:
+            json.dump(pb, f, ensure_ascii=False, indent=4, sort_keys=True)
+    else:
+        raise ValueError(f"Invalid format: {format}")
 
 
 def _resolve_path(playbook: Playbook, root: str):
