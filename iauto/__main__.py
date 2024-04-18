@@ -3,6 +3,7 @@ import importlib
 import json
 import os
 import sys
+import time
 import traceback
 
 from dotenv import dotenv_values, load_dotenv
@@ -74,9 +75,19 @@ def run(args, parser):
         variables.update(args.kwargs)
     variables.update(env)
 
-    result = executor.execute(playbook=p, variables=variables)
-    if result is not None:
-        print(result)
+    while True:
+        try:
+            result = executor.execute(playbook=p, variables=variables)
+            if result is not None:
+                print(result)
+            break
+        except Exception as e:
+            if args.autorestart:
+                print(f"Error: {e}")
+                print("Restarting...")
+                time.sleep(3)
+            else:
+                raise e
 
 
 class ParseDict(argparse.Action):
@@ -109,6 +120,7 @@ def parse_args(argv):
     )
     parser_run.add_argument('--kwargs', nargs="*", metavar="name=value",
                             action=ParseDict, help="set playbook variables")
+    parser_run.add_argument('--autorestart', action="store_true", help="Autorestart when error occurs")
     parser_run.set_defaults(func=lambda args: run(args=args, parser=parser_run))
 
     parser_playground = subparser.add_parser('playground', help="start playground")
