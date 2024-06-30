@@ -90,6 +90,11 @@ def run(args, parser):
                 raise e
 
 
+def serve(args, parser):
+    from iauto.api import start
+    start(host=args.host, port=args.port)
+
+
 class ParseDict(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         setattr(namespace, self.dest, dict())
@@ -128,6 +133,11 @@ def parse_args(argv):
                                    metavar="PLAYGROUND_NAME", help="playground name")
     parser_playground.add_argument('--playbooks', default=None, help="playbook dir for playground")
     parser_playground.set_defaults(func=lambda args: run_playground(args, parser=parser_playground))
+
+    parser_serve = subparser.add_parser("serve", help="run iauto server")
+    parser_serve.add_argument('--port', default=2000, type=int, help="port for server")
+    parser_serve.add_argument('--host', default="0.0.0.0", help="host for server")
+    parser_serve.set_defaults(func=lambda args: serve(args=args, parser=parser_serve))
 
     args = parser.parse_args(argv)
     return args, parser
