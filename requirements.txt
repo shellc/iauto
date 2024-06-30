@@ -1,18 +1,28 @@
+# Basic
 pydantic
 PyYAML
 
 python-dotenv
 prompt_toolkit
 
+# Server
+uvicorn
+fastapi
+
+# LLM
 openai
 pyautogen
-llama-cpp-python
+#llama-cpp-python
 
+# Appium & Playwright
 playwright
 Appium-Python-Client
 
+# SQL
 SQLAlchemy
 pandas
 
+# Playground
 streamlit
 watchdog
+
